@@ -1,0 +1,189 @@
+#=
+References:
+
+Tajima F. and Nei M. (1984). Estimation of evolutionary distance between
+nucleotide sequences. Mol Biol Evol 1 (3):269-285.
+http://mbe.oxfordjournals.org/content/1/3/269
+
+Tamura K. and Kumar S. (2002). Evolutionary Distance Estimation Under
+Heterogeneous Substitution Pattern Among Lineages. Mol Biol Evol 19 (10):
+1727-1736. http://mbe.oxfordjournals.org/content/19/10/1727
+=#
+
+#=
+Description:
+
+Compute Tajima Nei (1984) pairwise distances of protein sequences, with the
+Tamura and Kumar (2002) correction for heterogeneous patterns.
+
+Arguments:
+
+  rawdata::Array{Uint8, 2}
+    m-by-n data matrix, where m is the common sequence length and n is the
+    sample size
+  ref::Array{Uint8, 1}
+    reference sequence, i.e. a vector of length m storing the values of
+    homogeneous sites
+
+Details:
+
+Pyrrolysine (O) and Selenocysteine (U) are treated as valid amino acids if they
+have not been given a value of zero (missing).
+
+If a pairwise distance is equal to -1.0, it means that is wasn't possible to
+compute it. This usually happens when the hypotheses of the underlying
+evolutionary model are not satisfied.
+
+Value:
+
+  d::Array{Float64, 1}
+    evolutionary distances. Vector length is equal to n * (n - 1) / 2. It
+    contains the values of the lower triangular matrix of the full distance
+    matrix, ordered by column.
+    To access the distance between units i and j (i < j), use
+    d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
+=#
+function distaamtn84(rawdata::Array{Uint8, 2},
+                     ref::Array{Uint8, 1})
+  n = size(rawdata, 2)
+  m = size(rawdata, 1)
+
+  d = zeros(Float64, div(n * (n - 1), 2))
+
+  tmpref = zeros(Float64, 30)
+  tmpraw = zeros(Float64, 29)
+
+  for i in 1:length(ref)
+    tmpref[ref[i] + 1] += 1
+  end
+
+  for col in 1:n, row in 1:m
+    tmpraw[rawdata[row, col] + 1] += 1
+  end
+
+  gt = zeros(Float64, 22)
+  gt[:] = tmpref[2:23]
+
+  gb = zeros(Float64, 22)
+  gb[:] = tmpraw[2:23] + n * gt
+
+  st = 0.0
+  sb = 0.0
+
+  for aa in 1:22
+    st += gt[aa]
+    sb += gb[aa]
+  end
+
+  gb /= sb
+
+  sc = 0.0
+  for aa in 1:22
+    sc += gb[aa]^2
+  end
+
+  b = 1 - sc
+
+  idx = 1
+  for j in 1:(n - 1), i in (j + 1):n
+    d[idx] = aamtn84(rawdata[:, i], rawdata[:, j], gt, st, b)
+    idx += 1
+  end
+
+  d
+end
+
+#=
+Description:
+
+Compute the Tajima Nei (1984) distance between two protein sequences, with the
+Tamura and Kumar (2002) correction for heterogeneous patterns.
+
+Arguments:
+
+  s1::Array{Uint8, 1}
+    protein sequence
+  s2::Array{Uint8, 1}
+    protein sequence
+  gt::Array{Float64, 1}
+    common absolute frequency for the 22 amino acids, i.e. the count of each
+    amino acid at homogeneous sites
+  h::Float64
+    h = sum(gt), i.e. the total number of homogeneous sites that are not missing
+  b::Float64
+    b = 1 - sum(pi^2), where pi is the proportion of amino acid i observed in
+    the whole dataset
+
+Value:
+
+  d::Float64
+    evolutionary distance between the two protein sequences
+=#
+function aamtn84(x1::Array{Uint8, 1},
+                 x2::Array{Uint8, 1},
+                 gt::Array{Float64, 1},
+                 h::Float64,
+                 b::Float64)
+  d = -1.0
+
+  # effective length, i.e. total number of sites at which both sequences have
+  # non-missing values
+  n = zeros(Float64, 3)
+  n[:] = h
+
+  # proportion of different elements
+  p = 0.0
+
+  # proportion of observed amino acids
+  g1 = zeros(Float64, 22)
+  g1[:] = gt
+
+  g2 = zeros(Float64, 22)
+  g2[:] = gt
+
+  f = 0.0
+  w = 0.0
+
+  for i in 1:length(x1)
+    if 0 < x1[i] < 23
+      g1[x1[i]] += 1
+      n[1] += 1
+    end
+
+    if 0 < x2[i] < 23
+      g2[x2[i]] += 1
+      n[2] += 1
+    end
+
+    if (0 < x1[i] < 23) && (0 < x2[i] < 23)
+      if x1[i] != x2[i]
+        p += 1
+      end
+
+      n[3] += 1
+    end
+  end
+
+  if p > 0
+    g1 /= n[1]
+    g2 /= n[2]
+
+    p /= n[3]
+
+    for i in 1:22
+      f += g1[i] * g2[i]
+    end
+
+    x = 1 - (p / (1 - f))
+
+    if x > 0
+      d = - b * log(x)
+    end
+  else
+    # sequences are identical (or couldn't be compared because of missing
+    # values. But in this case, by default, we consider them identical)
+    d = 0.0
+  end
+
+  d
+end
