@@ -10,7 +10,7 @@ required to be aligned. Only polymorphic columns are stored.
 
 ## Usage
 
-readfasta(infile; dna=true, miss=Array(UInt8, 0), l=100000000, t=500)
+readfasta(infile; dna=true, miss=zeros(UInt8, 0), l=100000000, t=500)
 
 ## Arguments
 
@@ -42,7 +42,7 @@ distances.
 Standard conversion tables for FASTA data:
 
 +----------------------------------------+
-|        Conversion table (DNA)          |
+|         Conversion table (DNA)         |
 +----------------------------------------+
 |          Nucleotide |  Code |  Integer |
 +---------------------+-------+----------+
@@ -113,7 +113,7 @@ by a value of 29
 """
 function readfasta(infile::AbstractString;
                    dna::Bool=true,
-                   miss::Array{UInt8, 1}=Array(UInt8, 0),
+                   miss::Array{UInt8, 1}=zeros(UInt8, 0),
                    l::Int=100000000,
                    t::Int=500)
   # we read the file twice
@@ -160,12 +160,15 @@ function readfasta(infile::AbstractString;
     throw(Kpax3FASTAError("Missing sequence identifier. Sequence: 1."))
   end
 
-  L = 0
-  w = 0
+  seqlen = zero(Int)
+  seqref = zeros(UInt8, l)
+  missseqref = falses(length(seqref))
 
-  seqlen = 0
-  seqref = Array(UInt8, l)
-  missseqref = Array(Bool, length(seqref))
+  # support variables
+  c = '\0'
+  L = zero(Int)
+  w = zero(Int)
+  u = zero(UInt8)
 
   # start reading the first sequence
   keepgoing = true
@@ -179,18 +182,30 @@ function readfasta(infile::AbstractString;
         # do we have enough space to store the first sequence?
         if w > length(seqref)
           L = length(seqref) + l * fld(w, length(seqref))
-          tmp = Array(UInt8, L)
+          tmp = zeros(UInt8, L)
           tmp[1:length(seqref)] = seqref
           seqref = tmp
 
-          tmp = Array(Bool, length(seqref))
+          tmp = falses(length(seqref))
           tmp[1:length(missseqref)] = missseqref
           missseqref = tmp
         end
 
-        scansequence!(s, seqref, missseqref, seqlen + 1, miss)
+        for c in lowercase(s)
+          u = UInt8(c)
 
-        seqlen = w
+          if !((u == 0x20) || (0x09 <= u <= 0x0d)) # skip blanks
+            seqlen += 1
+
+            if !in(u, miss)
+              seqref[seqlen] = u
+              missseqref[seqlen] = false
+            else
+              seqref[seqlen] = 0x3f # '?'
+              missseqref[seqlen] = true
+            end
+          end
+        end
       else
         keepgoing = false
       end
@@ -205,7 +220,7 @@ function readfasta(infile::AbstractString;
   end
 
   # at least a sequence has been found
-  n = 1
+  n = one(Int)
 
   seqref = seqref[1:seqlen]
   missseqref = missseqref[1:seqlen]
@@ -220,42 +235,47 @@ function readfasta(infile::AbstractString;
     end
   end
 
-  curlen = 0
+  curlen = zero(Int)
 
-  snp = Array(Bool, seqlen)
-  snp[:] = false
+  snp = falses(seqlen)
+  seq = zeros(UInt8, seqlen)
+  missseq = falses(seqlen)
+  j = falses(seqlen)
 
-  seq = Array(UInt8, seqlen)
-  seq[:] = '\0'
-
-  missseq = Array(Bool, seqlen)
-  missseq[:] = false
-
-  j = Array(Bool, seqlen)
-  j[:] = false
-
-  for l in eachline(f)
-    s = strip(l)::ASCIIString
+  for line in eachline(f)
+    s = strip(line)::ASCIIString
 
     if length(s) > 0
       if s[1] != '>'
-        w = curlen + length(s)
+        for c in lowercase(s)
+          u = UInt8(c)
 
-        if w > seqlen
-          close(f)
-          throw(Kpax3FASTAError(string("Different sequence length. Error at ",
-                                       "sequence ", n + 1, " (", sid, ").")))
+          if !((u == 0x20) || (0x09 <= u <= 0x0d)) # skip blanks
+            curlen += 1
+
+            if curlen > seqlen
+              close(f)
+              throw(Kpax3FASTAError(string("Different sequence length: ",
+                                           "sequence ", n + 1, " (", sid, ") ",
+                                           "is longer than expected.")))
+            end
+
+            if !in(u, miss)
+              seq[curlen] = u
+              missseq[curlen] = false
+            else
+              seq[curlen] = 0x3f # '?'
+              missseq[curlen] = true
+            end
+          end
         end
-
-        scansequence!(s, seq, missseq, curlen + 1, miss)
-
-        curlen = w
       else
         # we just finished scanning the previous sequence
-        if w != seqlen
+        if curlen != seqlen
           close(f)
-          throw(Kpax3FASTAError(string("Different sequence length. Error at ",
-                                       "sequence ", n + 1, " (", sid, ").")))
+          throw(Kpax3FASTAError(string("Different sequence length: ",
+                                       "sequence ", n + 1, " (", sid, ") ",
+                                       "is shorter than expected.")))
         end
 
         n += 1
@@ -277,22 +297,21 @@ function readfasta(infile::AbstractString;
         if length(s) > 1
           sid = lstrip(s, '>')::ASCIIString
           curlen = 0
-          w = 0
         else
           # there is only the '>' character
           close(f)
-          throw(Kpax3FASTAError(string("Missing sequence identifier. ",
-                                       "Sequence: ", n + 1, ".")))
+          throw(Kpax3FASTAError(string("Missing identifier at sequence ",
+                                       n + 1, ".")))
         end
       end
     end
   end
 
   # by construction, the last sequence has not been pre-processed
-  if w != seqlen
+  if curlen != seqlen
     close(f)
-    throw(Kpax3FASTAError(string("Different sequence length. Error at ",
-                                 "sequence ", n + 1, " (", sid, ").")))
+    throw(Kpax3FASTAError(string("Different sequence length: sequence ", n + 1,
+                                 "(", sid, ") ", "is shorter than expected.")))
   end
 
   n += 1
@@ -301,11 +320,10 @@ function readfasta(infile::AbstractString;
   seqref[j] = seq[j]
   missseqref[j] = false
 
-  # to be compared, both values must be non-missing
   j[:] = !(missseqref | missseq)
   snp[j] = snp[j] | (seq[j] .!= seqref[j])
 
-  m = sum(snp)
+  m = sum(snp)::Int
 
   if t > 0
     println("Found ", n, " sequences: ", m, " SNPs out of ", seqlen,
@@ -333,38 +351,46 @@ function readfasta(infile::AbstractString;
     enc[117] = 0x04 # 'u'
   end
 
-  rawdata = Array(UInt8, m, n)
+  data = zeros(UInt8, m, n)
   id = Array(ASCIIString, n)
 
   # go back at the beginning of the file and start again
   seekstart(f)
 
-  s = strip(readuntil(f, '>'))::ASCIIString
-
   # we already checked that the first non-empty element is the id
-  u = 1
-  id[u] = strip(readuntil(f, '\n'))::ASCIIString
+  i = 1
+
+  s = strip(readuntil(f, '>'))::ASCIIString
+  id[i] = strip(readuntil(f, '\n'))::ASCIIString
 
   i1 = 0
   i2 = 0
-  for l in eachline(f)
-    s = strip(l)::ASCIIString
+  for line in eachline(f)
+    s = strip(line)::ASCIIString
 
     if length(s) > 0
       if s[1] != '>'
-        ls = lowercase(s[snp[i1 + (1:length(s))]])
-        insertsequence!(ls, rawdata, i2 + 1, u, enc)
-        i1 += length(s)
-        i2 += length(ls)
-      else
-        u += 1
+        for c in lowercase(s)
+          u = UInt8(c)
 
-        if (t > 0) && (u % t == 0)
-          println(u, " sequences have been processed.")
+          if !((u == 0x20) || (0x09 <= u <= 0x0d)) # skip blanks
+            i1 += 1
+
+            if snp[i1]
+              i2 += 1
+              data[i2, i] = enc[u]
+            end
+          end
+        end
+      else
+        i += 1
+
+        if (t > 0) && (i % t == 0)
+          println(i, " sequences have been processed.")
         end
 
         # move on with the next sequence
-        id[u] = lstrip(s, '>')::ASCIIString
+        id[i] = lstrip(s, '>')::ASCIIString
 
         i1 = 0
         i2 = 0
@@ -373,87 +399,14 @@ function readfasta(infile::AbstractString;
   end
 
   if t > 0
-    println("All ", u, " sequences have been processed.")
+    println("All ", i, " sequences have been processed.")
   end
 
   close(f)
 
-  ref = Array(UInt8, seqlen)
+  ref = zeros(UInt8, seqlen)
   ref[:] = 29
   ref[!snp] = enc[seqref[!snp]]
 
-  (rawdata, id, ref)
-end
-
-"""
-# readfasta utility function
-
-## Description
-
-Copy a sequence into a UInt8 matrix (column) character by character.
-
-## Usage
-
-insertsequence!(s, m, i, u, enc)
-
-## Arguments
-
-* `s` Sequence to be copied
-* `m` Matrix where the string s is to be copied
-* `i` Matrix row where the copy has to start
-* `u` Matrix column where the sequence must be copied
-* `enc` Encoding table (Char -> UInt8)
-"""
-function insertsequence!(s::ASCIIString,
-                         m::Array{UInt8, 2},
-                         i::Int,
-                         u::Int,
-                         enc::Array{UInt8, 1})
-  for c in s
-    m[i, u] = enc[UInt8(c)]
-    i += 1
-  end
-
-  nothing
-end
-
-"""
-# readfasta utility function
-
-## Description
-
-Read a sequence character by character and check if the character is "missing".
-
-## Usage
-
-scansequence!(s, sq, mq, i, miss)
-
-## Arguments
-
-* `s` Sequence to be scanned
-* `sq` Vector where the string `s` is to be copied
-* `mq` Vector of indicator variables for missing characters
-* `i` Position at which the copy has to start
-* `miss` Vector of characters to be considered missing
-"""
-function scansequence!(s::ASCIIString,
-                       sq::Array{UInt8, 1},
-                       mq::Array{Bool, 1},
-                       i::Int,
-                       miss::Array{UInt8, 1})
-  for c in lowercase(s)
-    u = UInt8(c)
-
-    if !in(u, miss)
-      sq[i] = u
-      mq[i] = false
-    else
-      sq[i] = 0x3f # '?'
-      mq[i] = true
-    end
-
-    i += 1
-  end
-
-  nothing
+  (data, id, ref)
 end
