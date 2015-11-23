@@ -16,15 +16,12 @@ readfasta(infile; dna=true, miss=zeros(UInt8, 0), l=100000000, t=500)
 
 * `infile` Path to the input data file
 * `dna` `true` if reading DNA data or `false` if reading protein data
-* `miss` Values to be considered missing. Default values are (UInt8 version):
- - DNA data
+* `miss` Characters (as `UInt8`) to be considered missing. Use
+`miss = zeros(UInt8, 1)` if all characters are to be considered valid. Default
+characters for `miss` are:
 
-        miss = ['?', '\*', #', '-', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's', 'v',
-                'w', 'x', 'y']
-
- - Protein data
-
-        miss = ['?', '\*', '#', '-', 'b', 'j', 'x', 'z']
+  - DNA data: _?, \*, #, -, b, d, h, k, m, n, r, s, v, w, x, y_
+  - Protein data: _?, \*, #, -, b, j, x, z_
 
 * `l` Sequence length. If unknown, it is better to choose a value which is
 surely greater than the real sequence length. If `l` is found to be
@@ -123,6 +120,21 @@ function readfasta(infile::AbstractString;
 
   # note: this function has been written with a huge dataset in mind
 
+  if (length(miss) == 1) && (miss[1] == 0x00)
+    # we can't use 0x00 as an index in enc[miss]. Use instead 0x01: it is not an
+    # ASCII character allowed in a sequence in a proper FASTA file
+    miss[1] = 0x01
+  end
+
+  if !all(0 .< miss .< 128)
+    throw(Kpax3DomainError(string("Argument 'miss' contains some values not ",
+                                  "in the range [1, ..., 127].")))
+  end
+
+  if l < 1
+    throw(Kpax3DomainError("Argument 'l' is not positive."))
+  end
+
   #    ?    *    #    -    b    d    h    k    m    n    r    s    v    w    x
   # 0x3f 0x2a 0x23 0x2d 0x62 0x64 0x68 0x6b 0x6d 0x6e 0x72 0x73 0x76 0x77 0x78
   #    y    j    z
@@ -181,7 +193,7 @@ function readfasta(infile::AbstractString;
 
         # do we have enough space to store the first sequence?
         if w > length(seqref)
-          L = length(seqref) + l * fld(w, length(seqref))
+          L = w + l
           tmp = zeros(UInt8, L)
           tmp[1:length(seqref)] = seqref
           seqref = tmp
