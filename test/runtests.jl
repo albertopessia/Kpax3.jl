@@ -1,4 +1,4 @@
-# This file is part of K-Pax3. License is MIT.
+# This file is part of Kpax3. License is MIT.
 
 using Base.Test
 

@@ -1,9 +1,11 @@
+# This file is part of Kpax3. License is MIT.
+
 """
 # Genetic data
 
 ## Description
 
-Genetic data and its metadata.
+DNA data and its metadata.
 
 ## Fields
 
@@ -34,15 +36,6 @@ Bayesian identification of cluster-defining amino acid positions in large
 sequence datasets. _Microbial Genomics_ **1**(1).
 <http://dx.doi.org/10.1099/mgen.0.000025>.
 """
-abstract Kpax3Data
-
-"""
-# DNA genetic data
-
-## Description
-
-DNA data and Amino Acid data are modelled differently.
-"""
 immutable NucleotideData <: Kpax3Data
   data::Array{UInt8, 2}
   id::Array{ASCIIString, 1}
@@ -52,11 +45,40 @@ immutable NucleotideData <: Kpax3Data
 end
 
 """
-# DNA genetic data
+# Genetic data
 
 ## Description
 
-DNA data and Amino Acid data are modelled differently.
+Amino acid data and its metadata.
+
+## Fields
+
+* `data` Multiple sequence alignment (MSA) encoded as a binary (UInt8) matrix
+* `id` units' ids
+* `ref` reference sequence, i.e. a vector of the same length of the original
+sequences storing the values of homogeneous sites. SNPs are instead represented
+by a value of 29
+* `val` vector with unique values per MSA site
+* `key` vector with indices of each value
+
+## Details
+
+Let `n` be the total number of units and `ml` be the total number of unique
+values observed at SNP `l`. Define m = m1 + ... + mL, where L is the total
+number os SNPs.
+
+`data` is a `m`-by-`n` indicator matrix, i.e. `data[j, i]` is `1` if unit `i`
+possesses value `j`, `0` otherwise.
+
+The value associated with column `j` can be obtained by `val[j]` while the SNP
+position by `find(ref == 29)[key[j]]`.
+
+## References
+
+Pessia A., Grad Y., Cobey S., Puranen J. S. and Corander J. (2015). K-Pax2:
+Bayesian identification of cluster-defining amino acid positions in large
+sequence datasets. _Microbial Genomics_ **1**(1).
+<http://dx.doi.org/10.1099/mgen.0.000025>.
 """
 immutable AminoAcidData <: Kpax3Data
   data::Array{UInt8, 2}

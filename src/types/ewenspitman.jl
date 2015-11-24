@@ -1,3 +1,5 @@
+# This file is part of Kpax3. License is MIT.
+
 """
 # Ewens-Pitman formula
 
@@ -44,7 +46,7 @@ Pitman, J. (2006). Combinatorial Stochastic Processes. In _Ecole d’Eté de
 Probabilités de Saint-Flour XXXII – 2002_. Lecture Notes in Mathematics
 **1875**. Springer Berlin Heidelberg. <http://dx.doi.org/10.1007/b11601500>.
 """
-abstract EwensPitman <: PriorPartition
+abstract EwensPitman <: PriorRowPartition
 
 """
 # Ewens-Pitman formula
