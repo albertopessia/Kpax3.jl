@@ -1,4 +1,4 @@
-# This file is part of K-Pax3. License is MIT.
+# This file is part of Kpax3. License is MIT.
 
 # test exceptions
 @test_throws Kpax3DomainError readfasta("data/proper_nt.fasta",

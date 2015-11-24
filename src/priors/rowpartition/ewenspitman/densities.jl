@@ -1,3 +1,5 @@
+# This file is part of Kpax3. License is MIT.
+
 """
 # Density of the Ewens-Pitman distribution
 
