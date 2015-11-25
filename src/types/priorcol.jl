@@ -13,20 +13,23 @@ end
 
 function AminoAcidPriorCol(data::Array{UInt8, 2},
                            k::Int,
-                           γ::Array{Float64, 1},
+                           g::Array{Float64, 1},
                            r::Float64)
-  if length(γ) != 3
-    throw(Kpax3InputError("Argument 'γ' does not have length 3."))
+  if length(g) != 3
+    throw(Kpax3InputError("Argument 'g' does not have length 3."))
   end
 
-  if any(γ .< 0)
-    throw(Kpax3DomainError("Argument 'γ' contains negative values."))
+  if any(g .< 0)
+    throw(Kpax3DomainError("Argument 'g' contains negative values."))
   end
 
   # probabilities must sum to one
-  γ = γ / (γ[1] + γ[2] + γ[3])
+  g = g / (g[1] + g[2] + g[3])
 
   m, n = size(data)
+
+  # attributes 3 and 4 are both from property 3 -> use g.prob[3] twice
+  γ = [g[1], g[2], g[3], g[3]]
 
   # log(0) is -Inf
   # since we are going to multiply this matrix with a positive scalar (1 / k)
