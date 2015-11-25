@@ -31,7 +31,7 @@ function AminoAcidPriorCol(data::Array{UInt8, 2},
   # log(0) is -Inf
   # since we are going to multiply this matrix with a positive scalar (1 / k)
   # no NaN can be produced even if some γ[i] are zero
-  logγ = [log(γ[1]), log(γ[2]), log(γ[3])]
+  logγ = log(γ)
 
   ω = [1.0, 1.0, (k - 1.0) / k, 1.0 / k]
   logω = [0.0, 0.0, log(k - 1.0) - log(k), -log(k)]

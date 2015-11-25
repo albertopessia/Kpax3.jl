@@ -2,6 +2,8 @@
 
 include("data/partitions.jl")
 
+ε = 3.0e-15
+
 @test_throws Kpax3DomainError EwensPitman(1.0, 0.0)
 @test_throws Kpax3DomainError EwensPitman(2.0, 0.0)
 
@@ -31,7 +33,7 @@ for (α, θ) in ((0.4, -0.3), (0.4, 0.0), (0.4, 2.1), (0.0, 2.1), (-2.4, 3))
       pr += dEwensPitman(ep, po.partition[:, j])
     end
 
-    @test_approx_eq_eps pr 1.0 3.0e-15
+    @test_approx_eq_eps pr 1.0 ε
 
     pr = 0.0
 
@@ -42,6 +44,6 @@ for (α, θ) in ((0.4, -0.3), (0.4, 0.0), (0.4, 2.1), (0.0, 2.1), (-2.4, 3))
 
     pr += dEwensPitman(ep, i, po.k[po.C], po.blocksize[:, po.C])
 
-    @test_approx_eq_eps pr 1.0 3.0e-15
+    @test_approx_eq_eps pr 1.0 ε
   end
 end

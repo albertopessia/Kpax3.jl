@@ -128,7 +128,7 @@ function NucleotideData(infile::ASCIIString;
   end
 
   (data, id, ref) = readfasta(infile; dna=true, miss=missuint, l=l, t=t)
-  (bindata, val, key) = categorical2binary(data)
+  (bindata, val, key) = categorical2binary(data, 0x1c)
 
   NucleotideData(bindata, id, ref, val, key)
 end
@@ -170,7 +170,7 @@ function AminoAcidData(infile::ASCIIString;
   end
 
   (data, id, ref) = readfasta(infile; dna=false, miss=missuint, l=l, t=t)
-  (bindata, val, key) = categorical2binary(data)
+  (bindata, val, key) = categorical2binary(data, 0x1c)
 
   AminoAcidData(bindata, id, ref, val, key)
 end
