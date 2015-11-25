@@ -4,12 +4,13 @@ using Base.Test
 
 include("../src/boot.jl")
 
-tests = ["aacolprior",
-         "dataprocessing",
+tests = ["dataprocessing",
          "datatypes",
          "likelihoods",
-         "priorpartition"]
+         "posterior",
+         "priorcol",
+         "priorrow"]
 
 for t in tests
-  include(t * ".jl")
+  include(string(t, ".jl"))
 end
