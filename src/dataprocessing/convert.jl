@@ -9,11 +9,12 @@ Convert an integer matrix to a binary (indicator) matrix.
 
 ## Usage
 
-categorical2binary(data)
+categorical2binary(data, maxval)
 
 ## Arguments
 
 * `data` Integer matrix to be converted
+* `maxval` Theoretical maximum value observable in `data`
 
 ## Value
 
@@ -25,7 +26,7 @@ A tuple containing the following variables:
 
 ## Example
 
-If `data` consists of just the following three rows
+If `data` consists of just the following three units
 
     0 2 1
     1 3 2
@@ -49,9 +50,10 @@ while
     val = [1, 2, 1, 2, 3, 2, 4, 2, 3] (i.e. 12 123 24 23)
     key = [1, 1, 2, 2, 2, 3, 3, 4, 4] (i.e. 11 222 33 44)
 
-Missing data (`0` values) is discarded.
+`0` values (missing data) are discarded.
 """
-function categorical2binary{T <: Integer}(data::Array{T, 2})
+function categorical2binary{T <: Integer}(data::Array{T, 2},
+                                          maxval::T)
   # TOOPTIMIZE: traversing the matrices by row instead of by column
   n = size(data, 2)
   m = 0
@@ -59,22 +61,28 @@ function categorical2binary{T <: Integer}(data::Array{T, 2})
   # number of unique values per column
   v = zeros(Int, size(data, 1))
 
-  # maximum value observed in data
-  maxval = c = zero(T)
+  # maximum value actually observed in data
+  M = c = zero(T)
 
-  tmp1 = falses(n)
+  tmp1 = falses(Int(maxval))
   for row in 1:size(data, 1)
     tmp1[:] = false
 
     for col in 1:size(data, 2)
       c = data[row, col]
 
+      if (c < 0) || (c > maxval)
+        throw(Kpax3DomainError(string("Value outside the allowed range ",
+                                      "at (row, col) = (", row, ", ", col,
+                                      ").")))
+      end
+
       if (c > 0) && !tmp1[c]
         tmp1[c] = true
         v[row] += 1
 
-        if c > maxval
-          maxval = c
+        if c > M
+          M = c
         end
       end
     end
@@ -83,12 +91,12 @@ function categorical2binary{T <: Integer}(data::Array{T, 2})
   end
 
   bindata = zeros(UInt8, m, n)
-  val = zeros(Int, m)
+  val = zeros(T, m)
   key = zeros(Int, m)
 
   i = 0
-  tmp1 = falses(Int(maxval))
-  tmp2 = zeros(UInt8, maxval, n)
+  tmp1 = falses(Int(M))
+  tmp2 = zeros(UInt8, M, n)
   for row in 1:size(data, 1)
     tmp1[:] = false
     tmp2[:] = false

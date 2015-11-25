@@ -4,7 +4,10 @@ using Base.Test
 
 include("../src/boot.jl")
 
-tests = ["dataprocessing",
+tests = ["aacolprior",
+         "dataprocessing",
+         "datatypes",
+         "likelihoods",
          "priorpartition"]
 
 for t in tests
