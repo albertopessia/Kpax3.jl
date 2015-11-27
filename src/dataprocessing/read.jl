@@ -10,7 +10,7 @@ required to be aligned. Only polymorphic columns are stored.
 
 ## Usage
 
-readfasta(infile; dna=true, miss=zeros(UInt8, 0), l=100000000, t=500)
+readfasta(infile, dna, miss, l, verbose, verbosestep)
 
 ## Arguments
 
@@ -28,7 +28,8 @@ surely greater than the real sequence length. If `l` is found to be
 insufficient, the array size is dynamically increased (not recommended from a
 performance point of view). Default value should be sufficient for most
 datasets
-* `t` If positive, print a status report every `t` read sequences
+* `verbose` If `true`, print status reports
+* `verbosestep` Print a status report every `verbosestep` read sequences
 
 ## Details
 
@@ -108,17 +109,21 @@ A tuple containing the following variables:
 sequences storing the values of homogeneous sites. SNPs are instead represented
 by a value of 29
 """
-function readfasta(infile::AbstractString;
-                   dna::Bool=true,
-                   miss::Array{UInt8, 1}=zeros(UInt8, 0),
-                   l::Int=100000000,
-                   t::Int=500)
+function readfasta(infile::AbstractString,
+                   dna::Bool,
+                   miss::Array{UInt8, 1},
+                   l::Int,
+                   verbose::Bool,
+                   verbosestep::Int)
   # we read the file twice
   # the first time we check the total number of sequences, if each sequence
   # has the same length and at what location the SNPs are
   # the second time we store the data, keeping only the SNPs
 
   # note: this function has been written with a huge dataset in mind
+
+  # disable status reports if verbosestep is not positive
+  verbose = verbose && (verbosestep > 0)
 
   if (length(miss) == 1) && (miss[1] == 0x00)
     # we can't use 0x00 as an index in enc[miss]. Use instead 0x01: it is not an
@@ -302,7 +307,7 @@ function readfasta(infile::AbstractString;
         j[:] = !(missseqref | missseq)
         snp[j] = snp[j] | (seq[j] .!= seqref[j])
 
-        if (t > 0) && (n % t == 0)
+        if verbose && (n % verbosestep == 0)
           println(n, " sequences have been pre-processed.")
         end
 
@@ -337,7 +342,7 @@ function readfasta(infile::AbstractString;
 
   m = sum(snp)::Int
 
-  if t > 0
+  if verbose
     println("Found ", n, " sequences: ", m, " SNPs out of ", seqlen,
             " total sites.\nProcessing data...")
   end
@@ -397,7 +402,7 @@ function readfasta(infile::AbstractString;
       else
         i += 1
 
-        if (t > 0) && (i % t == 0)
+        if verbose && (i % verbosestep == 0)
           println(i, " sequences have been processed.")
         end
 
@@ -410,7 +415,7 @@ function readfasta(infile::AbstractString;
     end
   end
 
-  if t > 0
+  if verbose
     println("All ", i, " sequences have been processed.")
   end
 

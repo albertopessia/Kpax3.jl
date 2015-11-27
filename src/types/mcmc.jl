@@ -9,8 +9,6 @@
 
 * `R` Int vector representing row clusters
 * `C` UInt8 matrix representing column clusters
-* `T` Length of the Markov Chain (total number of iterations)
-* `burnin` Length of the burnin period
 * `op` MCMC operators probabilities
 * `t` Save the Markov Chain state `(R, C)` every `t` iterations
 * `outfile` Path to the output file
@@ -22,49 +20,64 @@
 type AminoAcidMCMC <: Kpax3MCMC
   R::Array{Int, 1}
   C::Array{UInt8, 2}
-
-  T::Int
-  burnin::Int
-  op::WeightVec
-  t::Int
-  outfile::AbstractString
-
   k::Int
-  emptyclusters::BitArray{1}
-  v::Array{Float64, 1}
-  n1s::Array{Float64, 2}
+  emptycluster::BitArray{1}
+  cluster::Array{Cluster, 1}
 end
 
 function AminoAcidMCMC(data::Array{UInt8, 2},
                        R::Array{Int, 1},
                        priorC::AminoAcidPriorCol,
-                       T::Int,
-                       maxclust::Int,
-                       burnin::Int,
-                       op::Array{Float64, 1},
-                       t::Int,
-                       outfile::AbstractString)
+                       settings::Kpax3Settings)
   m, n = size(data)
 
   k = maximum(R)
 
-  emptyclusters = trues(maxclust)
-  emptyclusters[unique(R)] = false
+  C = zeros(UInt8, m, settings.maxclust)
 
-  v = zeros(Float64, maxclust)
-  n1s = zeros(Float64, m, maxclust)
+  emptycluster = trues(settings.maxclust)
+  emptycluster[unique(R)] = false
+
+  cluster = [Cluster(0, zeros(Int, 1), zeros(Float64, 1), 0.0)
+             for g in 1:settings.maxclust]
+
+  for g in 1:k
+    cluster[g].unit = zeros(Int, settings.maxunit)
+    cluster[g].n1s = zeros(Float64, m)
+  end
 
   for i in 1:n
-    cl = R[i]
-    v[cl] += 1.0
+    g = R[i]
+    cluster[g].v += 1
+
+    if cluster[g].v > length(cluster[g].unit)
+      tmp = zeros(Int, min(2 * settings.maxunit, n))
+      tmp[1:(cluster[g].v - 1)] = cluster[g].unit
+      cluster[g].unit = tmp
+    end
+
+    cluster[g].unit[cluster[g].v] = i
 
     for j in 1:m
-      n1s[j, cl] += data[j, i]
+      cluster[g].n1s[j] += data[j, i]
     end
   end
 
-  C = zeros(UInt8, m, maxclust)
-  rcolpartition!(priorC, C, v, n1s, emptyclusters)
+  rcolpartition!(priorC, C, cluster, emptycluster)
 
-  AminoAcidMCMC(R, C, T, burnin, WeightVec(op), t, outfile, k, emptyclusters, v, n1s)
+  # If array A has dimension (d_{1}, ..., d_{l}, ..., d_{L}), to access
+  # element A[i_{1}, ..., i_{l}, ..., i_{L}] it is possible to use the
+  # following linear index
+  # linearidx = i_{1} + d_{1} * (i_{2} - 1) + ... +
+  #           + (d_{1} * ... * d_{l-1}) * (i_{l} - 1) + ... +
+  #           + (d_{1} * ... * d_{L-1}) * (i_{L} - 1)
+  #
+  # A[i_{1}, ..., i_{l}, ..., i_{L}] == A[linearidx]
+  for g in 1:k
+    linearidx = [(i + m * (C[i, g] - 1))::Int for i in 1:m]
+    cluster[g].ll = sum(logmarglik(cluster[g].n1s, cluster[g].v,
+                                   priorC.A[linearidx], priorC.B[linearidx]))
+  end
+
+  AminoAcidMCMC(R, C, k, emptycluster, cluster)
 end

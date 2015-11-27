@@ -4,36 +4,68 @@ function kpax3mcmc(mcmcobj::AminoAcidMCMC,
                    priorR::PriorRowPartition,
                    priorC::PriorColPartition,
                    data::Array{UInt8, 2},
-                   verbose::Bool,
-                   verbosestep::Int)
+                   settings::Kpax3Settings)
   m, n = size(data)
 
-  opburnin = sample(1:3, mcmcobj.op, mcmcobj.burnin)
-  opmcmc = sample(1:3, mcmcobj.op, mcmcobj.T)
+  # sample before hand which operators we are going to use
+  opburnin = StatsBase.sample(1:3, settings.op, settings.burnin)
+  opmcmc = StatsBase.sample(1:3, settings.op, settings.T)
 
+  # indices of units i and j
   ij = zeros(Int, 2)
-  neighbours = falses(n)
 
-  if verbose && (mcmcobj.burnin > 0)
+  # neighbour indices
+  neighbours = zeros(Int, n)
+
+  # total number of neighbours
+  S = 0
+
+  # clusters of i and j respectively
+  gi = 0
+  gj = 0
+
+  if verbose && (settings.burnin > 0)
     println("Starting burnin phase...")
   end
 
-  for t in 1:length(opburnin)
+  for t in 1:burnin
     if opburnin[t] == 1
       # cluster founders (units i and j)
-      sample!(1:n, ij; replace=false, ordered=false)
+      StatsBase.sample!(1:n, ij, replace=false, ordered=false)
 
-      # neighbours of units i and j
-      neighbours[:] = (mcmcobj.R .== mcmcobj.R[ij[1]]) |
-                      (mcmcobj.R .== mcmcobj.R[ij[2]])
-      neighbours[ij] = false
+      # ij = [303, 1012];
+      gi = mcmcobj.R[ij[1]]
+      gj = mcmcobj.R[ij[2]]
 
-      S = find(neighbours)
+      S = 0
 
-      if mcmcobj.R[ij[1]] == mcmcobj.R[ij[2]]
-        split!(mcmcobj, priorR, priorC, data, ij, S)
+      if gi == gj
+        for u in 1:mcmcobj.cluster[gi].v
+          idx = mcmcobj.cluster[gi].unit[u]
+
+          if (idx != ij[1]) && (idx != ij[2])
+            neighbours[S += 1] = idx
+          end
+        end
+
+        split!(mcmcobj, priorR, priorC, data, ij, neighbours, S, support)
       else
-        merge!(mcmcobj, priorR, priorC, data, ij, S)
+        for u in 1:mcmcobj.cluster[gi].v
+          idx = mcmcobj.cluster[gi].unit[u]
+
+          if idx != ij[1]
+            neighbours[S += 1] = idx
+          end
+        end
+        for u in 1:mcmcobj.cluster[gj].v
+          idx = mcmcobj.cluster[gj].unit[u]
+
+          if idx != ij[2]
+            neighbours[S += 1] = idx
+          end
+        end
+
+        merge!(mcmcobj, priorR, priorC, data, ij, neighbours, S, support)
       end
     elseif opburnin[t] == 2
       biasedrandomwalk!(mcmcobj, priorR, priorC, data)
