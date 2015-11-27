@@ -4,33 +4,33 @@
 # Exceptions #
 ##############
 @test_throws Kpax3DomainError NucleotideData("data/proper_nt.fasta",
-                                             miss=['\0', '?'], t=0)
-@test_throws Kpax3DomainError NucleotideData("data/proper_nt.fasta", l=-1, t=0)
+                                             miss=['\0', '?'])
+@test_throws Kpax3DomainError NucleotideData("data/proper_nt.fasta", l=-1)
 
-@test_throws Kpax3FASTAError NucleotideData("data/empty_file.fasta", t=0)
-@test_throws Kpax3FASTAError NucleotideData("data/no_1st_seq.fasta", t=0)
-@test_throws Kpax3FASTAError NucleotideData("data/no_id_char.fasta", t=0)
-@test_throws Kpax3FASTAError NucleotideData("data/no_nth_seq.fasta", t=0)
+@test_throws Kpax3FASTAError NucleotideData("data/empty_file.fasta")
+@test_throws Kpax3FASTAError NucleotideData("data/no_1st_seq.fasta")
+@test_throws Kpax3FASTAError NucleotideData("data/no_id_char.fasta")
+@test_throws Kpax3FASTAError NucleotideData("data/no_nth_seq.fasta")
 
-@test_throws TypeError NucleotideData("data/utf8_id.fasta", t=0)
-@test_throws TypeError NucleotideData("data/utf8_seq.fasta", t=0)
+@test_throws TypeError NucleotideData("data/utf8_id.fasta")
+@test_throws TypeError NucleotideData("data/utf8_seq.fasta")
 
 @test_throws Kpax3DomainError AminoAcidData("data/proper_nt.fasta",
-                                            miss=['\0', '?'], t=0)
-@test_throws Kpax3DomainError AminoAcidData("data/proper_nt.fasta", l=-1, t=0)
+                                            miss=['\0', '?'])
+@test_throws Kpax3DomainError AminoAcidData("data/proper_nt.fasta", l=-1)
 
-@test_throws Kpax3FASTAError AminoAcidData("data/empty_file.fasta", t=0)
-@test_throws Kpax3FASTAError AminoAcidData("data/no_1st_seq.fasta", t=0)
-@test_throws Kpax3FASTAError AminoAcidData("data/no_id_char.fasta", t=0)
-@test_throws Kpax3FASTAError AminoAcidData("data/no_nth_seq.fasta", t=0)
+@test_throws Kpax3FASTAError AminoAcidData("data/empty_file.fasta")
+@test_throws Kpax3FASTAError AminoAcidData("data/no_1st_seq.fasta")
+@test_throws Kpax3FASTAError AminoAcidData("data/no_id_char.fasta")
+@test_throws Kpax3FASTAError AminoAcidData("data/no_nth_seq.fasta")
 
-@test_throws TypeError AminoAcidData("data/utf8_id.fasta", t=0)
-@test_throws TypeError AminoAcidData("data/utf8_seq.fasta", t=0)
+@test_throws TypeError AminoAcidData("data/utf8_id.fasta")
+@test_throws TypeError AminoAcidData("data/utf8_seq.fasta")
 
 #################################
 # FASTA file filled with blanks #
 #################################
-nt = NucleotideData("data/blanks.fasta", t=0)
+nt = NucleotideData("data/blanks.fasta")
 @test nt.data == UInt8[0x00 0x01;
                        0x01 0x00;
                        0x01 0x00;
@@ -50,7 +50,7 @@ nt = NucleotideData("data/blanks.fasta", t=0)
                  0x02, 0x03, 0x01, 0x03, 0x02, 0x03]
 @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
-nt = NucleotideData("data/blanks.fasta", l=1, t=0)
+nt = NucleotideData("data/blanks.fasta", l=1)
 @test nt.data == UInt8[0x00 0x01;
                        0x01 0x00;
                        0x01 0x00;
@@ -70,7 +70,7 @@ nt = NucleotideData("data/blanks.fasta", l=1, t=0)
                  0x02, 0x03, 0x01, 0x03, 0x02, 0x03]
 @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
-aa = AminoAcidData("data/blanks.fasta", t=0)
+aa = AminoAcidData("data/blanks.fasta")
 @test aa.data == UInt8[0x00 0x01;
                        0x01 0x00;
                        0x01 0x00;
@@ -90,7 +90,7 @@ aa = AminoAcidData("data/blanks.fasta", t=0)
                  0x02, 0x03, 0x01, 0x03, 0x02, 0x03]
 @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
-aa = AminoAcidData("data/blanks.fasta", l=1, t=0)
+aa = AminoAcidData("data/blanks.fasta", l=1)
 @test aa.data == UInt8[0x00 0x01;
                        0x01 0x00;
                        0x01 0x00;
@@ -113,7 +113,7 @@ aa = AminoAcidData("data/blanks.fasta", l=1, t=0)
 #########################
 # Proper DNA FASTA file #
 #########################
-nt = NucleotideData("data/proper_nt.fasta", t=0)
+nt = NucleotideData("data/proper_nt.fasta")
 @test nt.data == UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
                        0x01 0x01 0x01 0x01 0x01 0x00;
                        0x00 0x00 0x01 0x00 0x01 0x01;
@@ -139,7 +139,7 @@ nt = NucleotideData("data/proper_nt.fasta", t=0)
                  0x02, 0x03, 0x01, 0x03, 0x04, 0x01, 0x04, 0x02, 0x03]
 @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
-nt = NucleotideData("data/proper_nt.fasta", l=1, t=0)
+nt = NucleotideData("data/proper_nt.fasta", l=1)
 @test nt.data == UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
                        0x01 0x01 0x01 0x01 0x01 0x00;
                        0x00 0x00 0x01 0x00 0x01 0x01;
@@ -166,7 +166,7 @@ nt = NucleotideData("data/proper_nt.fasta", l=1, t=0)
 @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
 # consider all characters
-nt = NucleotideData("data/proper_nt.fasta", miss=['\0'], t=0)
+nt = NucleotideData("data/proper_nt.fasta", miss=['\0'])
 @test nt.data == UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
                        0x01 0x01 0x01 0x01 0x01 0x00;
                        0x00 0x00 0x01 0x00 0x01 0x01;
@@ -199,7 +199,7 @@ nt = NucleotideData("data/proper_nt.fasta", miss=['\0'], t=0)
 #############################
 # Proper Protein FASTA file #
 #############################
-aa = AminoAcidData("data/proper_aa.fasta", t=0)
+aa = AminoAcidData("data/proper_aa.fasta")
 @test aa.data == UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
                        0x01 0x01 0x01 0x01 0x01 0x00;
                        0x00 0x00 0x01 0x00 0x01 0x01;
@@ -225,7 +225,7 @@ aa = AminoAcidData("data/proper_aa.fasta", t=0)
                  0x0c, 0x09, 0x0c, 0x0e, 0x02, 0x13, 0x01, 0x04]
 @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
-aa = AminoAcidData("data/proper_aa.fasta", l=1, t=0)
+aa = AminoAcidData("data/proper_aa.fasta", l=1)
 @test aa.data == UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
                        0x01 0x01 0x01 0x01 0x01 0x00;
                        0x00 0x00 0x01 0x00 0x01 0x01;
@@ -252,7 +252,7 @@ aa = AminoAcidData("data/proper_aa.fasta", l=1, t=0)
 @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
 # consider all characters
-aa = AminoAcidData("data/proper_aa.fasta", miss=['\0'], t=0)
+aa = AminoAcidData("data/proper_aa.fasta", miss=['\0'])
 @test aa.data == UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
                        0x01 0x01 0x01 0x01 0x01 0x00;
                        0x00 0x00 0x01 0x00 0x01 0x01;
@@ -285,7 +285,7 @@ aa = AminoAcidData("data/proper_aa.fasta", miss=['\0'], t=0)
 ####################
 # Input and Output #
 ####################
-nt = NucleotideData("data/proper_nt.fasta", t=0)
+nt = NucleotideData("data/proper_nt.fasta")
 
 # TODO: Test expection when saving to a location without writing permissions
 save("../build/nt.jld", nt)
@@ -321,7 +321,7 @@ nt = loadnt("../build/nt.jld")
                  0x02, 0x03, 0x01, 0x03, 0x04, 0x01, 0x04, 0x02, 0x03]
 @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
-aa = AminoAcidData("data/proper_aa.fasta", t=0)
+aa = AminoAcidData("data/proper_aa.fasta")
 
 # TODO: Test expection when saving to a location without writing permissions
 save("../build/aa.jld", aa)

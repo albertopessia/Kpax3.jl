@@ -3,22 +3,30 @@
 ##############
 # Exceptions #
 ##############
-@test_throws Kpax3DomainError readfasta("data/proper_nt.fasta",
-                                        miss=[0x00, 0x3f], t=0)
-@test_throws Kpax3DomainError readfasta("data/proper_nt.fasta", l=-1, t=0)
+@test_throws Kpax3DomainError readfasta("data/proper_nt.fasta", true,
+                                        [0x00, 0x3f], 10, false, 0)
+@test_throws Kpax3DomainError readfasta("data/proper_nt.fasta", true,
+                                        zeros(UInt8, 0), -1, false, 0)
 
-@test_throws Kpax3FASTAError readfasta("data/empty_file.fasta", t=0)
-@test_throws Kpax3FASTAError readfasta("data/no_1st_seq.fasta", t=0)
-@test_throws Kpax3FASTAError readfasta("data/no_id_char.fasta", t=0)
-@test_throws Kpax3FASTAError readfasta("data/no_nth_seq.fasta", t=0)
+@test_throws Kpax3FASTAError readfasta("data/empty_file.fasta", true,
+                                       zeros(UInt8, 0), 100000000, false, 0)
+@test_throws Kpax3FASTAError readfasta("data/no_1st_seq.fasta", true,
+                                       zeros(UInt8, 0), 100000000, false, 0)
+@test_throws Kpax3FASTAError readfasta("data/no_id_char.fasta", true,
+                                       zeros(UInt8, 0), 100000000, false, 0)
+@test_throws Kpax3FASTAError readfasta("data/no_nth_seq.fasta", true,
+                                       zeros(UInt8, 0), 100000000, false, 0)
 
-@test_throws TypeError readfasta("data/utf8_id.fasta", t=0)
-@test_throws TypeError readfasta("data/utf8_seq.fasta", t=0)
+@test_throws TypeError readfasta("data/utf8_id.fasta", true,
+                                 zeros(UInt8, 0), 100000000, false, 0)
+@test_throws TypeError readfasta("data/utf8_seq.fasta", true,
+                                 zeros(UInt8, 0), 100000000, false, 0)
 
 #################################
 # FASTA file filled with blanks #
 #################################
-data, id, refseq = readfasta("data/blanks.fasta", t=0)
+data, id, refseq = readfasta("data/blanks.fasta", true,
+                             zeros(UInt8, 0), 100000000, false, 0)
 @test data == UInt8[0x03 0x01;
                     0x01 0x03;
                     0x03 0x02;
@@ -48,7 +56,8 @@ bindata, val, key = categorical2binary(data, 0x1c)
               0x02, 0x03, 0x01, 0x03, 0x02, 0x03]
 @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
-data, id, refseq = readfasta("data/blanks.fasta", l=1, t=0)
+data, id, refseq = readfasta("data/blanks.fasta", true,
+                             zeros(UInt8, 0), 1, false, 0)
 @test data == UInt8[0x03 0x01;
                     0x01 0x03;
                     0x03 0x02;
@@ -62,7 +71,8 @@ data, id, refseq = readfasta("data/blanks.fasta", l=1, t=0)
 #########################
 # Proper DNA FASTA file #
 #########################
-data, id, refseq = readfasta("data/proper_nt.fasta", t=0)
+data, id, refseq = readfasta("data/proper_nt.fasta", true,
+                             zeros(UInt8, 0), 100000000, false, 0)
 @test data == UInt8[0x04 0x04 0x04 0x04 0x04 0x02;
                     0x03 0x03 0x01 0x03 0x01 0x01;
                     0x01 0x01 0x00 0x03 0x03 0x00;
@@ -100,7 +110,8 @@ bindata, val, key = categorical2binary(data, 0x1c)
               0x02, 0x03, 0x01, 0x03, 0x04, 0x01, 0x04, 0x02, 0x03]
 @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
-data, id, refseq = readfasta("data/proper_nt.fasta", l=1, t=0)
+data, id, refseq = readfasta("data/proper_nt.fasta", true,
+                             zeros(UInt8, 0), 1, false, 0)
 @test data == UInt8[0x04 0x04 0x04 0x04 0x04 0x02;
                     0x03 0x03 0x01 0x03 0x01 0x01;
                     0x01 0x01 0x00 0x03 0x03 0x00;
@@ -114,7 +125,8 @@ data, id, refseq = readfasta("data/proper_nt.fasta", l=1, t=0)
                       0x03, 0x1d, 0x1d, 0x1d, 0x1d, 0x01]
 
 # consider all characters
-data, id, refseq = readfasta("data/proper_nt.fasta", miss=[0x00], t=0)
+data, id, refseq = readfasta("data/proper_nt.fasta", true,
+                             [0x00], 100000000, false, 0)
 @test data == UInt8[0x04 0x04 0x04 0x04 0x04 0x02;
                     0x03 0x03 0x01 0x03 0x01 0x01;
                     0x01 0x01 0x1c 0x03 0x03 0x1c;
@@ -159,7 +171,8 @@ bindata, val, key = categorical2binary(data, 0x1c)
 #############################
 # Proper Protein FASTA file #
 #############################
-data, id, refseq = readfasta("data/proper_aa.fasta", dna=false, t=0)
+data, id, refseq = readfasta("data/proper_aa.fasta", false,
+                             zeros(UInt8, 0), 100000000, false, 0)
 @test data == UInt8[0x0d 0x0d 0x0d 0x0d 0x0d 0x09;
                     0x0d 0x0d 0x0b 0x0d 0x0b 0x0b;
                     0x0c 0x0c 0x00 0x14 0x14 0x00;
@@ -195,7 +208,8 @@ bindata, val, key = categorical2binary(data, 0x1c)
               0x09, 0x0c, 0x0e, 0x02, 0x13, 0x01, 0x04]
 @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
-data, id, refseq = readfasta("data/proper_aa.fasta", dna=false, l=1, t=0)
+data, id, refseq = readfasta("data/proper_aa.fasta", false,
+                             zeros(UInt8, 0), 1, false, 0)
 @test data == UInt8[0x0d 0x0d 0x0d 0x0d 0x0d 0x09;
                     0x0d 0x0d 0x0b 0x0d 0x0b 0x0b;
                     0x0c 0x0c 0x00 0x14 0x14 0x00;
@@ -209,8 +223,8 @@ data, id, refseq = readfasta("data/proper_aa.fasta", dna=false, l=1, t=0)
                       0x14, 0x1d, 0x1d, 0x1d, 0x1d, 0x0f]
 
 # consider all characters
-data, id, refseq = readfasta("data/proper_aa.fasta",
-                             dna=false, miss=[0x00], t=0)
+data, id, refseq = readfasta("data/proper_aa.fasta", true,
+                             [0x00], 100000000, false, 0)
 @test data == UInt8[0x0d 0x0d 0x0d 0x0d 0x0d 0x09;
                     0x0d 0x0d 0x0b 0x0d 0x0b 0x0b;
                     0x0c 0x0c 0x1c 0x14 0x14 0x1c;

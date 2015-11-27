@@ -2,10 +2,9 @@
 
 function rcolpartition!(x::AminoAcidPriorCol,
                         C::Array{UInt8, 2},
-                        v::Array{Float64, 1},
-                        n1s::Array{Float64, 2},
-                        emptyclusters::BitArray{1})
-  cl = find(!emptyclusters)
+                        cluster::Array{Cluster, 1},
+                        emptycluster::BitArray{1})
+  cl = find(!emptycluster)
 
   m = size(C, 1)
   k = length(cl)
@@ -24,10 +23,12 @@ function rcolpartition!(x::AminoAcidPriorCol,
   for i in 1:k, j in 1:m
     g = cl[i]
 
-    tmp[1] = marglik(n1s[j, g], v[g], x.A[j, 1], x.B[j, 1])
-    tmp[2] = marglik(n1s[j, g], v[g], x.A[j, 2], x.B[j, 2])
-    tmp[3] = x.ω[3] * marglik(n1s[j, g], v[g], x.A[j, 3], x.B[j, 3])
-    tmp[4] = x.ω[4] * marglik(n1s[j, g], v[g], x.A[j, 4], x.B[j, 4])
+    tmp[1] = marglik(cluster[g].n1s[j], cluster[g].v, x.A[j, 1], x.B[j, 1])
+    tmp[2] = marglik(cluster[g].n1s[j], cluster[g].v, x.A[j, 2], x.B[j, 2])
+    tmp[3] = x.ω[3] * marglik(cluster[g].n1s[j], cluster[g].v,
+                              x.A[j, 3], x.B[j, 3])
+    tmp[4] = x.ω[4] * marglik(cluster[g].n1s[j], cluster[g].v,
+                              x.A[j, 4], x.B[j, 4])
 
     w[j, i, 1] = tmp[1]
     w[j, i, 2] = tmp[2]

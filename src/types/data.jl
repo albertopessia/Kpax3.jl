@@ -44,6 +44,53 @@ immutable NucleotideData <: Kpax3Data
   key::Array{Int, 1}
 end
 
+# TODO: Julia v0.4
+# we can't document this constructor: the type has already been documented
+
+#=
+# Constructor of an object of type NucleotideData
+
+## Description
+
+Create a new NucleotideData object.
+
+## Usage
+
+NucleotideData(f; miss=['?', '\*', '#', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's',
+'v', 'w', 'x', 'y'], l=100000000, t=500)
+
+## Arguments
+
+* `infile` Path to the input data file
+* `miss` Values to be considered missing.
+* `l` Sequence length. If unknown, it is better to choose a value which is
+surely greater than the real sequence length. If `l` is found to be
+insufficient, the array size is dynamically increased (not recommended from a
+performance point of view). Default value should be sufficient for most
+datasets
+* `verbose` If `true`, print status reports
+* `verbosestep` Print a status report every `verbosestep` read sequences
+=#
+function NucleotideData(infile::ASCIIString;
+                        miss::Array{Char, 1}=['?', '*', '#', '-', 'b', 'd', 'h',
+                                              'k', 'm', 'n', 'r', 's', 'v', 'w',
+                                              'x', 'y'],
+                        l::Int=100000000,
+                        verbose::Bool=false,
+                        verbosestep::Int=500)
+  missuint = zeros(UInt8, length(miss))
+  i = 0
+
+  for c in miss
+    missuint[i += 1] = UInt8(c)
+  end
+
+  (data, id, ref) = readfasta(infile, true, missuint, l, verbose, verbosestep)
+  (bindata, val, key) = categorical2binary(data, 0x1c)
+
+  NucleotideData(bindata, id, ref, val, key)
+end
+
 """
 # Genetic data
 
@@ -88,51 +135,6 @@ immutable AminoAcidData <: Kpax3Data
   key::Array{Int, 1}
 end
 
-# TODO: Julia v0.4
-# we can't document this constructor: the type has already been documented
-
-#=
-# Constructor of an object of type NucleotideData
-
-## Description
-
-Create a new NucleotideData object.
-
-## Usage
-
-NucleotideData(f; miss=['?', '\*', '#', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's',
-'v', 'w', 'x', 'y'], l=100000000, t=500)
-
-## Arguments
-
-* `infile` Path to the input data file
-* `miss` Values to be considered missing.
-* `l` Sequence length. If unknown, it is better to choose a value which is
-surely greater than the real sequence length. If `l` is found to be
-insufficient, the array size is dynamically increased (not recommended from a
-performance point of view). Default value should be sufficient for most
-datasets
-* `t` If positive, print a status report every `t` read sequences
-=#
-function NucleotideData(infile::ASCIIString;
-                        miss::Array{Char, 1}=['?', '*', '#', '-', 'b', 'd', 'h',
-                                              'k', 'm', 'n', 'r', 's', 'v', 'w',
-                                              'x', 'y'],
-                        l::Int=100000000,
-                        t::Int=500)
-  missuint = zeros(UInt8, length(miss))
-  i = 0
-
-  for c in miss
-    missuint[i += 1] = UInt8(c)
-  end
-
-  (data, id, ref) = readfasta(infile; dna=true, miss=missuint, l=l, t=t)
-  (bindata, val, key) = categorical2binary(data, 0x1c)
-
-  NucleotideData(bindata, id, ref, val, key)
-end
-
 #=
 # Constructor of an object of type AminoAcidData
 
@@ -154,14 +156,15 @@ surely greater than the real sequence length. If `l` is found to be
 insufficient, the array size is dynamically increased (not recommended from a
 performance point of view). Default value should be sufficient for most
 datasets
-* `t` If positive, print a status report every `t` read sequences
+* `verbose` If `true`, print status reports
+* `verbosestep` Print a status report every `verbosestep` read sequences
 =#
 function AminoAcidData(infile::ASCIIString;
                        miss::Array{Char, 1}=['?', '*', '#', '-',
                                              'b', 'j', 'x', 'z'],
                        l::Int=100000000,
-                       t::Int=500)
-
+                       verbose::Bool=false,
+                       verbosestep::Int=500)
   missuint = zeros(UInt8, length(miss))
   i = 0
 
@@ -169,7 +172,7 @@ function AminoAcidData(infile::ASCIIString;
     missuint[i += 1] = UInt8(c)
   end
 
-  (data, id, ref) = readfasta(infile; dna=false, miss=missuint, l=l, t=t)
+  (data, id, ref) = readfasta(infile, false, missuint, l, verbose, verbosestep)
   (bindata, val, key) = categorical2binary(data, 0x1c)
 
   AminoAcidData(bindata, id, ref, val, key)

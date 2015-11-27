@@ -13,10 +13,18 @@ import JLD: load, save
 # Load Types #
 ##############
 include("types/abstracts.jl")
+
 include("types/exceptions.jl")
-include("types/priorcol.jl")
+
 include("types/ewenspitman.jl")
+include("types/priorcol.jl")
+
 include("types/data.jl")
+
+include("types/settings.jl")
+
+include("types/cluster.jl")
+include("types/support.jl")
 include("types/mcmc.jl")
 
 ########################
