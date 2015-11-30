@@ -1,5 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
+ε = eps()
+
 data = UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
              0x01 0x01 0x01 0x01 0x01 0x00;
              0x00 0x00 0x01 0x00 0x01 0x01;
@@ -59,23 +61,23 @@ for k in 1:n
     x2 = AminoAcidPriorCol(data, k, γ, r2)
 
     for i in 1:3
-      @test_approx_eq_eps x1.γ[i] (γ[i] / sum(γ)) eps()
-      @test_approx_eq_eps x1.logγ[i] log(γ[i] / sum(γ)) eps()
-      @test_approx_eq_eps x1.ω[i] ω[i] eps()
-      @test_approx_eq_eps x1.logω[i] log(ω[i]) eps()
+      @test_approx_eq_eps x1.γ[i] (γ[i] / sum(γ)) ε
+      @test_approx_eq_eps x1.logγ[i] log(γ[i] / sum(γ)) ε
+      @test_approx_eq_eps x1.ω[i] ω[i] ε
+      @test_approx_eq_eps x1.logω[i] log(ω[i]) ε
 
-      @test_approx_eq_eps x2.γ[i] (γ[i] / sum(γ)) eps()
-      @test_approx_eq_eps x2.logγ[i] log(γ[i] / sum(γ)) eps()
-      @test_approx_eq_eps x2.ω[i] ω[i] eps()
-      @test_approx_eq_eps x2.logω[i] log(ω[i]) eps()
+      @test_approx_eq_eps x2.γ[i] (γ[i] / sum(γ)) ε
+      @test_approx_eq_eps x2.logγ[i] log(γ[i] / sum(γ)) ε
+      @test_approx_eq_eps x2.ω[i] ω[i] ε
+      @test_approx_eq_eps x2.logω[i] log(ω[i]) ε
     end
 
     for i in 1:4, j in 1:m
-      @test_approx_eq_eps x1.A[j, i] A1[j, i] eps()
-      @test_approx_eq_eps x1.B[j, i] B1[j, i] eps()
+      @test_approx_eq_eps x1.A[j, i] A1[j, i] ε
+      @test_approx_eq_eps x1.B[j, i] B1[j, i] ε
 
-      @test_approx_eq_eps x2.A[j, i] A2[j, i] eps()
-      @test_approx_eq_eps x2.B[j, i] B2[j, i] eps()
+      @test_approx_eq_eps x2.A[j, i] A2[j, i] ε
+      @test_approx_eq_eps x2.B[j, i] B2[j, i] ε
     end
   end
 end

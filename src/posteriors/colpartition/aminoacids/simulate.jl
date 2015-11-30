@@ -1,61 +1,57 @@
 # This file is part of Kpax3. License is MIT.
 
-function rcolpartition!(x::AminoAcidPriorCol,
-                        C::Array{UInt8, 2},
+function rcolpartition!(C::Array{UInt8, 2},
+                        priorC::AminoAcidPriorCol,
                         cluster::Array{Cluster, 1},
                         emptycluster::BitArray{1})
   cl = find(!emptycluster)
-
-  m = size(C, 1)
   k = length(cl)
 
-  w = zeros(Float64, m, k, 3)
-  p = zeros(Float64, m, k, 2)
+  m = size(C, 1)
 
-  # for the moment, use logarithms for a numerically stable algorithm
-  # at the end we will proceed to exp them
-  γ = zeros(Float64, m, 3)
+  logq = zeros(Float64, 4, k)
 
-  tmp = zeros(Float64, 4)
-  s = zero(Float64)
-  u = zero(Int)
+  γ = zeros(Float64, 3)
+  logγ = zeros(Float64, 3)
 
-  for i in 1:k, j in 1:m
-    g = cl[i]
+  ω = zeros(Float64, 2, k)
 
-    tmp[1] = marglik(cluster[g].n1s[j], cluster[g].v, x.A[j, 1], x.B[j, 1])
-    tmp[2] = marglik(cluster[g].n1s[j], cluster[g].v, x.A[j, 2], x.B[j, 2])
-    tmp[3] = x.ω[3] * marglik(cluster[g].n1s[j], cluster[g].v,
-                              x.A[j, 3], x.B[j, 3])
-    tmp[4] = x.ω[4] * marglik(cluster[g].n1s[j], cluster[g].v,
-                              x.A[j, 4], x.B[j, 4])
-
-    w[j, i, 1] = tmp[1]
-    w[j, i, 2] = tmp[2]
-    w[j, i, 3] = tmp[3] + tmp[4]
-
-    p[j, i, 1] = tmp[3] / w[j, i, 3]
-    p[j, i, 2] = tmp[4] / w[j, i, 3]
-
-    γ[j, 1] += log(w[j, i, 1])
-    γ[j, 2] += log(w[j, i, 2])
-    γ[j, 3] += log(w[j, i, 3])
-  end
+  g = zero(Int)
 
   for j in 1:m
-    tmp[1] = exp(log(x.γ[1]) + γ[j, 1])
-    tmp[2] = exp(log(x.γ[2]) + γ[j, 2])
-    tmp[3] = exp(log(x.γ[3]) + γ[j, 3])
+    logγ[1] = priorC.logγ[1]
+    logγ[2] = priorC.logγ[2]
+    logγ[3] = priorC.logγ[3]
 
-    s = tmp[1] + tmp[2] + tmp[3]
+    for i in 1:k
+      g = cl[i]
 
-    γ[j, 1] = tmp[1] / s
-    γ[j, 2] = tmp[2] / s
-    γ[j, 3] = tmp[3] / s
-  end
+      logq[1, i] = logmarglik(cluster[g].n1s[j], cluster[g].v, priorC.A[j, 1],
+                              priorC.B[j, 1])
+      logq[2, i] = logmarglik(cluster[g].n1s[j], cluster[g].v, priorC.A[j, 2],
+                              priorC.B[j, 2])
+      logq[3, i] = priorC.logω[3] + logmarglik(cluster[g].n1s[j], cluster[g].v,
+                                               priorC.A[j, 3], priorC.B[j, 3])
+      logq[4, i] = priorC.logω[4] + logmarglik(cluster[g].n1s[j], cluster[g].v,
+                                               priorC.A[j, 4], priorC.B[j, 4])
 
-  for j in 1:m
-    u = sample(WeightVec(vec(γ[j, :])))
+      tmp = log(exp(logq[3, i]) + exp(logq[4, i]))
+
+      logγ[1] += logq[1, i]
+      logγ[2] += logq[2, i]
+      logγ[3] += tmp
+
+      ω[1, i] = exp(logq[3, i] - tmp)
+      ω[2, i] = exp(logq[4, i] - tmp)
+    end
+
+    tmp = log(exp(logγ[1]) + exp(logγ[2]) + exp(logγ[3]))
+
+    γ[1] = exp(logγ[1] - tmp)
+    γ[2] = exp(logγ[2] - tmp)
+    γ[3] = exp(logγ[3] - tmp)
+
+    u = sample(StatsBase.WeightVec(γ))
 
     if u == 1
       C[j, cl] = 0x01
@@ -63,7 +59,7 @@ function rcolpartition!(x::AminoAcidPriorCol,
       C[j, cl] = 0x02
     else
       for i in 1:k
-        C[j, cl[i]] = UInt8(2 + sample(WeightVec(vec(p[j, i, :]))))
+        C[j, cl[i]] = UInt8(2 + sample(WeightVec(vec(ω[:, i]))))
       end
     end
   end
