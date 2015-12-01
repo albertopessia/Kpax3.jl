@@ -26,14 +26,14 @@ function rcolpartition!(C::Array{UInt8, 2},
     for i in 1:k
       g = cl[i]
 
-      logq[1, i] = logmarglik(cluster[g].n1s[j], cluster[g].v, priorC.A[j, 1],
-                              priorC.B[j, 1])
-      logq[2, i] = logmarglik(cluster[g].n1s[j], cluster[g].v, priorC.A[j, 2],
-                              priorC.B[j, 2])
+      logq[1, i] = logmarglik(cluster[g].n1s[j], cluster[g].v, priorC.A[1, j],
+                              priorC.B[1, j])
+      logq[2, i] = logmarglik(cluster[g].n1s[j], cluster[g].v, priorC.A[2, j],
+                              priorC.B[2, j])
       logq[3, i] = priorC.logω[3] + logmarglik(cluster[g].n1s[j], cluster[g].v,
-                                               priorC.A[j, 3], priorC.B[j, 3])
+                                               priorC.A[3, j], priorC.B[3, j])
       logq[4, i] = priorC.logω[4] + logmarglik(cluster[g].n1s[j], cluster[g].v,
-                                               priorC.A[j, 4], priorC.B[j, 4])
+                                               priorC.A[4, j], priorC.B[4, j])
 
       tmp = log(exp(logq[3, i]) + exp(logq[4, i]))
 

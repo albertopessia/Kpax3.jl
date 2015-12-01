@@ -11,22 +11,22 @@ memory allocation of the same objects over and over again.
 
 """
 type Kpax3Support
-  smv::Array{Float64, 1}
-  smR::Array{Int, 1}
-  smMPi::Array{Float64, 2}
-  smMPj::Array{Float64, 2}
+  smR::Array{Float64, 1}
+  smV::Array{Float64, 1}
+  smCO::Array{Float64, 2}
+  smMP::Array{Float64, 3}
+  smLC::Array{Float64, 2}
   smCP::Array{Float64, 1}
 end
 
 function Kpax3Support(m::Int,
                       n::Int)
-  smv = zeros(Float64, 3)
-  smR = zeros(Int, n)
-
-  smMPi = zeros(Float64, m, 4)
-  smMPj = zeros(Float64, m, 4)
-
+  smR = zeros(Float64, n)
+  smV = zeros(Float64, 3)
+  smCO = zeros(Float64, 2, m)
+  smMP = zeros(Float64, 4, 2, m)
+  smLC = zeros(Float64, 2, m)
   smCP = zeros(Float64, n)
 
-  Kpax3Support(smv, smR, smMPi, smMPj, smCP)
+  Kpax3Support(smR, smV, smCO, smMP, smLC, smCP)
 end

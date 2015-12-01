@@ -23,7 +23,7 @@ function logposterior(R::Array{Int, 1},
   for j in 1:m
     s = C[j, g]
     logp += (priorC.logγ[s] + priorC.logω[s] +
-             logmarglik(n1s[j, g], v[g], priorC.A[j, s], priorC.B[j, s]))
+             logmarglik(n1s[j, g], v[g], priorC.A[s, j], priorC.B[s, j]))
   end
 
   for i in 2:k
@@ -32,7 +32,7 @@ function logposterior(R::Array{Int, 1},
     for j in 1:m
       s = C[j, g]
       logp += (priorC.logω[s] +
-               logmarglik(n1s[j, g], v[g], priorC.A[j, s], priorC.B[j, s]))
+               logmarglik(n1s[j, g], v[g], priorC.A[s, j], priorC.B[s, j]))
     end
   end
 

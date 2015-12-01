@@ -27,29 +27,29 @@ n1s = Float64[1, 5, 3, 3, 2, 2, 3, 3, 1, 3, 2, 1, 3, 2, 4, 2, 3, 3]
 r1 = 2.0
 r2 = 100.0
 
-A1 = zeros(Float64, m, 4)
-A1[:, 1] = (r1 + 1.0) * (n1s + 0.5) / (n + 1)
-A1[:, 2] = 1.0
-A1[:, 3] = 1.0
-A1[:, 4] = r1
+A1 = zeros(Float64, 4, m)
+A1[1, :] = (r1 + 1.0) * (n1s + 0.5) / (n + 1)
+A1[2, :] = 1.0
+A1[3, :] = 1.0
+A1[4, :] = r1
 
-B1 = zeros(Float64, m, 4)
-B1[:, 1] = (r1 + 1.0) - A1[:, 1]
-B1[:, 2] = 1.0
-B1[:, 3] = r1
-B1[:, 4] = 1.0
+B1 = zeros(Float64, 4, m)
+B1[1, :] = (r1 + 1.0) - A1[:, 1]
+B1[2, :] = 1.0
+B1[3, :] = r1
+B1[4, :] = 1.0
 
-A2 = zeros(Float64, m, 4)
-A2[:, 1] = n1s + 0.5
-A2[:, 2] = 1.0
-A2[:, 3] = 1.0
-A2[:, 4] = r2
+A2 = zeros(Float64, 4, m)
+A2[1, :] = n1s + 0.5
+A2[2, :] = 1.0
+A2[3, :] = 1.0
+A2[4, :] = r2
 
-B2 = zeros(Float64, m, 4)
-B2[:, 1] = n - n1s + 0.5
-B2[:, 2] = 1.0
-B2[:, 3] = r2
-B2[:, 4] = 1.0
+B2 = zeros(Float64, 4, m)
+B2[1, :] = n - n1s + 0.5
+B2[2, :] = 1.0
+B2[3, :] = r2
+B2[4, :] = 1.0
 
 for k in 1:n
   ω = [1.0, 1.0, 1.0 - 1.0 / k, 1.0 / k]
@@ -72,12 +72,12 @@ for k in 1:n
       @test_approx_eq_eps x2.logω[i] log(ω[i]) ε
     end
 
-    for i in 1:4, j in 1:m
-      @test_approx_eq_eps x1.A[j, i] A1[j, i] ε
-      @test_approx_eq_eps x1.B[j, i] B1[j, i] ε
+    for j in 1:m, i in 1:4
+      @test_approx_eq_eps x1.A[i, j] A1[i, j] ε
+      @test_approx_eq_eps x1.B[i, j] B1[i, j] ε
 
-      @test_approx_eq_eps x2.A[j, i] A2[j, i] ε
-      @test_approx_eq_eps x2.B[j, i] B2[j, i] ε
+      @test_approx_eq_eps x2.A[i, j] A2[i, j] ε
+      @test_approx_eq_eps x2.B[i, j] B2[i, j] ε
     end
   end
 end

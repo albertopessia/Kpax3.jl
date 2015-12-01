@@ -63,7 +63,7 @@ function AminoAcidMCMC(data::Array{UInt8, 2},
     end
   end
 
-  rcolpartition!(priorC, C, cluster, emptycluster)
+  rcolpartition!(C, priorC, cluster, emptycluster)
 
   # If array A has dimension (d_{1}, ..., d_{l}, ..., d_{L}), to access
   # element A[i_{1}, ..., i_{l}, ..., i_{L}] it is possible to use the
@@ -74,7 +74,7 @@ function AminoAcidMCMC(data::Array{UInt8, 2},
   #
   # A[i_{1}, ..., i_{l}, ..., i_{L}] == A[linearidx]
   for g in 1:k
-    linearidx = [(i + m * (C[i, g] - 1))::Int for i in 1:m]
+    linearidx = [(C[i, g] + 4 * (i - 1))::Int for i in 1:m]
     cluster[g].ll = sum(logmarglik(cluster[g].n1s, cluster[g].v,
                                    priorC.A[linearidx], priorC.B[linearidx]))
   end
