@@ -39,8 +39,8 @@ function AminoAcidPriorCol(data::Array{UInt8, 2},
   ω = [1.0, 1.0, (k - 1.0) / k, 1.0 / k]
   logω = [0.0, 0.0, log(k - 1.0) - log(k), -log(k)]
 
-  A = zeros(Float64, m, 4)
-  B = zeros(Float64, m, 4)
+  A = zeros(Float64, 4, m)
+  B = zeros(Float64, 4, m)
 
   n1s = zeros(Float64, m)
   for j = 1:m
@@ -56,24 +56,24 @@ function AminoAcidPriorCol(data::Array{UInt8, 2},
   # don't want them to be overwhelmed by the data.
   # The mean is the same to the one obtained with a Jeffreys prior
   if n > r
-    A[:, 1] = (r + 1.0) * (n1s + 0.5) / (n + 1)
-    B[:, 1] = (r + 1.0) - A[:, 1]
+    A[1, :] = (r + 1.0) * (n1s + 0.5) / (n + 1)
+    B[1, :] = (r + 1.0) - A[1, :]
   else
-    A[:, 1] = n1s + 0.5
-    B[:, 1] = n - n1s + 0.5
+    A[1, :] = n1s + 0.5
+    B[1, :] = n - n1s + 0.5
   end
 
   # informative but not characteristic for any cluster
-  A[:, 2] = 1.0
-  B[:, 2] = 1.0
+  A[2, :] = 1.0
+  B[2, :] = 1.0
 
   # informative and characteristic... but for another cluster
-  A[:, 3] = 1.0
-  B[:, 3] = r
+  A[3, :] = 1.0
+  B[3, :] = r
 
   # informative and characteristic for this cluster
-  A[:, 4] = r
-  B[:, 4] = 1.0
+  A[4, :] = r
+  B[4, :] = 1.0
 
   AminoAcidPriorCol(γ, logγ, ω, logω, A, B)
 end

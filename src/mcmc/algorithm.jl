@@ -33,7 +33,7 @@ function kpax3mcmc(mcmcobj::AminoAcidMCMC,
       # cluster founders (units i and j)
       StatsBase.sample!(1:n, ij, replace=false, ordered=false)
 
-      # ij = [303, 1012];
+      # ij = [303, 347];
       gi = mcmcobj.R[ij[1]]
       gj = mcmcobj.R[ij[2]]
 

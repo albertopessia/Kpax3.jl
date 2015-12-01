@@ -1,5 +1,84 @@
 # This file is part of Kpax3. License is MIT.
 
+function addunit!(l::Int,
+                  g::Int,
+                  x::Array{UInt8, 1},
+                  support::Kpax3Support)
+  support.smR[l] = g
+  support.smV[g] += 1.0
+
+  for j in 1:length(x)
+    support.smCO[g, j] += x[j]
+  end
+
+  nothing
+end
+
+function initializeCO!(support::Kpax3Support,
+                       xi::Array{UInt8, 1},
+                       xj::Array{UInt8, 1})
+  for j in 1:length(xi)
+    support.smCO[1, j] = xi[j]
+    support.smCO[2, j] = xj[j]
+  end
+
+  nothing
+end
+
+function initializeMP!(support::Kpax3Support,
+                       xi::Array{UInt8, 1},
+                       xj::Array{UInt8, 1},
+                       logγ::Array{Float64, 1},
+                       logω::Array{Float64, 1},
+                       A::Array{Float64, 2},
+                       B::Array{Float64, 2})
+  M = zero(Float64)
+
+  # they will be used to compute conditional probabilities
+  for j in 1:length(xi)
+    support.smMP[1, 1, j] = logγ[1] + logmarglik(xi[j], 1, A[1, j], B[1, j])
+    support.smMP[2, 1, j] = logγ[2] + logmarglik(xi[j], 1, A[2, j], B[2, j])
+    support.smMP[3, 1, j] = logγ[3] + logω[3] +
+                            logmarglik(xi[j], 1, A[3, j], B[3, j])
+    support.smMP[4, 1, j] = logγ[4] + logω[4] +
+                            logmarglik(xi[j], 1, A[4, j], B[4, j])
+
+    M = max(support.smMP[1, 1, j], support.smMP[2, 1, j],
+            support.smMP[3, 1, j], support.smMP[4, 1, j])
+
+    support.smLC[1, j] = M + log(exp(support.smMP[1, 1, j] - M) +
+                                 exp(support.smMP[2, 1, j] - M) +
+                                 exp(support.smMP[3, 1, j] - M) +
+                                 exp(support.smMP[4, 1, j] - M))
+
+    support.smMP[1, 2, j] = logγ[1] + logmarglik(xj[j], 1, A[1, j], B[1, j])
+    support.smMP[2, 2, j] = logγ[2] + logmarglik(xj[j], 1, A[2, j], B[2, j])
+    support.smMP[3, 2, j] = logγ[3] + logω[3] +
+                            logmarglik(xj[j], 1, A[3, j], B[3, j])
+    support.smMP[4, 2, j] = logγ[4] + logω[4] +
+                            logmarglik(xj[j], 1, A[4, j], B[4, j])
+
+    M = max(support.smMP[1, 2, j], support.smMP[2, 2, j],
+            support.smMP[3, 2, j], support.smMP[4, 2, j])
+
+    support.smLC[2, j] = M + log(exp(support.smMP[1, 2, j] - M) +
+                                 exp(support.smMP[2, 2, j] - M) +
+                                 exp(support.smMP[3, 2, j] - M) +
+                                 exp(support.smMP[4, 2, j] - M))
+  end
+
+  nothing
+end
+
+function initializeV!(support::Kpax3Support,
+                      S::Int)
+  # they will be the new sample sizes
+  support.smV[1] = one(Float64)
+  support.smV[2] = one(Float64)
+  support.smV[3] = Float64(S + 2.0)
+  nothing
+end
+
 function split!(mcmcobj::AminoAcidMCMC,
                 priorR::PriorRowPartition,
                 priorC::PriorColPartition,
@@ -9,135 +88,95 @@ function split!(mcmcobj::AminoAcidMCMC,
                 S::Int,
                 settings::Kpax3Settings,
                 support::Kpax3Support)
-  # initialize variables
-  gi = mcmcobj.R[ij[1]]
+  # new cluster labels
+  hi = mcmcobj.R[ij[1]]
+  hj = findfirst(mcmcobj.emptycluster)
 
-  # sample sizes and partition allocations
-  support.smv[1] = one(Float64)
-  support.smv[2] = one(Float64)
-  support.smv[3] = S + 2.0
+  # number of clusters after the split
+  k = mcmcobj.k + 1.0
 
-  fill!(support.smR, zero(Int))
+  initializeV!(support, S)
+  initializeCO!(support, data[:, ij[1]], data[:, ij[2]])
+  initializeMP!(support, data[:, ij[1]], data[:, ij[2]], priorC.logγ,
+                [0.0, 0.0, log(k - 1.0) - log(k), -log(k)], priorC.A, priorC.B)
 
-  fill!(support.smMPi, zero(Float64))
-  fill!(support.smMPj, zero(Float64))
-
-  fill!(support.smCP, zero(Float64))
-
-  for j in 1:m
-    support.smMPi[j, 1] = exp(priorC.logγ[1] +
-                              logmarglik(data[j, ij[1]], 1, priorC.A[j, 1],
-                                         priorC.B[j, 1]))
-
-    support.smMPi[j, 2] = exp(priorC.logγ[2] +
-                              logmarglik(data[j, ij[1]], 1, priorC.A[j, 2],
-                                         priorC.B[j, 2]))
-
-    support.smMPi[j, 3] = exp(priorC.logγ[3] +
-                              log(mcmcobj.k) - log(mcmcobj.k + 1) +
-                              logmarglik(data[j, ij[1]], 1, priorC.A[j, 3],
-                                         priorC.B[j, 3]))
-
-    support.smMPi[j, 4] = exp(priorC.logγ[3] -
-                              log(mcmcobj.k + 1) +
-                              logmarglik(data[j, ij[1]], 1, priorC.A[j, 4],
-                                         priorC.B[j, 4]))
-
-    support.smMPj[j, 1] = exp(priorC.logγ[1] +
-                              logmarglik(data[j, ij[2]], 1, priorC.A[j, 1],
-                                         priorC.B[j, 1]))
-
-    support.smMPj[j, 2] = exp(priorC.logγ[2] +
-                              logmarglik(data[j, ij[2]], 1, priorC.A[j, 2],
-                                         priorC.B[j, 2]))
-
-    support.smMPj[j, 3] = exp(priorC.logγ[3] +
-                              log(mcmcobj.k) - log(mcmcobj.k + 1) +
-                              logmarglik(data[j, ij[2]], 1, priorC.A[j, 3],
-                                         priorC.B[j, 3]))
-
-    support.smMPj[j, 4] = exp(priorC.logγ[3] -
-                              log(mcmcobj.k + 1) +
-                              logmarglik(data[j, ij[2]], 1, priorC.A[j, 4],
-                                         priorC.B[j, 4]))
-  end
-
-  # log-likelihoods
-  ll = zeros(Float64, 3)
-
-  # logarithm of the sequential allocation probabilities
-  lq = zero(Float64)
-
-  # support weight vectors
-  wv1 = zeros(Float64, 2)
-  wv2 = zeros(Float64, 2)
-  wvs = zero(Float64)
-
-  # set variables
+  # sample a new proportion for cluster 'hi'
   ws = StatsBase.rand(settings.distws)
 
+  # logarithm of sequential probabilities
+  lq = zero(Float64)
+
+  # temporary / support variables
+  g = zero(Int)
+  u = zero(Int)
+  lcp = zeros(Float64, 2)
+  tmp = zeros(Float64, 4)
+  M = zero(Float64)
+  wv = zeros(Float64, 2)
+
   # allocate the neighbours of i and j
-  for u in 1:S
-    support.smMP[1, u + 1] = support.smMP[1, u]
+  for l in 1:S
+    u = neighbours[l]
+    lcp[1] = lcp[2] = 0.0
 
-    wv1[1] = loglik(likelihood, likelihood.x[S[h]], μ1, τ1)
-    wv1[2] = loglik(likelihood, likelihood.x[S[h]], μ2, τ2)
+    # compute p(x_{u} | x_{hi,1:(u-1)}) and p(x_{u} | x_{hj,1:(u-1)})
+    for j in 1:m
+      tmp[1] = support.smMP[1, 1, j] - support.smLC[1, j] +
+               logcondmarglik(data[j, u], support.smCO[1, j], support.smV[1],
+                              priorC.A[1, j], priorC.B[1, j])
+      tmp[2] = support.smMP[2, 1, j] - support.smLC[1, j] +
+               logcondmarglik(data[j, u], support.smCO[1, j], support.smV[1],
+                              priorC.A[2, j], priorC.B[2, j])
+      tmp[3] = support.smMP[3, 1, j] - support.smLC[1, j] +
+               logcondmarglik(data[j, u], support.smCO[1, j], support.smV[1],
+                              priorC.A[3, j], priorC.B[3, j])
+      tmp[4] = support.smMP[4, 1, j] - support.smLC[1, j] +
+               logcondmarglik(data[j, u], support.smCO[1, j], support.smV[1],
+                              priorC.A[4, j], priorC.B[4, j])
 
-    # wv2[1] = (ws * l(μ1, τ1)) / (ws * l(μ1, τ1) + (1 - ws) * l(μ2, τ2))
-    wv2[1] = 1 / (1 + exp(log(1 - ws) + wv1[2] - log(ws) - wv1[1]))
-    wv2[2] = 1.0 - wv2[1]
+      M = max(tmp[1], tmp[2], tmp[3], tmp[4])
 
-    z = WeightVec(wv2, 1.0)
+      lcp[1] += M + log(exp(tmp[1] - M) + exp(tmp[2] - M) +
+                        exp(tmp[3] - M) + exp(tmp[4] - M))
 
-    pS[h] = sample(1:2, z)
+      tmp[1] = support.smMP[1, 2, j] - support.smLC[2, j] +
+               logcondmarglik(data[j, u], support.smCO[2, j], support.smV[2],
+                              priorC.A[1, j], priorC.B[1, j])
+      tmp[2] = support.smMP[2, 2, j] - support.smLC[2, j] +
+               logcondmarglik(data[j, u], support.smCO[2, j], support.smV[2],
+                              priorC.A[2, j], priorC.B[2, j])
+      tmp[3] = support.smMP[3, 2, j] - support.smLC[2, j] +
+               logcondmarglik(data[j, u], support.smCO[2, j], support.smV[2],
+                              priorC.A[3, j], priorC.B[3, j])
+      tmp[4] = support.smMP[4, 2, j] - support.smLC[2, j] +
+               logcondmarglik(data[j, u], support.smCO[2, j], support.smV[2],
+                              priorC.A[4, j], priorC.B[4, j])
 
-    o = m[pS[h]]
-    n[pS[h]] += 1
-    m[pS[h]] += (likelihood.x[S[h]] - o) / n[pS[h]]
-    d[pS[h]] += (likelihood.x[S[h]] - o) * (likelihood.x[S[h]] - m[pS[h]])
+      M = max(tmp[1], tmp[2], tmp[3], tmp[4])
 
-    ll[pS[h]] += wv1[pS[h]]
-    ll[3] += loglik(likelihood, likelihood.x[S[h]], μ, τ)
+      lcp[2] += M + log(exp(tmp[1] - M) + exp(tmp[2] - M) +
+                        exp(tmp[3] - M) + exp(tmp[4] - M))
+    end
 
-    lq += log(values(z)[pS[h]])
+    wv[1] = 1.0 / (1.0 + exp(log(1.0 - ws) - log(ws) + lcp[2] - lcp[1]))
+    wv[2] = 1.0 - wv[1]
+
+    z = StatsBase.WeightVec(wv, 1.0)
+    g = StatsBase.sample(1:2, z)
+
+    addunit!(l, g, data[:, u], support)
+
+    lq += log(values(z)[g])
   end
 
-  dist_wm = Beta(splitmerge.para_wm + n[1], splitmerge.para_wm + n[2])
+  distwm = Distributions.Beta(settings.parawm + support.smV[1],
+                              settings.parawm + support.smV[2])
 
-  ratio = exp(split_lr_prior_partition(prior_part, n) +
-              split_lr_prior_parameter(prior_para, μ, τ, μ1, τ1, μ2, τ2) +
-              split_lr_likelihood(ll) +
-              split_lr_operator(splitmerge, dist_wm, ws, u1, u2, lpij, lq) +
-              split_ljacobian(τ, τ1, τ2, μ1, μ2, u1, u2))
+  ratio = exp(logSplitRatioPriorRow(priorR, support.smV, k) + )
 
   if ratio >= 1.0 || rand(Bernoulli(ratio)) == 1
     # move units to their new cluster
-    k = findfirst(mcmc_run.empty_clusters)
-
-    mcmc_run.p[ij[2]] = k
-    mcmc_run.p[S[pS .== 2]] = k
-
-    # update parameters
-    mcmc_run.μ[g] = μ1
-    mcmc_run.τ[g] = τ1
-    mcmc_run.μ[k] = μ2
-    mcmc_run.τ[k] = τ2
-
-    # update statistics
-    mcmc_run.s[1, g] = n[1]
-    mcmc_run.s[2, g] = m[1]
-    mcmc_run.s[3, g] = d[1]
-    mcmc_run.s[1, k] = n[2]
-    mcmc_run.s[2, k] = m[2]
-    mcmc_run.s[3, k] = d[2]
-
-    # set empty cluster
-    mcmc_run.empty_clusters[k] = false
-
-    mcmc_run.counter[1, 1] += 1
   end
-
-  mcmc_run.counter[1, 2] += 1
 
   nothing
 end
