@@ -3,26 +3,26 @@
 ##############
 # Exceptions #
 ##############
-@test_throws Kpax3DomainError NucleotideData("data/proper_nt.fasta",
+@test_throws KDomainError NucleotideData("data/proper_nt.fasta",
                                              miss=['\0', '?'])
-@test_throws Kpax3DomainError NucleotideData("data/proper_nt.fasta", l=-1)
+@test_throws KDomainError NucleotideData("data/proper_nt.fasta", l=-1)
 
-@test_throws Kpax3FASTAError NucleotideData("data/empty_file.fasta")
-@test_throws Kpax3FASTAError NucleotideData("data/no_1st_seq.fasta")
-@test_throws Kpax3FASTAError NucleotideData("data/no_id_char.fasta")
-@test_throws Kpax3FASTAError NucleotideData("data/no_nth_seq.fasta")
+@test_throws KFASTAError NucleotideData("data/empty_file.fasta")
+@test_throws KFASTAError NucleotideData("data/no_1st_seq.fasta")
+@test_throws KFASTAError NucleotideData("data/no_id_char.fasta")
+@test_throws KFASTAError NucleotideData("data/no_nth_seq.fasta")
 
 @test_throws TypeError NucleotideData("data/utf8_id.fasta")
 @test_throws TypeError NucleotideData("data/utf8_seq.fasta")
 
-@test_throws Kpax3DomainError AminoAcidData("data/proper_nt.fasta",
+@test_throws KDomainError AminoAcidData("data/proper_nt.fasta",
                                             miss=['\0', '?'])
-@test_throws Kpax3DomainError AminoAcidData("data/proper_nt.fasta", l=-1)
+@test_throws KDomainError AminoAcidData("data/proper_nt.fasta", l=-1)
 
-@test_throws Kpax3FASTAError AminoAcidData("data/empty_file.fasta")
-@test_throws Kpax3FASTAError AminoAcidData("data/no_1st_seq.fasta")
-@test_throws Kpax3FASTAError AminoAcidData("data/no_id_char.fasta")
-@test_throws Kpax3FASTAError AminoAcidData("data/no_nth_seq.fasta")
+@test_throws KFASTAError AminoAcidData("data/empty_file.fasta")
+@test_throws KFASTAError AminoAcidData("data/no_1st_seq.fasta")
+@test_throws KFASTAError AminoAcidData("data/no_id_char.fasta")
+@test_throws KFASTAError AminoAcidData("data/no_nth_seq.fasta")
 
 @test_throws TypeError AminoAcidData("data/utf8_id.fasta")
 @test_throws TypeError AminoAcidData("data/utf8_seq.fasta")

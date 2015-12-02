@@ -72,9 +72,8 @@ function categorical2binary{T <: Integer}(data::Array{T, 2},
       c = data[row, col]
 
       if (c < 0) || (c > maxval)
-        throw(Kpax3DomainError(string("Value outside the allowed range ",
-                                      "at (row, col) = (", row, ", ", col,
-                                      ").")))
+        throw(KDomainError(string("Value outside the allowed range  at (row, ",
+                                  "col) = (", row, ", ", col, ").")))
       end
 
       if (c > 0) && !tmp1[c]

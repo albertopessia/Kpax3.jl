@@ -18,14 +18,8 @@ function kpax3aa(x::AminoAcidData,
                  maxunit::Int=500,
                  verbose::Bool=true,
                  verbosestep::Int=100000)
-  settings = Kpax3Settings(T, outfile, burnin, t, op, α, θ, γ, r, λs1, λs2,
-                           parawm, maxclust, maxunit, verbose, verbosestep)
-
   R = initpartition(partition, x.id)
   k = maximum(R)
-
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, k, settings.γ, settings.r)
 
   # To preallocate memory, we must choose an upper bound to the maximum
   # number of clusters. The total number of clusters can't be greater than n,
@@ -33,7 +27,15 @@ function kpax3aa(x::AminoAcidData,
   # bound unless the current partition has more than maxclust clusters...
   maxclust = max(min(maxclust, size(x.data, 2)), k)
 
-  mcmcobj = AminoAcidMCMC(x.data, R, priorC, settings)
+  maxunit = min(maxunit, n)
 
-  kpax3mcmc(mcmcobj, priorR, priorC, x.data, settings)
+  settings = KSettings(T, outfile, burnin, t, op, α, θ, γ, r, λs1, λs2, parawm,
+                       maxclust, maxunit, verbose, verbosestep)
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(x.data, k, settings.γ, settings.r)
+
+  mcmcobj = AminoAcidMCMC(x.data, R, priorR, priorC, settings)
+
+  kpax3mcmc(x.data, priorR, priorC, settings, mcmcobj)
 end

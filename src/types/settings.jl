@@ -22,7 +22,7 @@
 * `verbosestep` Print a status report every `verbosestep` Markov Chain steps
 
 """
-immutable Kpax3Settings
+immutable KSettings
   T::Int
   outfile::AbstractString
   burnin::Int
@@ -40,23 +40,23 @@ immutable Kpax3Settings
   verbosestep::Int
 end
 
-function Kpax3Settings(T::Int,
-                       outfile::AbstractString,
-                       burnin::Int,
-                       t::Int,
-                       op::Array{Float64, 1},
-                       α::Float64,
-                       θ::Float64,
-                       γ::Array{Float64, 1},
-                       r::Float64,
-                       λs1::Float64,
-                       λs2::Float64,
-                       parawm::Float64,
-                       maxclust::Int,
-                       maxunit::Int,
-                       verbose::Bool,
-                       verbosestep::Int)
-  Kpax3Settings(T, outfile, burnin, t, StatsBase.WeightVec(op), α, θ, γ, r,
-                Distributions.Beta(λs1, λs2), parawm, maxclust, maxunit,
-                verbose, verbosestep)
+function KSettings(T::Int,
+                   outfile::AbstractString,
+                   burnin::Int,
+                   t::Int,
+                   op::Array{Float64, 1},
+                   α::Float64,
+                   θ::Float64,
+                   γ::Array{Float64, 1},
+                   r::Float64,
+                   λs1::Float64,
+                   λs2::Float64,
+                   parawm::Float64,
+                   maxclust::Int,
+                   maxunit::Int,
+                   verbose::Bool,
+                   verbosestep::Int)
+  KSettings(T, outfile, burnin, t, StatsBase.WeightVec(op), α, θ, γ, r,
+            Distributions.Beta(λs1, λs2), parawm, maxclust, maxunit, verbose,
+            verbosestep)
 end

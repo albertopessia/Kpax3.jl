@@ -1,5 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
+abstract PriorColPartition
+
 type AminoAcidPriorCol <: PriorColPartition
   γ::Array{Float64, 1}
   logγ::Array{Float64, 1}
@@ -16,11 +18,11 @@ function AminoAcidPriorCol(data::Array{UInt8, 2},
                            g::Array{Float64, 1},
                            r::Float64)
   if length(g) != 3
-    throw(Kpax3InputError("Argument 'g' does not have length 3."))
+    throw(KInputError("Argument 'g' does not have length 3."))
   end
 
   if any(g .< 0)
-    throw(Kpax3DomainError("Argument 'g' contains negative values."))
+    throw(KDomainError("Argument 'g' contains negative values."))
   end
 
   # probabilities must sum to one
@@ -43,11 +45,11 @@ function AminoAcidPriorCol(data::Array{UInt8, 2},
   B = zeros(Float64, 4, m)
 
   n1s = zeros(Float64, m)
-  for j = 1:m
-    n1s[j] = data[j, 1]
+  for b = 1:m
+    n1s[b] = data[b, 1]
   end
-  for i = 2:n, j = 1:m
-    n1s[j] += data[j, i]
+  for a = 2:n, b = 1:m
+    n1s[b] += data[b, a]
   end
 
   # uninformative attributes

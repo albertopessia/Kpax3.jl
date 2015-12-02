@@ -1,5 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
+abstract KMCMC
+
 """
 # Control MCMC run
 
@@ -17,28 +19,34 @@
 * `v` Vector of cluster sizes
 * `counts` Matrix containing the total number of ones observed in each cluster
 """
-type AminoAcidMCMC <: Kpax3MCMC
+type AminoAcidMCMC <: KMCMC
   R::Array{Int, 1}
   C::Array{UInt8, 2}
-  k::Int
+
+  cluster::Array{KCluster, 1}
   emptycluster::BitArray{1}
-  cluster::Array{Cluster, 1}
+  k::Int
+
+  logprR::Float64
+  logprC::Float64
+  loglik::Float64
 end
 
 function AminoAcidMCMC(data::Array{UInt8, 2},
                        R::Array{Int, 1},
+                       priorR::PriorRowPartition,
                        priorC::AminoAcidPriorCol,
-                       settings::Kpax3Settings)
+                       settings::KSettings)
   m, n = size(data)
 
-  k = maximum(R)
+  C = zeros(UInt8, settings.maxclust, m)
 
-  C = zeros(UInt8, m, settings.maxclust)
+  k = maximum(R)
 
   emptycluster = trues(settings.maxclust)
   emptycluster[unique(R)] = false
 
-  cluster = [Cluster(0, zeros(Int, 1), zeros(Float64, 1), 0.0)
+  cluster = [KCluster(0, zeros(Int, 1), zeros(Float64, 1), 0.0)
              for g in 1:settings.maxclust]
 
   for g in 1:k
@@ -59,25 +67,32 @@ function AminoAcidMCMC(data::Array{UInt8, 2},
     cluster[g].unit[cluster[g].v] = i
 
     for j in 1:m
-      cluster[g].n1s[j] += data[j, i]
+      cluster[g].n1s[j] += Float64(data[j, i])
     end
   end
 
-  rcolpartition!(C, priorC, cluster, emptycluster)
+  rpostpartitioncols!(C, cluster, emptycluster, priorC.logγ, priorC.logω,
+                      priorC.A, priorC.B)
 
-  # If array A has dimension (d_{1}, ..., d_{l}, ..., d_{L}), to access
-  # element A[i_{1}, ..., i_{l}, ..., i_{L}] it is possible to use the
-  # following linear index
-  # linearidx = i_{1} + d_{1} * (i_{2} - 1) + ... +
-  #           + (d_{1} * ... * d_{l-1}) * (i_{l} - 1) + ... +
-  #           + (d_{1} * ... * d_{L-1}) * (i_{L} - 1)
-  #
-  # A[i_{1}, ..., i_{l}, ..., i_{L}] == A[linearidx]
+  logprR = logdPriorRow(n, k, [Int(cluster[g].v) for g in 1:k], priorR)
+  logprC = logpriorC(C, emptycluster, priorC.logγ, priorC.logω)
+  loglik = zero(Float64)
+
   for g in 1:k
-    linearidx = [(C[i, g] + 4 * (i - 1))::Int for i in 1:m]
+    # If array A has dimension (d_{1}, ..., d_{l}, ..., d_{L}), to access
+    # element A[i_{1}, ..., i_{l}, ..., i_{L}] it is possible to use the
+    # following linear index
+    # linearidx = i_{1} + d_{1} * (i_{2} - 1) + ... +
+    #           + (d_{1} * ... * d_{l-1}) * (i_{l} - 1) + ... +
+    #           + (d_{1} * ... * d_{L-1}) * (i_{L} - 1)
+    #
+    # A[i_{1}, ..., i_{l}, ..., i_{L}] == A[linearidx]
+    linearidx = [(C[g, b] + 4 * (b - 1))::Int for b in 1:m]
     cluster[g].ll = sum(logmarglik(cluster[g].n1s, cluster[g].v,
                                    priorC.A[linearidx], priorC.B[linearidx]))
+
+    loglik += cluster[g].ll
   end
 
-  AminoAcidMCMC(R, C, k, emptycluster, cluster)
+  AminoAcidMCMC(R, C, cluster, emptycluster, k, logprR, logprC, loglik)
 end

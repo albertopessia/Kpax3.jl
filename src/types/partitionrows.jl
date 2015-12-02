@@ -1,5 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
+abstract PriorRowPartition
+
 """
 # Ewens-Pitman formula
 
@@ -138,8 +140,8 @@ function EwensPitman(α::Float64,
     if θ > 0
       EwensPitmanZAPT(θ)
     else
-      throw(Kpax3DomainError("When argument α is zero, argument θ must be " *
-                             "positive."))
+      throw(KDomainError(string("When argument α is zero, argument θ must be ",
+                                "positive.")))
     end
   elseif 0 < α < 1
     if θ == 0
@@ -147,14 +149,14 @@ function EwensPitman(α::Float64,
     elseif θ > -α
       EwensPitmanPAUT(α, θ)
     else
-      throw(Kpax3DomainError("When argument α is non-negative, argument θ " *
-                             "must be greater than -α."))
+      throw(KDomainError(string("When argument α is non-negative, argument θ ",
+                                "must be greater than -α.")))
     end
   elseif α < 0
-    throw(Kpax3DomainError("When argument α is negative, provide an integer " *
-                           "L to define parameter θ."))
+    throw(KDomainError(string("When argument α is negative, provide an ",
+                              "integer L to define parameter θ.")))
   else
-    throw(Kpax3DomainError("Argument α cannot be greater than or equal to 1."))
+    throw(KDomainError("Argument α cannot be greater than or equal to 1."))
   end
 end
 
@@ -164,10 +166,10 @@ function EwensPitman(α::Float64,
     if L > 0
       EwensPitmanNAPT(α, L)
     else
-      throw(Kpax3DomainError("Argument L must be positive."))
+      throw(KDomainError("Argument L must be positive."))
     end
   else
-    throw(Kpax3DomainError("When argument α is non-negative, provide a real " *
-                           "value for parameter θ."))
+    throw(KDomainError(string("When argument α is non-negative, provide a ",
+                              "real value for parameter θ.")))
   end
 end

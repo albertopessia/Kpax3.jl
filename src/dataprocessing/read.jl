@@ -132,12 +132,12 @@ function readfasta(infile::AbstractString,
   end
 
   if !all(0 .< miss .< 128)
-    throw(Kpax3DomainError(string("Argument 'miss' contains some values not ",
-                                  "in the range [1, ..., 127].")))
+    throw(KDomainError(string("Argument 'miss' contains some values not in ",
+                              "the range [1, ..., 127].")))
   end
 
   if l < 1
-    throw(Kpax3DomainError("Argument 'l' is not positive."))
+    throw(KDomainError("Argument 'l' is not positive."))
   end
 
   #    ?    *    #    -    b    d    h    k    m    n    r    s    v    w    x
@@ -163,10 +163,10 @@ function readfasta(infile::AbstractString,
   s = strip(readuntil(f, '>'))::ASCIIString
   if length(s) == 0
     close(f)
-    throw(Kpax3FASTAError("No sequence has been found."))
+    throw(KFASTAError("No sequence has been found."))
   elseif length(s) > 1
     close(f)
-    throw(Kpax3FASTAError("First non empty row is not a sequence id."))
+    throw(KFASTAError("First non empty row is not a sequence id."))
   end
 
   # we now know that there is a first sequence to read... but is the ID empty?
@@ -174,7 +174,7 @@ function readfasta(infile::AbstractString,
 
   if length(sid) == 0
     close(f)
-    throw(Kpax3FASTAError("Missing sequence identifier. Sequence: 1."))
+    throw(KFASTAError("Missing sequence identifier. Sequence: 1."))
   end
 
   seqlen = zero(Int)
@@ -233,7 +233,7 @@ function readfasta(infile::AbstractString,
 
   if seqlen == 0
     close(f)
-    throw(Kpax3FASTAError("Missing sequence. Sequence: 1."))
+    throw(KFASTAError("Missing sequence. Sequence: 1."))
   end
 
   # at least a sequence has been found
@@ -248,7 +248,7 @@ function readfasta(infile::AbstractString,
     else
       # there is only the '>' character
       close(f)
-      throw(Kpax3FASTAError("Missing sequence identifier. Sequence: 2."))
+      throw(KFASTAError("Missing sequence identifier. Sequence: 2."))
     end
   end
 
@@ -272,9 +272,9 @@ function readfasta(infile::AbstractString,
 
             if curlen > seqlen
               close(f)
-              throw(Kpax3FASTAError(string("Different sequence length: ",
-                                           "sequence ", n + 1, " (", sid, ") ",
-                                           "is longer than expected.")))
+              throw(KFASTAError(string("Different sequence length: sequence ",
+                                       n + 1, " (", sid, ") ", "is longer ",
+                                       "than expected.")))
             end
 
             if !in(u, miss)
@@ -290,9 +290,9 @@ function readfasta(infile::AbstractString,
         # we just finished scanning the previous sequence
         if curlen != seqlen
           close(f)
-          throw(Kpax3FASTAError(string("Different sequence length: ",
-                                       "sequence ", n + 1, " (", sid, ") ",
-                                       "is shorter than expected.")))
+          throw(KFASTAError(string("Different sequence length: sequence ",
+                                   n + 1, " (", sid, ") ", "is shorter than ",
+                                   "expected.")))
         end
 
         n += 1
@@ -317,8 +317,8 @@ function readfasta(infile::AbstractString,
         else
           # there is only the '>' character
           close(f)
-          throw(Kpax3FASTAError(string("Missing identifier at sequence ",
-                                       n + 1, ".")))
+          throw(KFASTAError(string("Missing identifier at sequence ", n + 1,
+                                   ".")))
         end
       end
     end
@@ -327,8 +327,8 @@ function readfasta(infile::AbstractString,
   # by construction, the last sequence has not been pre-processed
   if curlen != seqlen
     close(f)
-    throw(Kpax3FASTAError(string("Different sequence length: sequence ", n + 1,
-                                 "(", sid, ") ", "is shorter than expected.")))
+    throw(KFASTAError(string("Different sequence length: sequence ", n + 1,
+                             "(", sid, ") ", "is shorter than expected.")))
   end
 
   n += 1

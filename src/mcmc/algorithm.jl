@@ -1,10 +1,10 @@
 # This file is part of Kpax3. License is MIT.
 
-function kpax3mcmc(mcmcobj::AminoAcidMCMC,
+function kpax3mcmc(data::Array{UInt8, 2},
                    priorR::PriorRowPartition,
                    priorC::PriorColPartition,
-                   data::Array{UInt8, 2},
-                   settings::Kpax3Settings)
+                   settings::KSettings,
+                   mcmcobj::AminoAcidMCMC)
   m, n = size(data)
 
   # sample before hand which operators we are going to use
@@ -48,7 +48,8 @@ function kpax3mcmc(mcmcobj::AminoAcidMCMC,
           end
         end
 
-        split!(mcmcobj, priorR, priorC, data, ij, neighbours, S, support)
+        split!(ij, neighbours, S, data, priorR, priorC,
+               settings, support, mcmcobj)
       else
         for u in 1:mcmcobj.cluster[gi].v
           idx = mcmcobj.cluster[gi].unit[u]
@@ -65,12 +66,13 @@ function kpax3mcmc(mcmcobj::AminoAcidMCMC,
           end
         end
 
-        merge!(mcmcobj, priorR, priorC, data, ij, neighbours, S, support)
+        merge!(ij, neighbours, S, data, priorR, priorC,
+               settings, support, mcmcobj)
       end
     elseif opburnin[t] == 2
-      biasedrandomwalk!(mcmcobj, priorR, priorC, data)
+
     elseif opburnin[t] == 3
-      updateC!(mcmcobj, priorR, priorC, data)
+
     end
 
     if verbose && (t % verbosestep == 0)

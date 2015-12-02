@@ -1,5 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
+abstract KData
+
 """
 # Genetic data
 
@@ -36,7 +38,7 @@ Bayesian identification of cluster-defining amino acid positions in large
 sequence datasets. _Microbial Genomics_ **1**(1).
 <http://dx.doi.org/10.1099/mgen.0.000025>.
 """
-immutable NucleotideData <: Kpax3Data
+immutable NucleotideData <: KData
   data::Array{UInt8, 2}
   id::Array{ASCIIString, 1}
   ref::Array{UInt8, 1}
@@ -127,7 +129,7 @@ Bayesian identification of cluster-defining amino acid positions in large
 sequence datasets. _Microbial Genomics_ **1**(1).
 <http://dx.doi.org/10.1099/mgen.0.000025>.
 """
-immutable AminoAcidData <: Kpax3Data
+immutable AminoAcidData <: KData
   data::Array{UInt8, 2}
   id::Array{ASCIIString, 1}
   ref::Array{UInt8, 1}
