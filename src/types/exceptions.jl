@@ -11,10 +11,10 @@ Provides a message explaining the reason of the DomainError exception.
 
 * `msg` Optional argument with a descriptive error string
 """
-type Kpax3DomainError <: Exception
+type KDomainError <: Exception
   msg::AbstractString
 end
-Kpax3DomainError() = Kpax3DomainError("")
+KDomainError() = KDomainError("")
 
 """
 # Kpax3 Exception
@@ -27,10 +27,10 @@ Exception for a wrong formatted FASTA file.
 
 * `msg` Optional argument with a descriptive error string
 """
-type Kpax3FASTAError <: Exception
+type KFASTAError <: Exception
   msg::AbstractString
 end
-Kpax3FASTAError() = Kpax3FASTAError("")
+KFASTAError() = KFASTAError("")
 
 """
 # Kpax3 Exception
@@ -43,7 +43,7 @@ Exception for wrong data read from a source.
 
 * `msg` Optional argument with a descriptive error string
 """
-type Kpax3InputError <: Exception
+type KInputError <: Exception
   msg::AbstractString
 end
-Kpax3InputError() = Kpax3InputError("")
+KInputError() = KInputError("")

@@ -3,18 +3,18 @@
 ##############
 # Exceptions #
 ##############
-@test_throws Kpax3DomainError readfasta("data/proper_nt.fasta", true,
+@test_throws KDomainError readfasta("data/proper_nt.fasta", true,
                                         [0x00, 0x3f], 10, false, 0)
-@test_throws Kpax3DomainError readfasta("data/proper_nt.fasta", true,
+@test_throws KDomainError readfasta("data/proper_nt.fasta", true,
                                         zeros(UInt8, 0), -1, false, 0)
 
-@test_throws Kpax3FASTAError readfasta("data/empty_file.fasta", true,
+@test_throws KFASTAError readfasta("data/empty_file.fasta", true,
                                        zeros(UInt8, 0), 100000000, false, 0)
-@test_throws Kpax3FASTAError readfasta("data/no_1st_seq.fasta", true,
+@test_throws KFASTAError readfasta("data/no_1st_seq.fasta", true,
                                        zeros(UInt8, 0), 100000000, false, 0)
-@test_throws Kpax3FASTAError readfasta("data/no_id_char.fasta", true,
+@test_throws KFASTAError readfasta("data/no_id_char.fasta", true,
                                        zeros(UInt8, 0), 100000000, false, 0)
-@test_throws Kpax3FASTAError readfasta("data/no_nth_seq.fasta", true,
+@test_throws KFASTAError readfasta("data/no_nth_seq.fasta", true,
                                        zeros(UInt8, 0), 100000000, false, 0)
 
 @test_throws TypeError readfasta("data/utf8_id.fasta", true,
@@ -37,7 +37,7 @@ data, id, refseq = readfasta("data/blanks.fasta", true,
 @test refseq == UInt8[0x01, 0x04, 0x03, 0x1d, 0x1d, 0x1d,
                       0x03, 0x1d, 0x1d, 0x01, 0x1d, 0x01]
 
-@test_throws Kpax3DomainError categorical2binary(data, 0x01)
+@test_throws KDomainError categorical2binary(data, 0x01)
 
 bindata, val, key = categorical2binary(data, 0x1c)
 @test bindata == UInt8[0x00 0x01;
@@ -85,7 +85,7 @@ data, id, refseq = readfasta("data/proper_nt.fasta", true,
 @test refseq == UInt8[0x01, 0x1d, 0x03, 0x1d, 0x1d, 0x1d,
                       0x03, 0x1d, 0x1d, 0x1d, 0x1d, 0x01]
 
-@test_throws Kpax3DomainError categorical2binary(data, 0x01)
+@test_throws KDomainError categorical2binary(data, 0x01)
 
 bindata, val, key = categorical2binary(data, 0x1c)
 @test bindata == UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
@@ -140,7 +140,7 @@ data, id, refseq = readfasta("data/proper_nt.fasta", true,
 @test refseq == UInt8[0x01, 0x1d, 0x03, 0x1d, 0x1d, 0x1d,
                       0x03, 0x1d, 0x1d, 0x1d, 0x1d, 0x1d]
 
-@test_throws Kpax3DomainError categorical2binary(data, 0x01)
+@test_throws KDomainError categorical2binary(data, 0x01)
 
 bindata, val, key = categorical2binary(data, 0x1c)
 @test bindata == UInt8[0x00 0x00 0x00 0x00 0x00 0x01;

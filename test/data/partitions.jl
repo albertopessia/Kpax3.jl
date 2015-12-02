@@ -716,6 +716,6 @@ function TestPartition(n::Int)
   elseif n == 6
     TestP6()
   else
-    throw(Kpax3DomainError("Argument n must be positive and lesser than 7."))
+    throw(KDomainError("Argument n must be positive and lesser than 7."))
   end
 end

@@ -7,9 +7,9 @@ include("../src/boot.jl")
 tests = ["dataprocessing",
          "datatypes",
          "likelihoods",
-         "posterior",
-         "priorcol",
-         "priorrow"]
+         "partitioncols",
+         "partitionrows",
+         "posterior"]
 
 for t in tests
   include(string(t, ".jl"))

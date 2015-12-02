@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function save(outfile::AbstractString,
-              x::Kpax3Data)
+              x::KData)
   # create directory if it does not exist
   dirpath = dirname(outfile)
   if !isdir(dirpath)
