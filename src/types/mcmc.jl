@@ -30,6 +30,8 @@ type AminoAcidMCMC <: KMCMC
   logprR::Float64
   logprC::Float64
   loglik::Float64
+
+  logpocC::Float64
 end
 
 function AminoAcidMCMC(data::Array{UInt8, 2},
@@ -38,15 +40,14 @@ function AminoAcidMCMC(data::Array{UInt8, 2},
                        priorC::AminoAcidPriorCol,
                        settings::KSettings)
   m, n = size(data)
+  k = maximum(R)
 
   C = zeros(UInt8, settings.maxclust, m)
-
-  k = maximum(R)
 
   emptycluster = trues(settings.maxclust)
   emptycluster[unique(R)] = false
 
-  cluster = [KCluster(0, zeros(Int, 1), zeros(Float64, 1), 0.0)
+  cluster = [KCluster(0, zeros(Int, 1), zeros(Float64, 1))
              for g in 1:settings.maxclust]
 
   for g in 1:k
@@ -59,7 +60,7 @@ function AminoAcidMCMC(data::Array{UInt8, 2},
     cluster[g].v += 1
 
     if cluster[g].v > length(cluster[g].unit)
-      tmp = zeros(Int, min(2 * settings.maxunit, n))
+      tmp = zeros(Int, min(cluster[g].v - 1 + settings.maxunit, n))
       tmp[1:(cluster[g].v - 1)] = cluster[g].unit
       cluster[g].unit = tmp
     end
@@ -88,11 +89,12 @@ function AminoAcidMCMC(data::Array{UInt8, 2},
     #
     # A[i_{1}, ..., i_{l}, ..., i_{L}] == A[linearidx]
     linearidx = [(C[g, b] + 4 * (b - 1))::Int for b in 1:m]
-    cluster[g].ll = sum(logmarglik(cluster[g].n1s, cluster[g].v,
-                                   priorC.A[linearidx], priorC.B[linearidx]))
-
-    loglik += cluster[g].ll
+    loglik += sum(logmarglik(cluster[g].n1s, cluster[g].v, priorC.A[linearidx],
+                             priorC.B[linearidx]))
   end
 
-  AminoAcidMCMC(R, C, cluster, emptycluster, k, logprR, logprC, loglik)
+  logpocC = logcondpostC(C, cluster, emptycluster, priorC.logγ, priorC.logω,
+                         priorC.A, priorC.B)
+
+  AminoAcidMCMC(R, C, cluster, emptycluster, k, logprR, logprC, loglik, logpocC)
 end

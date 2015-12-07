@@ -20,10 +20,10 @@ Tamura and Kumar (2002) correction for heterogeneous patterns.
 
 Arguments:
 
-  rawdata::Array{Uint8, 2}
+  rawdata::Array{UInt8, 2}
     m-by-n data matrix, where m is the common sequence length and n is the
     sample size
-  ref::Array{Uint8, 1}
+  ref::Array{UInt8, 1}
     reference sequence, i.e. a vector of length m storing the values of
     homogeneous sites
 
@@ -45,10 +45,9 @@ Value:
     To access the distance between units i and j (i < j), use
     d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
 =#
-function distaamtn84(rawdata::Array{Uint8, 2},
-                     ref::Array{Uint8, 1})
-  n = size(rawdata, 2)
-  m = size(rawdata, 1)
+function distaamtn84(rawdata::Array{UInt8, 2},
+                     ref::Array{UInt8, 1})
+  m, n = size(rawdata)
 
   d = zeros(Float64, div(n * (n - 1), 2))
 
@@ -63,15 +62,11 @@ function distaamtn84(rawdata::Array{Uint8, 2},
     tmpraw[rawdata[row, col] + 1] += 1
   end
 
-  gt = zeros(Float64, 22)
-  gt[:] = tmpref[2:23]
-
-  gb = zeros(Float64, 22)
-  gb[:] = tmpraw[2:23] + n * gt
+  gt = tmpref[2:23]
+  gb = tmpraw[2:23] + n * gt
 
   st = 0.0
   sb = 0.0
-
   for aa in 1:22
     st += gt[aa]
     sb += gb[aa]
@@ -86,10 +81,9 @@ function distaamtn84(rawdata::Array{Uint8, 2},
 
   b = 1 - sc
 
-  idx = 1
+  idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx] = aamtn84(rawdata[:, i], rawdata[:, j], gt, st, b)
-    idx += 1
+    d[idx += 1] = aamtn84(rawdata[:, i], rawdata[:, j], gt, st, b)
   end
 
   d
@@ -103,9 +97,9 @@ Tamura and Kumar (2002) correction for heterogeneous patterns.
 
 Arguments:
 
-  s1::Array{Uint8, 1}
+  s1::Array{UInt8, 1}
     protein sequence
-  s2::Array{Uint8, 1}
+  s2::Array{UInt8, 1}
     protein sequence
   gt::Array{Float64, 1}
     common absolute frequency for the 22 amino acids, i.e. the count of each
@@ -121,8 +115,8 @@ Value:
   d::Float64
     evolutionary distance between the two protein sequences
 =#
-function aamtn84(x1::Array{Uint8, 1},
-                 x2::Array{Uint8, 1},
+function aamtn84(x1::Array{UInt8, 1},
+                 x2::Array{UInt8, 1},
                  gt::Array{Float64, 1},
                  h::Float64,
                  b::Float64)

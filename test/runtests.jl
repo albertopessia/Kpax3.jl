@@ -4,11 +4,17 @@ using Base.Test
 
 include("../src/boot.jl")
 
-tests = ["dataprocessing",
-         "datatypes",
-         "likelihoods",
-         "partitioncols",
-         "partitionrows",
+tests = ["dataprocessing";
+         "typescluster";
+         "typessettings";
+         "typessupport";
+         "typesdata";
+         "typespartitioncols";
+         "typespartitionrows";
+         "typesmcmc";
+         "likelihoods";
+         "partitioncols";
+         "partitionrows";
          "posterior"]
 
 for t in tests

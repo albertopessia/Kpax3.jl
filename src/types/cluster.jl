@@ -4,5 +4,4 @@ type KCluster
   v::Int
   unit::Array{Int, 1}
   n1s::Array{Float64, 1}
-  ll::Float64
 end

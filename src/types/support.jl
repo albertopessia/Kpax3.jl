@@ -26,10 +26,10 @@ end
 
 function KSupport(m::Int,
                   n::Int)
-  gi = KCluster(zero(Int), zeros(Int, 1), zeros(Float64, m), zero(Float64))
+  gi = KCluster(zero(Int), zeros(Int, 1), zeros(Float64, m))
   wi = KWeight(zeros(Float64, 4, m), zeros(Float64, m), zeros(Float64, 4, m))
 
-  gj = KCluster(zero(Int), zeros(Int, 1), zeros(Float64, m), zero(Float64))
+  gj = KCluster(zero(Int), zeros(Int, 1), zeros(Float64, m))
   wj = KWeight(zeros(Float64, 4, m), zeros(Float64, m), zeros(Float64, 4, m))
 
   KSupport(gi, wi, gj, wj)

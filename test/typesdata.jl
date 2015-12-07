@@ -287,7 +287,7 @@ aa = AminoAcidData("data/proper_aa.fasta", miss=['\0'])
 ####################
 nt = NucleotideData("data/proper_nt.fasta")
 
-# TODO: Test expection when saving to a location without writing permissions
+# TODO: Test exception when saving to a location without writing permissions
 save("../build/nt.jld", nt)
 @test isfile("../build/nt.jld")
 
@@ -323,7 +323,7 @@ nt = loadnt("../build/nt.jld")
 
 aa = AminoAcidData("data/proper_aa.fasta")
 
-# TODO: Test expection when saving to a location without writing permissions
+# TODO: Test exception when saving to a location without writing permissions
 save("../build/aa.jld", aa)
 @test isfile("../build/aa.jld")
 
