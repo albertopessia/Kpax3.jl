@@ -9,3 +9,4 @@ include("partitioncols/aminoacids/simulate.jl")
 
 include("partitionrows/ewenspitman/densities.jl")
 include("partitionrows/ewenspitman/split.jl")
+include("partitionrows/ewenspitman/merge.jl")

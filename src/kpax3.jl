@@ -2,8 +2,8 @@
 
 function kpax3aa(x::AminoAcidData,
                  partition::AbstractString,
-                 T::Int,
-                 outfile::AbstractString;
+                 outfile::AbstractString,
+                 T::Int;
                  burnin::Int=0,
                  t::Int=1,
                  op::Array{Float64, 1}=[0.5, 0.25, 0.25],

@@ -7,8 +7,8 @@
 
 ## Fields
 
-* `T` Length of the Markov Chain starting after the burnin period
 * `outfile` Path to the output file
+* `T` Length of the Markov Chain starting after the burnin period
 * `burnin` Length of the burnin period
 * `t` Save the Markov Chain state `(R, C)` every `t` iterations
 * `op` WeightVec representing the probabilities of Markov Chain kernels
@@ -23,8 +23,8 @@
 
 """
 immutable KSettings
-  T::Int
   outfile::AbstractString
+  T::Int
   burnin::Int
   t::Int
   op::StatsBase.WeightVec
@@ -40,8 +40,8 @@ immutable KSettings
   verbosestep::Int
 end
 
-function KSettings(T::Int,
-                   outfile::AbstractString,
+function KSettings(outfile::AbstractString,
+                   T::Int,
                    burnin::Int,
                    t::Int,
                    op::Array{Float64, 1},
@@ -56,7 +56,7 @@ function KSettings(T::Int,
                    maxunit::Int,
                    verbose::Bool,
                    verbosestep::Int)
-  KSettings(T, outfile, burnin, t, StatsBase.WeightVec(op), α, θ, γ, r,
+  KSettings(outfile, T, burnin, t, StatsBase.WeightVec(op), α, θ, γ, r,
             Distributions.Beta(λs1, λs2), parawm, maxclust, maxunit, verbose,
             verbosestep)
 end
