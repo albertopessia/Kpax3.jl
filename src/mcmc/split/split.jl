@@ -7,7 +7,7 @@ function split!(ij::Array{Int, 1},
                 priorR::PriorRowPartition,
                 priorC::PriorColPartition,
                 settings::KSettings,
-                support::KSupport
+                support::KSupport,
                 mcmcobj::AminoAcidMCMC)
   hi = mcmcobj.R[ij[1]]
   hj = findfirst(mcmcobj.emptycluster)
@@ -165,11 +165,11 @@ function split!(ij::Array{Int, 1},
   if ratio >= 1.0 || (ratio > 0 &&
                       Distributions.rand(Distributions.Bernoulli(ratio)) == 1)
     # move units to their new cluster
+    mcmcobj.R[support.gj.unit[1:support.gj.v]] = hj
+
     if hj > 0
       mcmcobj.C[!mcmcobj.emptycluster, :] = C[1:mcmcobj.k, :]
       mcmcobj.C[hj, :] = C[k, :]
-
-      mcmcobj.emptycluster[hj] = false
 
       mcmcobj.cluster[hi].v = cluster[hi].v
       mcmcobj.cluster[hi].unit = cluster[hi].unit
@@ -178,6 +178,8 @@ function split!(ij::Array{Int, 1},
       mcmcobj.cluster[hj].v = cluster[hj].v
       mcmcobj.cluster[hj].unit = cluster[hj].unit
       mcmcobj.cluster[hj].n1s = cluster[hj].n1s
+
+      mcmcobj.emptycluster[hj] = false
     else
       hj = k
 
@@ -185,19 +187,21 @@ function split!(ij::Array{Int, 1},
       len = min(settings.maxclust, n - length(mcmcobj.emptycluster)) - 1
 
       mcmcobj.C = vcat(C, zeros(UInt8, len, m))
-      mcmcobj.emptycluster = vcat(mcmcobj.emptycluster, false, trues(len))
+
       mcmcobj.cluster = vcat(cluster,
                              [KCluster(0, zeros(Int, 1), zeros(Float64, 1))
                               for g in 1:len])
+
+      mcmcobj.emptycluster = vcat(mcmcobj.emptycluster, false, trues(len))
     end
 
-    mcmcobj.R[support.gj.unit[1:support.gj.v]] = hj
-
     mcmcobj.k = k
-    mcmcobj.logprR = logdPriorRow(n, k, Int[cluster[g].v for g in 1:k],
-                                  priorR)
+
+    mcmcobj.logprR = logdPriorRow(n, k, Int[cluster[g].v for g in 1:k], priorR)
     mcmcobj.logprC = logprC
     mcmcobj.loglik = loglik
+
+    mcmcobj.logpocC = logpocC
 
     priorC.ω = [1.0, 1.0, (k - 1.0) / k, 1.0 / k]
     priorC.logω = logω

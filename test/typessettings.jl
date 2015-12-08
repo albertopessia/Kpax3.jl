@@ -6,7 +6,7 @@ import Distributions: Beta
 T = 1000000
 outfile = "outfile.bin"
 burnin = 10000
-t = 1
+tstep = 1
 op = [1.0, 0.0, 0.0]
 α = 0.0
 θ = 1.0
@@ -20,13 +20,13 @@ maxclust = 500
 verbose = true
 verbosestep = 10000
 
-settings = KSettings(outfile, T, burnin, t, op, α, θ, γ, r, λs1, λs2, parawm,
-                     maxclust, maxunit, verbose, verbosestep)
+settings = KSettings(outfile, T, burnin, tstep, op, α, θ, γ, r, λs1, λs2,
+                     parawm, maxclust, maxunit, verbose, verbosestep)
 
 @test settings.outfile == outfile
 @test settings.T == T
 @test settings.burnin == burnin
-@test settings.t == t
+@test settings.tstep == tstep
 @test isa(settings.op, WeightVec)
 @test values(settings.op) == op
 @test settings.α == α

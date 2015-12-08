@@ -24,4 +24,5 @@ include("initpartition.jl")
 #################
 include("dataprocessing/dataprocessing.jl")
 include("model/model.jl")
-#include("mcmc/mcmc.jl")
+include("mcmc/mcmc.jl")
+include("kpax3.jl")
