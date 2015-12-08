@@ -7,7 +7,7 @@ function merge!(ij::Array{Int, 1},
                 priorR::PriorRowPartition,
                 priorC::PriorColPartition,
                 settings::KSettings,
-                support::KSupport
+                support::KSupport,
                 mcmcobj::AminoAcidMCMC)
   hi = mcmcobj.R[ij[1]]
   hj = mcmcobj.R[ij[2]]
@@ -162,6 +162,23 @@ function merge!(ij::Array{Int, 1},
 
   if ratio >= 1.0 || (ratio > 0.0 &&
                       Distributions.rand(Distributions.Bernoulli(ratio)) == 1)
+    mcmcobj.logpocC = logpocC
+
+    mcmcobj.loglik = loglik
+    mcmcobj.logprC = logprC
+    mcmcobj.logprR = logdPriorRow(n, k, Int[cluster[g].v for g in 1:k], priorR)
+
+    mcmcobj.k = k
+    mcmcobj.emptycluster[hj] = true
+    mcmcobj.cluster[hi].v = cluster[hi].v
+    mcmcobj.cluster[hi].unit = cluster[hi].unit
+    mcmcobj.cluster[hi].n1s = cluster[hi].n1s
+
+    mcmcobj.C[!mcmcobj.emptycluster, :] = C
+    mcmcobj.R[support.gj.unit[1:support.gj.v]] = hi
+
+    priorC.ω = [1.0, 1.0, (k - 1.0) / k, 1.0 / k]
+    priorC.logω = logω
   end
 
   nothing

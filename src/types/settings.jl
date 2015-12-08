@@ -26,7 +26,7 @@ immutable KSettings
   outfile::AbstractString
   T::Int
   burnin::Int
-  t::Int
+  tstep::Int
   op::StatsBase.WeightVec
   α::Float64
   θ::Float64
@@ -43,7 +43,7 @@ end
 function KSettings(outfile::AbstractString,
                    T::Int,
                    burnin::Int,
-                   t::Int,
+                   tstep::Int,
                    op::Array{Float64, 1},
                    α::Float64,
                    θ::Float64,
@@ -56,7 +56,7 @@ function KSettings(outfile::AbstractString,
                    maxunit::Int,
                    verbose::Bool,
                    verbosestep::Int)
-  KSettings(outfile, T, burnin, t, StatsBase.WeightVec(op), α, θ, γ, r,
+  KSettings(outfile, T, burnin, tstep, StatsBase.WeightVec(op), α, θ, γ, r,
             Distributions.Beta(λs1, λs2), parawm, maxclust, maxunit, verbose,
             verbosestep)
 end
