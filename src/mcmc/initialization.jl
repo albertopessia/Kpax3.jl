@@ -77,7 +77,7 @@ function updateSupport!(h::KCluster,
   h.unit[h.v] = u
 
   for b in 1:length(x)
-    h.n1s[b] += Float64(x[b])
+    h.n1s[b] += convert(Float64, x[b])
 
     w.w[1, b] = w.z[1, b]
     w.w[2, b] = w.z[2, b]

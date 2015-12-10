@@ -164,9 +164,6 @@ function split!(ij::Array{Int, 1},
 
   if ratio >= 1.0 || (ratio > 0 &&
                       Distributions.rand(Distributions.Bernoulli(ratio)) == 1)
-    # move units to their new cluster
-    mcmcobj.R[support.gj.unit[1:support.gj.v]] = hj
-
     if hj > 0
       mcmcobj.C[!mcmcobj.emptycluster, :] = C[1:mcmcobj.k, :]
       mcmcobj.C[hj, :] = C[k, :]
@@ -194,6 +191,9 @@ function split!(ij::Array{Int, 1},
 
       mcmcobj.emptycluster = vcat(mcmcobj.emptycluster, false, trues(len))
     end
+
+    # move units to their new cluster
+    mcmcobj.R[support.gj.unit[1:support.gj.v]] = hj
 
     mcmcobj.k = k
 

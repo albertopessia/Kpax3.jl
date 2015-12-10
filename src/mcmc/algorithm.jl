@@ -14,7 +14,7 @@ function saveresults!(fp::IOStream,
                       mcmcobj::AminoAcidMCMC)
   write(fp, mcmcobj.k)
   write(fp, mcmcobj.R)
-  write(fp, vec(mcmcobj.C[!mcmcobj.emptycluster, :]))
+  write(fp, vec(mcmcobj.C[!mcmcobj.emptycluster, :][1, :]))
 
   nothing
 end
