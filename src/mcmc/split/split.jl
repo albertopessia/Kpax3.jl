@@ -1,39 +1,36 @@
 # This file is part of Kpax3. License is MIT.
 
-function split!(ij::Array{Int, 1},
-                neighbours::Array{Int, 1},
+function split!(ij::Vector{Int},
+                neighbours::Vector{Int},
                 S::Int,
-                data::Array{UInt8, 2},
+                data::Matrix{UInt8},
                 priorR::PriorRowPartition,
                 priorC::PriorColPartition,
                 settings::KSettings,
                 support::KSupport,
                 mcmcobj::AminoAcidMCMC)
   hi = mcmcobj.R[ij[1]]
-  hj = findfirst(mcmcobj.emptycluster)
-
-  m, n = size(data)
 
   # number of clusters after the split
-  k = mcmcobj.k + 1
+  k = length(mcmcobj.cl) + 1
 
   logω = [0.0; 0.0; log(k - 1.0) - log(k); -log(k)]
 
-  initializeSupport!(support, ij[1], data[:, ij[1]], ij[2], data[:, ij[2]], S,
-                     priorC.logγ, logω, priorC.A, priorC.B)
+  initializeSupport!(support, ij[1], ij[2], S, k, data, priorC.logγ, logω,
+                     priorC.A, priorC.B)
 
   # sample a new proportion for cluster 'hi'
   ws = Distributions.rand(settings.distws)
 
   # logarithm of the product of sequential probabilities
-  lq = zero(Float64)
+  lq = 0.0
 
   # temporary / support variables
-  g = zero(Int)
-  u = zero(Int)
+  g = 0
+  u = 0
+  M = 0.0
   lcp = zeros(Float64, 2)
   tmp = zeros(Float64, 4)
-  M = zero(Float64)
   wv = zeros(Float64, 2)
 
   # allocate the neighbours of i and j
@@ -42,23 +39,19 @@ function split!(ij::Array{Int, 1},
     lcp[1] = lcp[2] = 0.0
 
     # compute p(x_{u} | x_{hi,1:(u-1)}) and p(x_{u} | x_{hj,1:(u-1)})
-    for b in 1:m
+    for b in 1:size(data, 1)
       support.wi.z[1, b] = support.wi.w[1, b] +
-                           logcondmarglik(data[b, u], support.gi.n1s[b],
-                                          support.gi.v, priorC.A[1, b],
-                                          priorC.B[1, b])
+                           logcondmarglik(data[b, u], support.ni[b], support.vi,
+                                          priorC.A[1, b], priorC.B[1, b])
       support.wi.z[2, b] = support.wi.w[2, b]+
-                           logcondmarglik(data[b, u], support.gi.n1s[b],
-                                          support.gi.v, priorC.A[2, b],
-                                          priorC.B[2, b])
+                           logcondmarglik(data[b, u], support.ni[b], support.vi,
+                                          priorC.A[2, b], priorC.B[2, b])
       support.wi.z[3, b] = support.wi.w[3, b]+
-                           logcondmarglik(data[b, u], support.gi.n1s[b],
-                                          support.gi.v, priorC.A[3, b],
-                                          priorC.B[3, b])
+                           logcondmarglik(data[b, u], support.ni[b], support.vi,
+                                          priorC.A[3, b], priorC.B[3, b])
       support.wi.z[4, b] = support.wi.w[4, b] +
-                           logcondmarglik(data[b, u], support.gi.n1s[b],
-                                          support.gi.v, priorC.A[4, b],
-                                          priorC.B[4, b])
+                           logcondmarglik(data[b, u], support.ni[b], support.vi,
+                                          priorC.A[4, b], priorC.B[4, b])
 
       tmp[1] = support.wi.z[1, b] - support.wi.c[b]
       tmp[2] = support.wi.z[2, b] - support.wi.c[b]
@@ -71,21 +64,17 @@ function split!(ij::Array{Int, 1},
                         exp(tmp[3] - M) + exp(tmp[4] - M))
 
       support.wj.z[1, b] = support.wj.w[1, b] +
-                           logcondmarglik(data[b, u], support.gj.n1s[b],
-                                          support.gj.v, priorC.A[1, b],
-                                          priorC.B[1, b])
+                           logcondmarglik(data[b, u], support.nj[b], support.vj,
+                                          priorC.A[1, b], priorC.B[1, b])
       support.wj.z[2, b] = support.wj.w[2, b]+
-                           logcondmarglik(data[b, u], support.gj.n1s[b],
-                                          support.gj.v, priorC.A[2, b],
-                                          priorC.B[2, b])
+                           logcondmarglik(data[b, u], support.nj[b], support.vj,
+                                          priorC.A[2, b], priorC.B[2, b])
       support.wj.z[3, b] = support.wj.w[3, b]+
-                           logcondmarglik(data[b, u], support.gj.n1s[b],
-                                          support.gj.v, priorC.A[3, b],
-                                          priorC.B[3, b])
+                           logcondmarglik(data[b, u], support.nj[b], support.vj,
+                                          priorC.A[3, b], priorC.B[3, b])
       support.wj.z[4, b] = support.wj.w[4, b] +
-                           logcondmarglik(data[b, u], support.gj.n1s[b],
-                                          support.gj.v, priorC.A[4, b],
-                                          priorC.B[4, b])
+                           logcondmarglik(data[b, u], support.nj[b], support.vj,
+                                          priorC.A[4, b], priorC.B[4, b])
 
       tmp[1] = support.wj.z[1, b] - support.wj.c[b]
       tmp[2] = support.wj.z[2, b] - support.wj.c[b]
@@ -100,61 +89,69 @@ function split!(ij::Array{Int, 1},
 
     # (w * p1) / (w * p1 + (1 - w) * p2) = 1 / (1 + ((1 - w) / w) * (p2 / p1))
     # => e^(-log(1 + e^(log(1 - w) - log(w) + log(p2) - log(p1))))
-    wv[1] = exp(-log1p(exp(log(1.0 - ws) - log(ws) + lcp[2] - lcp[1])))
-    wv[2] = 1.0 - wv[1]
+    wv[1] = exp(-log1p(exp(log(1 - ws) - log(ws) + lcp[2] - lcp[1])))
+    wv[2] = 1 - wv[1]
 
     z = StatsBase.WeightVec(wv)
     g = StatsBase.sample(1:2, z)
 
     if g == 1
-      updateSupport!(support.gi, support.wi, u, data[:, u])
+      updateClusteri!(support, u, data)
     else
-      updateSupport!(support.gj, support.wj, u, data[:, u])
+      updateClusterj!(support, u, data)
     end
 
     lq += log(values(z)[g])
   end
 
-  # sample a new candidate for C
-  emptycluster = falses(k)
-
-  C = zeros(UInt8, k, size(data, 1))
-
-  cluster = vcat([KCluster(mcmcobj.cluster[g].v, mcmcobj.cluster[g].unit,
-                           mcmcobj.cluster[g].n1s)
-                  for g in find(!mcmcobj.emptycluster)],
-                 KCluster(support.gj.v, support.gj.unit[1:support.gj.v],
-                          support.gj.n1s))
-
   # new index of cluster hi
-  gi = sum(!mcmcobj.emptycluster[1:hi])
-
-  cluster[gi].v = support.gi.v
-  if length(cluster[gi].unit) > support.gi.v
-    cluster[gi].unit[1:support.gi.v] = support.gi.unit[1:support.gi.v]
-  else
-    cluster[gi].unit = support.gi.unit[1:support.gi.v]
-  end
-  cluster[gi].n1s = support.gi.n1s
-
-  rpostpartitioncols!(C, cluster, emptycluster, priorC.logγ, logω, priorC.A,
-                      priorC.B)
-
-  distwm = Distributions.Beta(settings.parawm + support.gi.v,
-                              settings.parawm + support.gj.v)
-
-  logsrR = logSplitRatioPriorRow(k, support.gi.v, support.gj.v, priorR)
-  logprC = logpriorC(C, emptycluster, priorC.logγ, logω)
-
-  loglik = zero(Float64)
-  for g in 1:k
-    linearidx = [(C[g, b] + 4 * (b - 1))::Int for b in 1:m]
-    loglik += sum(logmarglik(cluster[g].n1s, cluster[g].v, priorC.A[linearidx],
-                             priorC.B[linearidx]))
+  idx = 0
+  for g in mcmcobj.cl
+    idx += 1
+    support.filledcluster[idx] = true
+    support.v[idx] = g != hi ? mcmcobj.v[g] : support.vi
   end
 
-  logpocC = logcondpostC(C, cluster, emptycluster, priorC.logγ, logω, priorC.A,
-                         priorC.B)
+  support.filledcluster[k] = true
+  support.v[k] = support.vj
+
+  for b in 1:size(data, 1)
+    support.n1s[k, b] = support.nj[b]
+
+    idx = 0
+    for g in mcmcobj.cl
+      support.n1s[idx += 1, b] = g != hi ? mcmcobj.n1s[g, b] : support.ni[b]
+    end
+  end
+
+#  if length(support.unit[gi]) < support.vi
+#    support.unit[gi] = zeros(Int, support.vi)
+#  end
+#  copy!(support.unit[gi], 1, support.ui, 1, support.vi)
+
+  cl = collect(1:k)
+
+  rpostpartitioncols!(support.C, cl, support.v, support.n1s,
+                      priorC.logγ, logω, priorC.A, priorC.B)
+
+  distwm = Distributions.Beta(settings.parawm + support.vi,
+                              settings.parawm + support.vj)
+
+  logsrR = logSplitRatioPriorRow(k, support.vi, support.vj, priorR)
+  logprC = logpriorC(support.C, cl, priorC.logγ, logω)
+
+  lidx = 0
+  loglik = 0.0
+  for b in 1:size(data, 1)
+    for g in cl
+      lidx = support.C[g, b] + 4 * (b - 1)
+      loglik += logmarglik(support.n1s[g, b], support.v[g], priorC.A[lidx],
+                           priorC.B[lidx])
+    end
+  end
+
+  logpocC = logcondpostC(support.C, cl, support.v, support.n1s, priorC.logγ,
+                         logω, priorC.A, priorC.B)
 
   ratio = exp(logsrR +
               logprC - mcmcobj.logprC +
@@ -164,24 +161,27 @@ function split!(ij::Array{Int, 1},
 
   if ratio >= 1.0 || (ratio > 0 &&
                       Distributions.rand(Distributions.Bernoulli(ratio)) == 1)
+    hj = findfirst(!mcmcobj.filledcluster)
+
     if hj > 0
       mcmcobj.C[!mcmcobj.emptycluster, :] = C[1:mcmcobj.k, :]
       mcmcobj.C[hj, :] = C[k, :]
 
-      mcmcobj.cluster[hi].v = cluster[hi].v
-      mcmcobj.cluster[hi].unit = cluster[hi].unit
-      mcmcobj.cluster[hi].n1s = cluster[hi].n1s
+      mcmcobj.v[hi] = support.v[gi]
+      mcmcobj.unit[hi] = support.unit[gi]
+      mcmcobj.n1s[hi, :] = support.n1s[gi, :]
 
-      mcmcobj.cluster[hj].v = cluster[hj].v
-      mcmcobj.cluster[hj].unit = cluster[hj].unit
-      mcmcobj.cluster[hj].n1s = cluster[hj].n1s
+      mcmcobj.v[hj] = support.v[k]
+      mcmcobj.unit[hj] = support.unit[k]
+      mcmcobj.n1s[hj, :] = support.n1s[k, :]
 
-      mcmcobj.emptycluster[hj] = false
+      mcmcobj.filledcluster[hj] = true
     else
       hj = k
 
       # reallocate memory
-      len = min(settings.maxclust, n - length(mcmcobj.emptycluster)) - 1
+      len = min(settings.maxclust,
+                size(data, 2) - length(mcmcobj.filledcluster)) - 1
 
       mcmcobj.C = vcat(C, zeros(UInt8, len, m))
 

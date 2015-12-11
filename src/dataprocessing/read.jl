@@ -111,7 +111,7 @@ by a value of 29
 """
 function readfasta(infile::AbstractString,
                    dna::Bool,
-                   miss::Array{UInt8, 1},
+                   miss::Vector{UInt8},
                    l::Int,
                    verbose::Bool,
                    verbosestep::Int)
@@ -125,21 +125,6 @@ function readfasta(infile::AbstractString,
   # disable status reports if verbosestep is not positive
   verbose = verbose && (verbosestep > 0)
 
-  if (length(miss) == 1) && (miss[1] == 0x00)
-    # we can't use 0x00 as an index in enc[miss]. Use instead 0x01: it is not an
-    # ASCII character allowed in a sequence in a proper FASTA file
-    miss[1] = 0x01
-  end
-
-  if !all(0 .< miss .< 128)
-    throw(KDomainError(string("Argument 'miss' contains some values not in ",
-                              "the range [1, ..., 127].")))
-  end
-
-  if l < 1
-    throw(KDomainError("Argument 'l' is not positive."))
-  end
-
   #    ?    *    #    -    b    d    h    k    m    n    r    s    v    w    x
   # 0x3f 0x2a 0x23 0x2d 0x62 0x64 0x68 0x6b 0x6d 0x6e 0x72 0x73 0x76 0x77 0x78
   #    y    j    z
@@ -152,10 +137,39 @@ function readfasta(infile::AbstractString,
       miss = [0x3f, 0x2a, 0x23, 0x62, 0x6a, 0x78, 0x7a]
     end
   else
-    # convert to lowercase
-    for i in 1:length(miss)
-      miss[i] = (0x40 < miss[i] < 0x5b) ? (miss[i] + 0x20) : miss[i]
+    if length(miss) == 1
+      if miss[1] == 0x00
+        # we can't use 0x00 as an index in enc[miss]. Use instead 0x01: it is
+        # not an ASCII character allowed in a sequence in a proper FASTA file
+        miss[1] = 0x01
+      else
+        if zero(UInt8) < miss[1] < UInt8(128)
+          if UInt8(64) < miss[1] < UInt8(91)
+            # convert to lowercase
+            miss[1] += UInt8(32)
+          end
+        else
+          throw(KDomainError(string("Value 'miss[1]' is not in the range ",
+                                    "[1, ..., 127]:", Int(miss[1]), ".")))
+        end
+      end
+    else
+      for i in 1:length(miss)
+        if zero(UInt8) < miss[i] < UInt8(128)
+          if UInt8(64) < miss[i] < UInt8(91)
+            # convert to lowercase
+            miss[i] += UInt8(32)
+          end
+        else
+          throw(KDomainError(string("Value 'miss[", i, "]' is not in the ",
+                                    "range [1, ..., 127]:", Int(miss[i]), ".")))
+        end
+      end
     end
+  end
+
+  if l < 1
+    throw(KDomainError("Argument 'l' is not positive."))
   end
 
   f = open(infile, "r")
@@ -177,15 +191,14 @@ function readfasta(infile::AbstractString,
     throw(KFASTAError("Missing sequence identifier. Sequence: 1."))
   end
 
-  seqlen = zero(Int)
+  seqlen = 0
   seqref = zeros(UInt8, l)
   missseqref = falses(length(seqref))
 
   # support variables
   c = '\0'
-  L = zero(Int)
-  w = zero(Int)
-  u = zero(UInt8)
+  w = 0
+  u = 0x00
 
   # start reading the first sequence
   keepgoing = true
@@ -198,27 +211,24 @@ function readfasta(infile::AbstractString,
 
         # do we have enough space to store the first sequence?
         if w > length(seqref)
-          L = w + l
-          tmp = zeros(UInt8, L)
-          tmp[1:length(seqref)] = seqref
-          seqref = tmp
+          tmp = zeros(UInt8, w + l)
+          seqref = copy!(tmp, seqref)
 
           tmp = falses(length(seqref))
-          tmp[1:length(missseqref)] = missseqref
-          missseqref = tmp
+          missseqref = copy!(tmp, missseqref)
         end
 
         for c in lowercase(s)
           u = UInt8(c)
 
-          if !((u == 0x20) || (0x09 <= u <= 0x0d)) # skip blanks
+          if !((u == UInt8(32)) || (UInt8(9) <= u <= UInt8(13))) # skip blanks
             seqlen += 1
 
             if !in(u, miss)
               seqref[seqlen] = u
               missseqref[seqlen] = false
             else
-              seqref[seqlen] = 0x3f # '?'
+              seqref[seqlen] = UInt8('?')
               missseqref[seqlen] = true
             end
           end
@@ -237,7 +247,7 @@ function readfasta(infile::AbstractString,
   end
 
   # at least a sequence has been found
-  n = one(Int)
+  n = 1
 
   seqref = seqref[1:seqlen]
   missseqref = missseqref[1:seqlen]
@@ -252,12 +262,11 @@ function readfasta(infile::AbstractString,
     end
   end
 
-  curlen = zero(Int)
+  curlen = 0
 
   snp = falses(seqlen)
   seq = zeros(UInt8, seqlen)
   missseq = falses(seqlen)
-  j = falses(seqlen)
 
   for line in eachline(f)
     s = strip(line)::ASCIIString
@@ -267,7 +276,7 @@ function readfasta(infile::AbstractString,
         for c in lowercase(s)
           u = UInt8(c)
 
-          if !((u == 0x20) || (0x09 <= u <= 0x0d)) # skip blanks
+          if !((u == UInt8(32)) || (UInt8(9) <= u <= UInt8(13))) # skip blanks
             curlen += 1
 
             if curlen > seqlen
@@ -281,7 +290,7 @@ function readfasta(infile::AbstractString,
               seq[curlen] = u
               missseq[curlen] = false
             else
-              seq[curlen] = 0x3f # '?'
+              seq[curlen] = UInt8('?')
               missseq[curlen] = true
             end
           end
@@ -297,15 +306,19 @@ function readfasta(infile::AbstractString,
 
         n += 1
 
-        # maybe this sequence has a non-missing value where it is missing
-        # in the reference sequence
-        j[:] = missseqref & (!missseq)
-        seqref[j] = seq[j]
-        missseqref[j] = false
-
-        # to be compared, both values must be non-missing
-        j[:] = !(missseqref | missseq)
-        snp[j] = snp[j] | (seq[j] .!= seqref[j])
+        for b in 1:seqlen
+          if !missseq[b]
+            if missseqref[b]
+              # this sequence has a non-missing value where it is missing in the
+              # reference sequence
+              seqref[b] = seq[b]
+              missseqref[b] = false
+            else
+              # to be compared, both values must be non-missing
+              snp[b] = snp[b] || (seq[b] != seqref[b])
+            end
+          end
+        end
 
         if verbose && (n % verbosestep == 0)
           println(n, " sequences have been pre-processed.")
@@ -333,14 +346,21 @@ function readfasta(infile::AbstractString,
 
   n += 1
 
-  j[:] = missseqref & (!missseq)
-  seqref[j] = seq[j]
-  missseqref[j] = false
+  for b in 1:seqlen
+    if !missseq[b]
+      if missseqref[b]
+        # this sequence has a non-missing value where it is missing in the
+        # reference sequence
+        seqref[b] = seq[b]
+        missseqref[b] = false
+      else
+        # to be compared, both values must be non-missing
+        snp[b] = snp[b] || (seq[b] != seqref[b])
+      end
+    end
+  end
 
-  j[:] = !(missseqref | missseq)
-  snp[j] = snp[j] | (seq[j] .!= seqref[j])
-
-  m = sum(snp)::Int
+  m = sum(snp)
 
   if verbose
     println("Found ", n, " sequences: ", m, " SNPs out of ", seqlen,
@@ -359,13 +379,11 @@ function readfasta(infile::AbstractString,
   enc = zeros(UInt8, 127)
   enc[[ 63,  97,  99, 103, 116, 114, 110, 100, 113, 101, 104, 105, 108, 107,
        109, 102, 112, 115, 119, 121, 118, 111, 117,  98, 122, 106,  45,  42,
-       120]] = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-                0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13,
-                0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c] # 0:28
-  enc[miss] = 0x00
+       120]] = round(UInt8, 0:28)
+  enc[miss] = zero(UInt8)
 
   if dna
-    enc[117] = 0x04 # 'u'
+    enc[117] = UInt8(4) # 'u'
   end
 
   data = zeros(UInt8, m, n)
@@ -390,7 +408,7 @@ function readfasta(infile::AbstractString,
         for c in lowercase(s)
           u = UInt8(c)
 
-          if !((u == 0x20) || (0x09 <= u <= 0x0d)) # skip blanks
+          if !((u == UInt8(32)) || (UInt8(9) <= u <= UInt8(13))) # skip blanks
             i1 += 1
 
             if snp[i1]
@@ -421,8 +439,7 @@ function readfasta(infile::AbstractString,
 
   close(f)
 
-  ref = zeros(UInt8, seqlen)
-  ref[:] = 29
+  ref = fill(UInt8(29), seqlen)
   ref[!snp] = enc[seqref[!snp]]
 
   (data, id, ref)

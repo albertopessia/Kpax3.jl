@@ -9,6 +9,5 @@ include("data.jl")
 
 include("settings.jl")
 
-include("cluster.jl")
 include("support.jl")
 include("mcmc.jl")

@@ -3,12 +3,12 @@
 """
 Logposterior minus the log(normalizing constant)
 """
-function logposterior(R::Array{Int, 1},
-                      C::Array{UInt8, 2},
+function logposterior(R::Vector{Int},
+                      C::Matrix{UInt8},
                       priorR::PriorRowPartition,
                       priorC::PriorColPartition,
-                      k::Real,
-                      cluster::Array{KCluster, 1})
+                      k::Int)
+#=
   logp = logdPriorRow(priorR, R)
   s = zero(UInt8)
 
@@ -26,4 +26,5 @@ function logposterior(R::Array{Int, 1},
   end
 
   logp
+=#
 end

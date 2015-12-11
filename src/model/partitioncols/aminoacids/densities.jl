@@ -3,18 +3,15 @@
 """
 logp(C | R)
 """
-function logpriorC(C::Array{UInt8, 2},
-                   emptycluster::BitArray{1},
-                   logγ::Array{Float64, 1},
-                   logω::Array{Float64, 1})
-  cl = find(!emptycluster)
-  k = length(cl)
-
-  logp = zero(Float64)
+function logpriorC(C::Matrix{UInt8},
+                   cl::Vector{Int},
+                   logγ::Vector{Float64},
+                   logω::Vector{Float64})
+  logp = 0.0
 
   for b in 1:size(C, 2)
     logp += logγ[C[cl[1], b]] + logω[C[cl[1], b]]
-    for l in 2:k
+    for l in 2:length(cl)
       logp += logω[C[cl[l], b]]
     end
   end
@@ -25,38 +22,32 @@ end
 """
 logp(S | R, X)
 """
-function logcondpostS(S::Array{UInt8, 1},
-                      cluster::Array{KCluster, 1},
-                      emptycluster::BitArray{1},
-                      logγ::Array{Float64, 1},
-                      logω::Array{Float64, 1},
-                      A::Array{Float64, 2},
-                      B::Array{Float64, 2})
-  cl = find(!emptycluster)
-  k = length(cl)
-
-  m = length(S)
-
-  logp = zero(Float64)
+function logcondpostS(S::Vector{UInt8},
+                      cl::Vector{Int},
+                      v::Vector{Int},
+                      n1s::Matrix{Float64},
+                      logγ::Vector{Float64},
+                      logω::Vector{Float64},
+                      A::Matrix{Float64},
+                      B::Matrix{Float64})
+  logp = 0.0
   lγ = zeros(Float64, 3)
 
   tmp1 = zeros(Float64, 2)
-  tmp2 = zero(Float64)
+  tmp2 = 0.0
 
-  for b in 1:m
+  for b in 1:length(S)
     lγ[1] = logγ[1]
     lγ[2] = logγ[2]
     lγ[3] = logγ[3]
 
     for g in cl
-      lγ[1] += logmarglik(cluster[g].n1s[b], cluster[g].v, A[1, b], B[1, b])
-      lγ[2] += logmarglik(cluster[g].n1s[b], cluster[g].v, A[2, b], B[2, b])
+      lγ[1] += logmarglik(n1s[g, b], v[g], A[1, b], B[1, b])
+      lγ[2] += logmarglik(n1s[g, b], v[g], A[2, b], B[2, b])
 
-      tmp1[1] = logω[3] +
-                logmarglik(cluster[g].n1s[b], cluster[g].v, A[3, b], B[3, b])
+      tmp1[1] = logω[3] + logmarglik(n1s[g, b], v[g], A[3, b], B[3, b])
 
-      tmp1[2] = logω[4] +
-                logmarglik(cluster[g].n1s[b], cluster[g].v, A[4, b], B[4, b])
+      tmp1[2] = logω[4] + logmarglik(n1s[g, b], v[g], A[4, b], B[4, b])
 
       if tmp1[1] > tmp1[2]
         lγ[3] += tmp1[1] + log1p(exp(tmp1[2] - tmp1[1]))
@@ -82,41 +73,34 @@ end
 """
 Logp(C | R, X)
 """
-function logcondpostC(C::Array{UInt8, 2},
-                      cluster::Array{KCluster, 1},
-                      emptycluster::BitArray{1},
-                      logγ::Array{Float64, 1},
-                      logω::Array{Float64, 1},
-                      A::Array{Float64, 2},
-                      B::Array{Float64, 2})
-  cl = find(!emptycluster)
-  k = length(cl)
-
-  m = size(C, 2)
-
-  logp = zero(Float64)
-
+function logcondpostC(C::Matrix{UInt8},
+                      cl::Vector{Int},
+                      v::Vector{Int},
+                      n1s::Matrix{Float64},
+                      logγ::Vector{Float64},
+                      logω::Vector{Float64},
+                      A::Matrix{Float64},
+                      B::Matrix{Float64})
+  logp = 0.0
   lγ = zeros(Float64, 3)
 
-  logq = zeros(Float64, 4, k)
+  logq = zeros(Float64, 4, length(cl))
 
-  tmp1 = zeros(Float64, 2)
-  tmp2 = zero(Float64)
+  g = 0
+  tmp = 0.0
 
-  for b in 1:m
+  for b in 1:size(C, 2)
     lγ[1] = logγ[1]
     lγ[2] = logγ[2]
     lγ[3] = logγ[3]
 
-    for l in 1:k
+    for l in 1:length(cl)
       g = cl[l]
 
-      logq[1, l] = logmarglik(cluster[g].n1s[b], cluster[g].v, A[1, b], B[1, b])
-      logq[2, l] = logmarglik(cluster[g].n1s[b], cluster[g].v, A[2, b], B[2, b])
-      logq[3, l] = logω[3] +
-                   logmarglik(cluster[g].n1s[b], cluster[g].v, A[3, b], B[3, b])
-      logq[4, l] = logω[4] +
-                   logmarglik(cluster[g].n1s[b], cluster[g].v, A[4, b], B[4, b])
+      logq[1, l] = logmarglik(n1s[g, b], v[g], A[1, b], B[1, b])
+      logq[2, l] = logmarglik(n1s[g, b], v[g], A[2, b], B[2, b])
+      logq[3, l] = logω[3] + logmarglik(n1s[g, b], v[g], A[3, b], B[3, b])
+      logq[4, l] = logω[4] + logmarglik(n1s[g, b], v[g], A[4, b], B[4, b])
 
       lγ[1] += logq[1, l]
       lγ[2] += logq[2, l]

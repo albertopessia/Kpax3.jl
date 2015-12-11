@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-function randompermute!(x::Array{Int, 1},
+function randompermute!(x::Vector{Int},
                         S::Int)
   for i = S:-1:2
     j = rand(1:i)
@@ -14,14 +14,14 @@ function saveresults!(fp::IOStream,
                       mcmcobj::AminoAcidMCMC)
   write(fp, mcmcobj.k)
   write(fp, mcmcobj.R)
-  write(fp, vec(mcmcobj.C[!mcmcobj.emptycluster, :][1, :]))
+  #write(fp, vec(mcmcobj.C[!mcmcobj.emptycluster, :][1, :]))
 
   nothing
 end
 
-function splitmerge!(ij::Array{Int, 1},
-                     neighbours::Array{Int, 1},
-                     data::Array{UInt8, 2},
+function splitmerge!(ij::Vector{Int},
+                     neighbours::Vector{Int},
+                     data::Matrix{UInt8},
                      priorR::PriorRowPartition,
                      priorC::PriorColPartition,
                      settings::KSettings,
@@ -35,10 +35,14 @@ function splitmerge!(ij::Array{Int, 1},
   gj = mcmcobj.R[ij[2]]
 
   # total number of neighbours
-  S = zero(Int)
+  S = 0
+
+  # generic unit
+  u = 0
 
   if gi == gj
-    for u in mcmcobj.cluster[gi].unit[1:mcmcobj.cluster[gi].v]
+    for l in 1:mcmcobj.v[gi]
+      u = mcmcobj.unit[gi][l]
       if (u != ij[1]) && (u != ij[2])
         neighbours[S += 1] = u
       end
@@ -48,13 +52,15 @@ function splitmerge!(ij::Array{Int, 1},
 
     split!(ij, neighbours, S, data, priorR, priorC, settings, support, mcmcobj)
   else
-    for u in mcmcobj.cluster[gi].unit[1:mcmcobj.cluster[gi].v]
+    for l in 1:mcmcobj.v[gi]
+      u = mcmcobj.unit[gi][l]
       if u != ij[1]
         neighbours[S += 1] = u
       end
     end
 
-    for u in mcmcobj.cluster[gj].unit[1:mcmcobj.cluster[gj].v]
+    for l in 1:mcmcobj.v[gj]
+      u = mcmcobj.unit[gj][l]
       if u != ij[2]
         neighbours[S += 1] = u
       end
@@ -68,7 +74,7 @@ function splitmerge!(ij::Array{Int, 1},
   nothing
 end
 
-function kpax3mcmc!(data::Array{UInt8, 2},
+function kpax3mcmc!(data::Matrix{UInt8},
                     priorR::PriorRowPartition,
                     priorC::PriorColPartition,
                     settings::KSettings,

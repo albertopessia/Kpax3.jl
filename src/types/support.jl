@@ -1,9 +1,9 @@
 # This file is part of Kpax3. License is MIT.
 
 type KWeight
-  w::Array{Float64, 2}
-  c::Array{Float64, 1}
-  z::Array{Float64, 2}
+  c::Vector{Float64}
+  w::Matrix{Float64}
+  z::Matrix{Float64}
 end
 
 """
@@ -17,20 +17,45 @@ allocation of the same objects over and over again.
 
 """
 type KSupport
-  gi::KCluster
+  vi::Int
+  ni::Vector{Float64}
+  ui::Vector{Int}
   wi::KWeight
 
-  gj::KCluster
+  vj::Int
+  nj::Vector{Float64}
+  uj::Vector{Int}
   wj::KWeight
+
+  C::Matrix{UInt8}
+
+  filledcluster::BitArray{1}
+
+  v::Vector{Int}
+  n1s::Matrix{Float64}
+  unit::Vector{Vector{Int}}
 end
 
 function KSupport(m::Int,
-                  n::Int)
-  gi = KCluster(zero(Int), zeros(Int, 1), zeros(Float64, m))
-  wi = KWeight(zeros(Float64, 4, m), zeros(Float64, m), zeros(Float64, 4, m))
+                  n::Int,
+                  maxclust::Int,
+                  maxunit::Int)
+  vi = 0
+  ni = zeros(Float64, m)
+  ui = zeros(Int, maxunit)
+  wi = KWeight(zeros(Float64, m), zeros(Float64, 4, m), zeros(Float64, 4, m))
 
-  gj = KCluster(zero(Int), zeros(Int, 1), zeros(Float64, m))
-  wj = KWeight(zeros(Float64, 4, m), zeros(Float64, m), zeros(Float64, 4, m))
+  vj = 0
+  nj = zeros(Float64, m)
+  uj = zeros(Int, maxunit)
+  wj = KWeight(zeros(Float64, m), zeros(Float64, 4, m), zeros(Float64, 4, m))
 
-  KSupport(gi, wi, gj, wj)
+  C = zeros(UInt8, maxclust, m)
+
+  filledcluster = falses(maxclust)
+  v = zeros(Int, maxclust)
+  n1s = zeros(Float64, maxclust, m)
+  unit = Vector{Int}[zeros(Int, maxunit) for g in 1:maxclust]
+
+  KSupport(vi, ni, ui, wi, vj, nj, uj, wj, C, filledcluster, v, n1s, unit)
 end

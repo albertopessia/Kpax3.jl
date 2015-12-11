@@ -5,14 +5,14 @@ function logSplitRatioPriorRow(k::Real,
                                vj::Real,
                                ep::EwensPitmanPAUT)
   log(ep.θ + k * ep.α) + lgamma(vi - ep.α) + lgamma(vj - ep.α) -
-  log(1.0 - ep.α) - lgamma(vi + vj - ep.α)
+  log(1 - ep.α) - lgamma(vi + vj - ep.α)
 end
 
 function logSplitRatioPriorRow(k::Real,
                                vi::Real,
                                vj::Real,
                                ep::EwensPitmanPAZT)
-  log(k * ep.α) + lgamma(vi - ep.α) + lgamma(vj - ep.α) - log(1.0 - ep.α) -
+  log(k * ep.α) + lgamma(vi - ep.α) + lgamma(vj - ep.α) - log(1 - ep.α) -
   lgamma(vi + vj - ep.α)
 end
 

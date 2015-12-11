@@ -4,7 +4,7 @@
 remove "gaps" and non-positive values from the partition
 Example: [1, 1, 0, 1, -2, 4, 0] -> [3, 3, 2, 3, 1, 4, 2]
 """
-function initpartition(partition::Array{Int, 1},
+function initpartition(partition::Vector{Int},
                        n::Int)
   if length(partition) != n
     throw(KInputError(string("Length of argument 'partition' is not equal to ",
@@ -32,7 +32,7 @@ function initpartition(infile::AbstractString,
 end
 
 function initpartition(infile::AbstractString,
-                       id::Array{ASCIIString, 1})
+                       id::Vector{ASCIIString})
   d = readcsv(infile, ASCIIString)
 
   if size(d, 1) != length(id)
@@ -48,8 +48,10 @@ function initpartition(infile::AbstractString,
     idx = indexin([x::ASCIIString for x in d[:, 1]], id)
     partition = [parse(Int, x) for x in d[:, 2]]
 
-    if any(idx .== 0)
-      throw(KInputError(string("Missing ids in file ", infile, ".")))
+    for i in 1:length(idx)
+      if idx[i] == 0
+        throw(KInputError(string("Missing ids in file ", infile, ".")))
+      end
     end
 
     indexin(partition, sort(unique(partition)))[idx]

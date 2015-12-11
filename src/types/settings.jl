@@ -30,7 +30,7 @@ immutable KSettings
   op::StatsBase.WeightVec
   α::Float64
   θ::Float64
-  γ::Array{Float64, 1}
+  γ::Vector{Float64}
   r::Float64
   distws::Distributions.Beta
   parawm::Float64
@@ -44,10 +44,10 @@ function KSettings(outfile::AbstractString,
                    T::Int,
                    burnin::Int,
                    tstep::Int,
-                   op::Array{Float64, 1},
+                   op::Vector{Float64},
                    α::Float64,
                    θ::Float64,
-                   γ::Array{Float64, 1},
+                   γ::Vector{Float64},
                    r::Float64,
                    λs1::Float64,
                    λs2::Float64,
