@@ -39,11 +39,11 @@ sequence datasets. _Microbial Genomics_ **1**(1).
 <http://dx.doi.org/10.1099/mgen.0.000025>.
 """
 immutable NucleotideData <: KData
-  data::Array{UInt8, 2}
-  id::Array{ASCIIString, 1}
-  ref::Array{UInt8, 1}
-  val::Array{UInt8, 1}
-  key::Array{Int, 1}
+  data::Matrix{UInt8}
+  id::Vector{ASCIIString}
+  ref::Vector{UInt8}
+  val::Vector{UInt8}
+  key::Vector{Int}
 end
 
 # TODO: Julia v0.4
@@ -74,9 +74,9 @@ datasets
 * `verbosestep` Print a status report every `verbosestep` read sequences
 =#
 function NucleotideData(infile::ASCIIString;
-                        miss::Array{Char, 1}=['?', '*', '#', '-', 'b', 'd', 'h',
-                                              'k', 'm', 'n', 'r', 's', 'v', 'w',
-                                              'x', 'y'],
+                        miss::Vector{Char}=['?', '*', '#', '-', 'b', 'd', 'h',
+                                            'k', 'm', 'n', 'r', 's', 'v', 'w',
+                                            'x', 'y'],
                         l::Int=100000000,
                         verbose::Bool=false,
                         verbosestep::Int=500)
@@ -130,11 +130,11 @@ sequence datasets. _Microbial Genomics_ **1**(1).
 <http://dx.doi.org/10.1099/mgen.0.000025>.
 """
 immutable AminoAcidData <: KData
-  data::Array{UInt8, 2}
-  id::Array{ASCIIString, 1}
-  ref::Array{UInt8, 1}
-  val::Array{UInt8, 1}
-  key::Array{Int, 1}
+  data::Matrix{UInt8}
+  id::Vector{ASCIIString}
+  ref::Vector{UInt8}
+  val::Vector{UInt8}
+  key::Vector{Int}
 end
 
 #=
@@ -162,8 +162,8 @@ datasets
 * `verbosestep` Print a status report every `verbosestep` read sequences
 =#
 function AminoAcidData(infile::ASCIIString;
-                       miss::Array{Char, 1}=['?', '*', '#', '-',
-                                             'b', 'j', 'x', 'z'],
+                       miss::Vector{Char}=['?', '*', '#', '-',
+                                           'b', 'j', 'x', 'z'],
                        l::Int=100000000,
                        verbose::Bool=false,
                        verbosestep::Int=500)

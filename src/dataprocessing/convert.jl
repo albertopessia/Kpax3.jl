@@ -52,7 +52,7 @@ while
 
 `0` values (missing data) are discarded.
 """
-function categorical2binary{T <: Integer}(data::Array{T, 2},
+function categorical2binary{T <: Integer}(data::Matrix{T},
                                           maxval::T)
   # TOOPTIMIZE: traversing the matrices by row instead of by column
   n = size(data, 2)
@@ -64,9 +64,9 @@ function categorical2binary{T <: Integer}(data::Array{T, 2},
   # maximum value actually observed in data
   M = c = zero(T)
 
-  tmp1 = falses(Int(maxval))
+  tmp = falses(Int(maxval))
   for row in 1:size(data, 1)
-    tmp1[:] = false
+    fill!(tmp, false)
 
     for col in 1:size(data, 2)
       c = data[row, col]
@@ -76,8 +76,8 @@ function categorical2binary{T <: Integer}(data::Array{T, 2},
                                   "col) = (", row, ", ", col, ").")))
       end
 
-      if (c > 0) && !tmp1[c]
-        tmp1[c] = true
+      if (c > 0) && !tmp[c]
+        tmp[c] = true
         v[row] += 1
 
         if c > M
@@ -97,8 +97,8 @@ function categorical2binary{T <: Integer}(data::Array{T, 2},
   tmp1 = falses(Int(M))
   tmp2 = zeros(UInt8, M, n)
   for row in 1:size(data, 1)
-    tmp1[:] = false
-    tmp2[:] = false
+    fill!(tmp1, false)
+    fill!(tmp2, false)
 
     for col in 1:size(data, 2)
       c = data[row, col]

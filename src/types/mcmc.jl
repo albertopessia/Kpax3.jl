@@ -9,23 +9,17 @@ abstract KMCMC
 
 ## Fields
 
-* `R` Int vector representing row clusters
-* `C` UInt8 matrix representing column clusters
-* `op` MCMC operators probabilities
-* `t` Save the Markov Chain state `(R, C)` every `t` iterations
-* `outfile` Path to the output file
-* `k` Current number of clusters (number of distinct values in `R`)
-* `emptyclusters` Bool vector representing which clusters are empty
-* `v` Vector of cluster sizes
-* `counts` Matrix containing the total number of ones observed in each cluster
 """
 type AminoAcidMCMC <: KMCMC
-  R::Array{Int, 1}
-  C::Array{UInt8, 2}
+  R::Vector{Int}
+  C::Matrix{UInt8}
 
-  cluster::Array{KCluster, 1}
-  emptycluster::BitArray{1}
-  k::Int
+  filledcluster::BitArray{1}
+  cl::Vector{Int}
+
+  v::Vector{Int}
+  n1s::Matrix{Float64}
+  unit::Vector{Vector{Int}}
 
   logprR::Float64
   logprC::Float64
@@ -34,67 +28,72 @@ type AminoAcidMCMC <: KMCMC
   logpocC::Float64
 end
 
-function AminoAcidMCMC(data::Array{UInt8, 2},
-                       R::Array{Int, 1},
+function AminoAcidMCMC(data::Matrix{UInt8},
+                       R::Vector{Int},
                        priorR::PriorRowPartition,
                        priorC::AminoAcidPriorCol,
                        settings::KSettings)
   m, n = size(data)
-  k = maximum(R)
 
   C = zeros(UInt8, settings.maxclust, m)
 
-  emptycluster = trues(settings.maxclust)
-  emptycluster[unique(R)] = false
+  filledcluster = falses(settings.maxclust)
+  filledcluster[unique(R)] = true
 
-  cluster = [KCluster(0, zeros(Int, 1), zeros(Float64, 1))
-             for g in 1:settings.maxclust]
+  cl = find(filledcluster)
 
-  for g in 1:k
-    cluster[g].unit = zeros(Int, settings.maxunit)
-    cluster[g].n1s = zeros(Float64, m)
-  end
+  v = zeros(Int, settings.maxclust)
+  n1s = zeros(Float64, settings.maxclust, m)
+  unit = Vector{Int}[zeros(Int, settings.maxunit) for g in 1:settings.maxclust]
 
-  for i in 1:n
-    g = R[i]
-    cluster[g].v += 1
+  logprR = 0.0
+  logprC = 0.0
+  loglik = 0.0
 
-    if cluster[g].v > length(cluster[g].unit)
-      tmp = zeros(Int, min(cluster[g].v - 1 + settings.maxunit, n))
-      tmp[1:(cluster[g].v - 1)] = cluster[g].unit
-      cluster[g].unit = tmp
+  logpocC = 0.0
+
+  for a in 1:n
+    g = R[a]
+
+    if v[g] == length(unit[g])
+      tmp = zeros(Int, min(v[g] + settings.maxunit, n))
+      unit[g] = copy!(tmp, unit[g])
     end
 
-    cluster[g].unit[cluster[g].v] = i
+    v[g] += 1
+    unit[g][v[g]] = a
 
-    for j in 1:m
-      cluster[g].n1s[j] += Float64(data[j, i])
+    for b in 1:m
+      n1s[g, b] += Float64(data[b, a])
     end
   end
 
-  rpostpartitioncols!(C, cluster, emptycluster, priorC.logγ, priorC.logω,
-                      priorC.A, priorC.B)
+  rpostpartitioncols!(C, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
+                      priorC.B)
 
-  logprR = logdPriorRow(n, k, [Int(cluster[g].v) for g in 1:k], priorR)
-  logprC = logpriorC(C, emptycluster, priorC.logγ, priorC.logω)
-  loglik = zero(Float64)
+  logprR = logdPriorRow(n, length(cl), v, priorR)
+  logprC = logpriorC(C, cl, priorC.logγ, priorC.logω)
+  loglik = 0.0
 
-  for g in 1:k
-    # If array A has dimension (d_{1}, ..., d_{l}, ..., d_{L}), to access
-    # element A[i_{1}, ..., i_{l}, ..., i_{L}] it is possible to use the
-    # following linear index
-    # linearidx = i_{1} + d_{1} * (i_{2} - 1) + ... +
-    #           + (d_{1} * ... * d_{l-1}) * (i_{l} - 1) + ... +
-    #           + (d_{1} * ... * d_{L-1}) * (i_{L} - 1)
-    #
-    # A[i_{1}, ..., i_{l}, ..., i_{L}] == A[linearidx]
-    linearidx = [(C[g, b] + 4 * (b - 1))::Int for b in 1:m]
-    loglik += sum(logmarglik(cluster[g].n1s, cluster[g].v, priorC.A[linearidx],
-                             priorC.B[linearidx]))
+  # If array A has dimension (d_{1}, ..., d_{l}, ..., d_{L}), to access
+  # element A[i_{1}, ..., i_{l}, ..., i_{L}] it is possible to use the
+  # following linear index
+  # lidx = i_{1} + d_{1} * (i_{2} - 1) + ... +
+  #      + (d_{1} * ... * d_{l-1}) * (i_{l} - 1) + ... +
+  #      + (d_{1} * ... * d_{L-1}) * (i_{L} - 1)
+  #
+  # A[i_{1}, ..., i_{l}, ..., i_{L}] == A[lidx]
+  lidx = 0
+  for b in 1:m
+    for g in cl
+      lidx = C[g, b] + 4 * (b - 1)
+      loglik += logmarglik(n1s[g, b], v[g], priorC.A[lidx], priorC.B[lidx])
+    end
   end
 
-  logpocC = logcondpostC(C, cluster, emptycluster, priorC.logγ, priorC.logω,
-                         priorC.A, priorC.B)
+  logpocC = logcondpostC(C, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
+                         priorC.B)
 
-  AminoAcidMCMC(R, C, cluster, emptycluster, k, logprR, logprC, loglik, logpocC)
+  AminoAcidMCMC(R, C, filledcluster, cl, v, n1s, unit, logprR, logprC, loglik,
+                logpocC)
 end

@@ -1,106 +1,144 @@
 # This file is part of Kpax3. License is MIT.
 
-function logdPriorRow(p::Array{Int, 1},
+function logdPriorRow(p::Vector{Int},
                       ep::EwensPitmanPAUT)
   n = length(p)
-  k = 0.0
+  k = 0
 
-  m = zeros(Float64, n)
-  idx = falses(n)
+  m = zeros(Int, n)
 
-  for i in 1:n
-    m[p[i]] += 1.0
+  for a in 1:n
+    m[p[a]] += 1
 
-    if m[p[i]] == 1.0
-      idx[p[i]] = true
-      k += 1.0
+    if m[p[a]] == 1
+      k += 1
     end
   end
 
-  (k - 1) * log(ep.α) + lgamma(ep.θ / ep.α + k) - lgamma(ep.θ / ep.α + 1) +
-  lgamma(ep.θ + 1) - lgamma(ep.θ + n) + sum(lgamma(m[idx] - ep.α)) -
-  k * lgamma(1 - ep.α)
+  logp = (k - 1) * log(ep.α) + lgamma(ep.θ / ep.α + k) -
+         lgamma(ep.θ / ep.α + 1) + lgamma(ep.θ + 1) - lgamma(ep.θ + n) -
+         k * lgamma(1 - ep.α)
+
+  for a in 1:n
+    if m[a] > 0
+      logp += lgamma(m[a] - ep.α)
+    end
+  end
+
+  logp
 end
 
 function logdPriorRow(n::Int,
                       k::Int,
-                      m::Array{Int, 1},
+                      m::Vector{Int},
                       ep::EwensPitmanPAUT)
-  (k - 1) * log(ep.α) + lgamma(ep.θ / ep.α + k) - lgamma(ep.θ / ep.α + 1) +
-  lgamma(ep.θ + 1) - lgamma(ep.θ + n) + sum(lgamma(m[m .> 0] - ep.α)) -
-  k * lgamma(1 - ep.α)
-end
+  logp = (k - 1) * log(ep.α) + lgamma(ep.θ / ep.α + k) -
+         lgamma(ep.θ / ep.α + 1) + lgamma(ep.θ + 1) - lgamma(ep.θ + n) -
+         k * lgamma(1 - ep.α)
 
-function logdPriorRow(p::Array{Int, 1},
-                      ep::EwensPitmanPAZT)
-  n = length(p)
-  k = 0.0
-
-  m = zeros(Float64, n)
-  idx = falses(n)
-
-  for i in 1:n
-    m[p[i]] += 1.0
-
-    if m[p[i]] == 1.0
-      idx[p[i]] = true
-      k += 1.0
+  for a in 1:length(m)
+    if m[a] > 0
+      logp += lgamma(m[a] - ep.α)
     end
   end
 
-  (k - 1) * log(ep.α) + lgamma(k) - lgamma(n) + sum(lgamma(m[idx] - ep.α)) -
-  k * lgamma(1 - ep.α)
+  logp
+end
+
+function logdPriorRow(p::Vector{Int},
+                      ep::EwensPitmanPAZT)
+  n = length(p)
+  k = 0
+
+  m = zeros(Int, n)
+
+  for a in 1:n
+    m[p[a]] += 1
+
+    if m[p[a]] == 1
+      k += 1
+    end
+  end
+
+  logp += (k - 1) * log(ep.α) + lgamma(k) - lgamma(n) - k * lgamma(1 - ep.α)
+
+  for a in 1:n
+    if m[a] > 0
+      logp += lgamma(m[a] - ep.α)
+    end
+  end
+
+  logp
 end
 
 function logdPriorRow(n::Int,
                       k::Int,
-                      m::Array{Int, 1},
+                      m::Vector{Int},
                       ep::EwensPitmanPAZT)
-  (k - 1) * log(ep.α) + lgamma(k) - lgamma(n) + sum(lgamma(m[m .> 0] - ep.α)) -
-  k * lgamma(1 - ep.α)
-end
+  logp += (k - 1) * log(ep.α) + lgamma(k) - lgamma(n) - k * lgamma(1 - ep.α)
 
-function logdPriorRow(p::Array{Int, 1},
-                      ep::EwensPitmanZAPT)
-  n = length(p)
-  k = 0.0
-
-  m = zeros(Float64, n)
-  idx = falses(n)
-
-  for i in 1:n
-    m[p[i]] += 1.0
-
-    if m[p[i]] == 1.0
-      idx[p[i]] = true
-      k += 1.0
+  for a in 1:length(m)
+    if m[a] > 0
+      logp += lgamma(m[a] - ep.α)
     end
   end
 
-  k * log(ep.θ) + lgamma(ep.θ) - lgamma(ep.θ + n) + sum(lgamma(m[idx]))
+  logp
+end
+
+function logdPriorRow(p::Vector{Int},
+                      ep::EwensPitmanZAPT)
+  n = length(p)
+  k = 0
+
+  m = zeros(Int, n)
+
+  for a in 1:n
+    m[p[a]] += 1
+
+    if m[p[a]] == 1
+      k += 1
+    end
+  end
+
+  logp = k * log(ep.θ) + lgamma(ep.θ) - lgamma(ep.θ + n)
+
+  for a in 1:n
+    if m[a] > 0
+      logp += lgamma(m[a])
+    end
+  end
+
+  logp
 end
 
 function logdPriorRow(n::Int,
                       k::Int,
-                      m::Array{Int, 1},
+                      m::Vector{Int},
                       ep::EwensPitmanZAPT)
-  k * log(ep.θ) + lgamma(ep.θ) - lgamma(ep.θ + n) + sum(lgamma(m[m .> 0]))
+  logp = k * log(ep.θ) + lgamma(ep.θ) - lgamma(ep.θ + n)
+
+  for a in 1:length(m)
+    if m[a] > 0
+      logp += lgamma(m[a])
+    end
+  end
+
+  logp
 end
 
-function logdPriorRow(p::Array{Int, 1},
+function logdPriorRow(p::Vector{Int},
                       ep::EwensPitmanNAPT)
   n = length(p)
-  k = 0.0
+  k = 0
 
-  m = zeros(Float64, n)
-  idx = falses(n)
+  m = zeros(Int, n)
 
-  for i in 1:n
-    m[p[i]] += 1.0
+  for a in 1:n
+    m[p[a]] += 1
 
-    if m[p[i]] == 1.0
-      idx[p[i]] = true
-      k += 1.0
+    if m[p[a]] == 1
+      k += 1
     end
   end
 
@@ -111,7 +149,7 @@ end
 
 function logdPriorRow(n::Int,
                       k::Int,
-                      m::Array{Int, 1},
+                      m::Vector{Int},
                       ep::EwensPitmanNAPT)
   log(prod((1:(k - 1)) - ep.L) * ep.α^(k - 1) *
       exp(sum(lgamma(m[m .> 0] - ep.α)) - k * lgamma(1 - ep.α)) /
@@ -143,123 +181,14 @@ dPriorRow(ep, n, k, m)
 ## Examples
 
 """
-function dPriorRow(p::Array{Int, 1},
-                   ep::EwensPitmanPAUT)
-  n = length(p)
-  k = 0.0
-
-  m = zeros(Float64, n)
-  idx = falses(n)
-
-  for i in 1:n
-    m[p[i]] += 1.0
-
-    if m[p[i]] == 1.0
-      idx[p[i]] = true
-      k += 1.0
-    end
-  end
-
-  exp((k - 1) * log(ep.α) + lgamma(ep.θ / ep.α + k) - lgamma(ep.θ / ep.α + 1) +
-      lgamma(ep.θ + 1) - lgamma(ep.θ + n) + sum(lgamma(m[idx] - ep.α)) -
-      k * lgamma(1 - ep.α))
+function dPriorRow(p::Vector{Int},
+                   ep::EwensPitman)
+  exp(logdPriorRow(p, ep))
 end
 
 function dPriorRow(n::Int,
                    k::Int,
-                   m::Array{Int, 1},
-                   ep::EwensPitmanPAUT)
-  exp((k - 1) * log(ep.α) + lgamma(ep.θ / ep.α + k) - lgamma(ep.θ / ep.α + 1) +
-      lgamma(ep.θ + 1) - lgamma(ep.θ + n) + sum(lgamma(m[m .> 0] - ep.α)) -
-      k * lgamma(1 - ep.α))
-end
-
-function dPriorRow(p::Array{Int, 1},
-                   ep::EwensPitmanPAZT)
-  n = length(p)
-  k = 0.0
-
-  m = zeros(Float64, n)
-  idx = falses(n)
-
-  for i in 1:n
-    m[p[i]] += 1.0
-
-    if m[p[i]] == 1.0
-      idx[p[i]] = true
-      k += 1.0
-    end
-  end
-
-  exp((k - 1) * log(ep.α) + lgamma(k) - lgamma(n) + sum(lgamma(m[idx] - ep.α)) -
-      k * lgamma(1 - ep.α))
-end
-
-function dPriorRow(n::Int,
-                   k::Int,
-                   m::Array{Int, 1},
-                   ep::EwensPitmanPAZT)
-  exp((k - 1) * log(ep.α) + lgamma(k) - lgamma(n) +
-      sum(lgamma(m[m .> 0] - ep.α)) - k * lgamma(1 - ep.α))
-end
-
-function dPriorRow(p::Array{Int, 1},
-                   ep::EwensPitmanZAPT)
-  n = length(p)
-  k = 0.0
-
-  m = zeros(Float64, n)
-  idx = falses(n)
-
-  for i in 1:n
-    m[p[i]] += 1.0
-
-    if m[p[i]] == 1.0
-      idx[p[i]] = true
-      k += 1.0
-    end
-  end
-
-  exp(k * log(ep.θ) + lgamma(ep.θ) - lgamma(ep.θ + n) + sum(lgamma(m[idx])))
-end
-
-function dPriorRow(n::Int,
-                   k::Int,
-                   m::Array{Int, 1},
-                   ep::EwensPitmanZAPT)
-  exp(k * log(ep.θ) + lgamma(ep.θ) - lgamma(ep.θ + n) + sum(lgamma(m[m .> 0])))
-end
-
-# TODO: risk of integer overflow
-# Is it possible to avoid it without introducing rounding errors or numerical
-# instability?
-function dPriorRow(p::Array{Int, 1},
-                   ep::EwensPitmanNAPT)
-  n = length(p)
-  k = 0.0
-
-  m = zeros(Float64, n)
-  idx = falses(n)
-
-  for i in 1:n
-    m[p[i]] += 1.0
-
-    if m[p[i]] == 1.0
-      idx[p[i]] = true
-      k += 1.0
-    end
-  end
-
-  prod((1:(k - 1)) - ep.L) * ep.α^(k - 1) *
-  exp(sum(lgamma(m[m .> 0] - ep.α)) - k * lgamma(1 - ep.α)) /
-  prod((1:(n - 1)) - ep.α * ep.L)
-end
-
-function dPriorRow(n::Int,
-                   k::Int,
-                   m::Array{Int, 1},
-                   ep::EwensPitmanNAPT)
-  prod((1:(k - 1)) - ep.L) * ep.α^(k - 1) *
-  exp(sum(lgamma(m[m .> 0] - ep.α)) - k * lgamma(1 - ep.α)) /
-  prod((1:(n - 1)) - ep.α * ep.L)
+                   m::Vector{Int},
+                   ep::EwensPitman)
+  exp(logdPriorRow(n, k, m, ep))
 end

@@ -44,26 +44,51 @@ Value:
     To access the distance between units i and j (i < j), use
     d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
 =#
-function distnttn84(rawdata::Array{Uint8, 2},
-                    ref::Array{Uint8, 1})
-  n = size(rawdata, 2)
+function distnttn84(data::Matrix{Uint8},
+                    ref::Vector{Uint8})
+  m, n = size(data, 2)
   d = zeros(Float64, div(n * (n - 1), 2))
 
   gt = zeros(Float64, 4)
   gb = zeros(Float64, 4)
   gp = zeros(Float64, 6)
 
-  gt[1] = sum(ref .== 1)
-  gt[2] = sum(ref .== 2)
-  gt[3] = sum(ref .== 3)
-  gt[4] = sum(ref .== 4)
+  for b in 1:m
+    if ref[b] == 1
+      gt[1] += 1
+    elseif ref[b] == 2
+      gt[2] += 1
+    elseif ref[b] == 3
+      gt[3] += 1
+    elseif ref[b] == 4
+      gt[4] += 1
+    end
+  end
 
-  gb[1] = sum(rawdata .== 1) + n * gt[1]
-  gb[2] = sum(rawdata .== 2) + n * gt[2]
-  gb[3] = sum(rawdata .== 3) + n * gt[3]
-  gb[4] = sum(rawdata .== 4) + n * gt[4]
+  for a in 1:n
+    for b in 1:m
+      if data[b, a] == 1
+        gb[1] += 1
+      elseif data[b, a] == 2
+        gb[2] += 1
+      elseif data[b, a] == 3
+        gb[3] += 1
+      elseif data[b, a] == 4
+        gb[4] += 1
+      end
+    end
+  end
 
-  gb /= (gb[1] + gb[2] + gb[3] + gb[4])
+  gb[1] += n * gt[1]
+  gb[2] += n * gt[2]
+  gb[3] += n * gt[3]
+  gb[4] += n * gt[4]
+
+  tot = gb[1] + gb[2] + gb[3] + gb[4]
+  gb[1] /= tot
+  gb[2] /= tot
+  gb[3] /= tot
+  gb[4] /= tot
 
   h = gt[1] + gt[2] + gt[3] + gt[4]
 
@@ -76,10 +101,9 @@ function distnttn84(rawdata::Array{Uint8, 2},
 
   b1 = 1 - (gb[1]^2 + gb[2]^2 + gb[3]^2 + gb[4]^2)
 
-  idx = 1
+  idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx] = nttn84(rawdata[:, i], rawdata[:, j], h, gp, b1)
-    idx += 1
+    d[idx += 1] = nttn84(i, j, data, h, gp, b1)
   end
 
   d
@@ -118,34 +142,58 @@ Value:
     To access the distance between units i and j (i < j), use
     d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
 =#
-function distntmtn84(rawdata::Array{Uint8, 2},
-                     ref::Array{Uint8, 1})
-  n = size(rawdata, 2)
+function distntmtn84(data::Matrix{Uint8},
+                     ref::Vector{Uint8})
+  m, n = size(data, 2)
   d = zeros(Float64, div(n * (n - 1), 2))
 
   gt = zeros(Float64, 4)
   gb = zeros(Float64, 4)
 
-  gt[1] = sum(ref .== 1)
-  gt[2] = sum(ref .== 2)
-  gt[3] = sum(ref .== 3)
-  gt[4] = sum(ref .== 4)
+  for b in 1:m
+    if ref[b] == 1
+      gt[1] += 1
+    elseif ref[b] == 2
+      gt[2] += 1
+    elseif ref[b] == 3
+      gt[3] += 1
+    elseif ref[b] == 4
+      gt[4] += 1
+    end
+  end
 
-  gb[1] = sum(rawdata .== 1) + n * gt[1]
-  gb[2] = sum(rawdata .== 2) + n * gt[2]
-  gb[3] = sum(rawdata .== 3) + n * gt[3]
-  gb[4] = sum(rawdata .== 4) + n * gt[4]
+  for a in 1:n
+    for b in 1:m
+      if data[b, a] == 1
+        gb[1] += 1
+      elseif data[b, a] == 2
+        gb[2] += 1
+      elseif data[b, a] == 3
+        gb[3] += 1
+      elseif data[b, a] == 4
+        gb[4] += 1
+      end
+    end
+  end
 
-  gb /= (gb[1] + gb[2] + gb[3] + gb[4])
+  gb[1] += n * gt[1]
+  gb[2] += n * gt[2]
+  gb[3] += n * gt[3]
+  gb[4] += n * gt[4]
+
+  tot = gb[1] + gb[2] + gb[3] + gb[4]
+  gb[1] /= tot
+  gb[2] /= tot
+  gb[3] /= tot
+  gb[4] /= tot
 
   h = gt[1] + gt[2] + gt[3] + gt[4]
 
   b = 1 - (gb[1]^2 + gb[2]^2 + gb[3]^2 + gb[4]^2)
 
-  idx = 1
+  idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx] = ntmtn84(rawdata[:, i], rawdata[:, j], gt, h, b)
-    idx += 1
+    d[idx += 1] = ntmtn84(i, j, data, gt, h, b)
   end
 
   d
@@ -176,10 +224,11 @@ Value:
   d::Float64
     evolutionary distance between the two dna sequences
 =#
-function nttn84(x1::Array{Uint8, 1},
-                x2::Array{Uint8, 1},
+function nttn84(i::Int,
+                j::Int,
+                data::Matrix{Uint8},
                 n::Float64,
-                gp::Array{Float64, 1},
+                gp::Vector{Float64},
                 b1::Float64)
   d = -1.0
 
@@ -192,22 +241,28 @@ function nttn84(x1::Array{Uint8, 1},
   c = 0.0
   w = 0.0
 
-  for i in 1:length(x1)
-    if (0 < x1[i] < 5) && (0 < x2[i] < 5)
-      if x1[i] != x2[i]
+  x1 = 0x00
+  x2 = 0x00
+
+  for b in 1:size(data, 1)
+    x1 = data[b, i]
+    x2 = data[b, j]
+
+    if (0x00 < x1 < 0x05) && (0x00 < x2 < 0x05)
+      if x1 != x2
         p += 1
 
-        if     ((x1[i] == 1) && (x2[i] == 2)) || ((x1[i] == 2) && (x2[i] == 1))
+        if     ((x1 == 0x01) && (x2 == 0x02)) || ((x1 == 0x02) && (x2 == 0x01))
           pn[1] += 1
-        elseif ((x1[i] == 1) && (x2[i] == 3)) || ((x1[i] == 3) && (x2[i] == 1))
+        elseif ((x1 == 0x01) && (x2 == 0x03)) || ((x1 == 0x03) && (x2 == 0x01))
           pn[2] += 1
-        elseif ((x1[i] == 1) && (x2[i] == 4)) || ((x1[i] == 4) && (x2[i] == 1))
+        elseif ((x1 == 0x01) && (x2 == 0x04)) || ((x1 == 0x04) && (x2 == 0x01))
           pn[3] += 1
-        elseif ((x1[i] == 2) && (x2[i] == 3)) || ((x1[i] == 3) && (x2[i] == 2))
+        elseif ((x1 == 0x02) && (x2 == 0x03)) || ((x1 == 0x03) && (x2 == 0x02))
           pn[4] += 1
-        elseif ((x1[i] == 2) && (x2[i] == 4)) || ((x1[i] == 4) && (x2[i] == 2))
+        elseif ((x1 == 0x02) && (x2 == 0x04)) || ((x1 == 0x04) && (x2 == 0x02))
           pn[5] += 1
-        elseif ((x1[i] == 3) && (x2[i] == 4)) || ((x1[i] == 4) && (x2[i] == 3))
+        elseif ((x1 == 0x03) && (x2 == 0x04)) || ((x1 == 0x04) && (x2 == 0x03))
           pn[6] += 1
         end
       end
@@ -266,44 +321,47 @@ Value:
   d::Float64
     evolutionary distance between the two dna sequences
 =#
-function ntmtn84(x1::Array{Uint8, 1},
-                 x2::Array{Uint8, 1},
-                 gt::Array{Float64, 1},
+function ntmtn84(i::Int,
+                 j::Int,
+                 data::Matrix{Uint8},
+                 gt::Vector{Float64},
                  h::Float64,
                  b::Float64)
   d = -1.0
 
   # effective length, i.e. total number of sites at which both sequences have
   # non-missing values
-  n = zeros(Float64, 3)
-  n[:] = h
+  n = fill(h, 3)
 
   # proportion of different elements
   p = 0.0
 
   # proportion of observed nucleotides
-  g1 = zeros(Float64, 4)
-  g1[1:4] = gt
-
-  g2 = zeros(Float64, 4)
-  g2[1:4] = gt
+  g1 = copy(gt)
+  g2 = copy(gt)
 
   f = 0.0
   w = 0.0
 
-  for i in 1:length(x1)
-    if 0 < x1[i] < 5
-      g1[x1[i]] += 1
+  x1 = 0x00
+  x2 = 0x00
+
+  for b in 1:size(data, 1)
+    x1 = data[b, i]
+    x2 = data[b, j]
+
+    if 0x00 < x1 < 0x05
+      g1[x1] += 1
       n[1] += 1
     end
 
-    if 0 < x2[i] < 5
-      g2[x2[i]] += 1
+    if 0x00 < x2 < 0x05
+      g2[x2] += 1
       n[2] += 1
     end
 
-    if (0 < x1[i] < 5) && (0 < x2[i] < 5)
-      if x1[i] != x2[i]
+    if (0x00 < x1 < 0x05) && (0x00 < x2 < 0x05)
+      if x1 != x2
         p += 1
       end
 

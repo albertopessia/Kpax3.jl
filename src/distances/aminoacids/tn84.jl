@@ -45,9 +45,9 @@ Value:
     To access the distance between units i and j (i < j), use
     d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
 =#
-function distaamtn84(rawdata::Array{UInt8, 2},
-                     ref::Array{UInt8, 1})
-  m, n = size(rawdata)
+function distaamtn84(data::Matrix{UInt8},
+                     ref::Vector{UInt8})
+  m, n = size(data)
 
   d = zeros(Float64, div(n * (n - 1), 2))
 
@@ -59,7 +59,7 @@ function distaamtn84(rawdata::Array{UInt8, 2},
   end
 
   for col in 1:n, row in 1:m
-    tmpraw[rawdata[row, col] + 1] += 1
+    tmpraw[data[row, col] + 1] += 1
   end
 
   gt = tmpref[2:23]
@@ -83,7 +83,7 @@ function distaamtn84(rawdata::Array{UInt8, 2},
 
   idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = aamtn84(rawdata[:, i], rawdata[:, j], gt, st, b)
+    d[idx += 1] = aamtn84(i, j, data, gt, st, b)
   end
 
   d
@@ -115,44 +115,47 @@ Value:
   d::Float64
     evolutionary distance between the two protein sequences
 =#
-function aamtn84(x1::Array{UInt8, 1},
-                 x2::Array{UInt8, 1},
-                 gt::Array{Float64, 1},
+function aamtn84(i::Int,
+                 j::Int,
+                 data::Matrix{UInt8},
+                 gt::Vector{Float64},
                  h::Float64,
                  b::Float64)
   d = -1.0
 
   # effective length, i.e. total number of sites at which both sequences have
   # non-missing values
-  n = zeros(Float64, 3)
-  n[:] = h
+  n = fill(h, 3)
 
   # proportion of different elements
   p = 0.0
 
   # proportion of observed amino acids
-  g1 = zeros(Float64, 22)
-  g1[:] = gt
-
-  g2 = zeros(Float64, 22)
-  g2[:] = gt
+  g1 = copy(gt)
+  g2 = copy(gt)
 
   f = 0.0
   w = 0.0
 
-  for i in 1:length(x1)
-    if 0 < x1[i] < 23
-      g1[x1[i]] += 1
+  x1 = 0x00
+  x2 = 0x00
+
+  for b in 1:size(data, 1)
+    x1 = data[b, i]
+    x2 = data[b, j]
+
+    if UInt8(0) < x1 < UInt8(23)
+      g1[x1] += 1
       n[1] += 1
     end
 
-    if 0 < x2[i] < 23
-      g2[x2[i]] += 1
+    if UInt8(0) < x2 < UInt8(23)
+      g2[x2] += 1
       n[2] += 1
     end
 
-    if (0 < x1[i] < 23) && (0 < x2[i] < 23)
-      if x1[i] != x2[i]
+    if (UInt8(0) < x1 < UInt8(23)) && (UInt8(0) < x2 < UInt8(23))
+      if x1 != x2
         p += 1
       end
 
