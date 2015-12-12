@@ -68,11 +68,10 @@ function AminoAcidMCMC(data::Matrix{UInt8},
     end
   end
 
-  rpostpartitioncols!(C, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
-                      priorC.B)
+  logprC, logpocC = rpostpartitioncols!(C, cl, v, n1s, priorC.logγ, priorC.logω,
+                                        priorC.A, priorC.B)
 
   logprR = logdPriorRow(n, length(cl), v, priorR)
-  logprC = logpriorC(C, cl, priorC.logγ, priorC.logω)
   loglik = 0.0
 
   # If array A has dimension (d_{1}, ..., d_{l}, ..., d_{L}), to access
@@ -90,9 +89,6 @@ function AminoAcidMCMC(data::Matrix{UInt8},
       loglik += logmarglik(n1s[g, b], v[g], priorC.A[lidx], priorC.B[lidx])
     end
   end
-
-  logpocC = logcondpostC(C, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
-                         priorC.B)
 
   AminoAcidMCMC(R, C, filledcluster, cl, v, n1s, unit, logprR, logprC, loglik,
                 logpocC)

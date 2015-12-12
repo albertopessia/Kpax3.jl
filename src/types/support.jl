@@ -28,12 +28,6 @@ type KSupport
   wj::KWeight
 
   C::Matrix{UInt8}
-
-  filledcluster::BitArray{1}
-
-  v::Vector{Int}
-  n1s::Matrix{Float64}
-  unit::Vector{Vector{Int}}
 end
 
 function KSupport(m::Int,
@@ -52,10 +46,5 @@ function KSupport(m::Int,
 
   C = zeros(UInt8, maxclust, m)
 
-  filledcluster = falses(maxclust)
-  v = zeros(Int, maxclust)
-  n1s = zeros(Float64, maxclust, m)
-  unit = Vector{Int}[zeros(Int, maxunit) for g in 1:maxclust]
-
-  KSupport(vi, ni, ui, wi, vj, nj, uj, wj, C, filledcluster, v, n1s, unit)
+  KSupport(vi, ni, ui, wi, vj, nj, uj, wj, C)
 end

@@ -60,7 +60,7 @@ function logdPriorRow(p::Vector{Int},
     end
   end
 
-  logp += (k - 1) * log(ep.α) + lgamma(k) - lgamma(n) - k * lgamma(1 - ep.α)
+  logp = (k - 1) * log(ep.α) + lgamma(k) - lgamma(n) - k * lgamma(1 - ep.α)
 
   for a in 1:n
     if m[a] > 0
@@ -75,7 +75,7 @@ function logdPriorRow(n::Int,
                       k::Int,
                       m::Vector{Int},
                       ep::EwensPitmanPAZT)
-  logp += (k - 1) * log(ep.α) + lgamma(k) - lgamma(n) - k * lgamma(1 - ep.α)
+  logp = (k - 1) * log(ep.α) + lgamma(k) - lgamma(n) - k * lgamma(1 - ep.α)
 
   for a in 1:length(m)
     if m[a] > 0

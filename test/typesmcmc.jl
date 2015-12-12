@@ -1,5 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
+ε = 2.0e-14
+
 data = UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
              0x01 0x01 0x01 0x01 0x01 0x00;
              0x00 0x00 0x01 0x00 0x01 0x01;
@@ -53,7 +55,7 @@ r = log(0.001) / log(0.95)
 priorC = AminoAcidPriorCol(data, k, g, r)
 
 settings = KSettings("typesmcmc.bin", 1, 0, 1, [1.0; 0.0; 0.0], 0.0, 1.0,
-                     [0.6; 0.35; 0.05], 135.0, 1.0, 1.0, 5.0, 2, 1, true, 1)
+                     [0.6; 0.35; 0.05], 135.0, 1.0, 1.0, 5.0, 3, 1, true, 1)
 
 mcmcobj = AminoAcidMCMC(data, R, priorR, priorC, settings)
 
@@ -63,36 +65,21 @@ mcmcobj = AminoAcidMCMC(data, R, priorR, priorC, settings)
 @test size(mcmcobj.C, 1) == settings.maxclust
 @test size(mcmcobj.C, 2) == m
 
-@test isa(mcmcobj.cluster, Array{KCluster, 1})
-@test length(mcmcobj.cluster) == settings.maxclust
+@test mcmcobj.filledcluster == [true; true; false]
+@test mcmcobj.cl == [1; 2]
 
-linearidx = [(mcmcobj.C[1, b] + 4 * (b - 1))::Int for b in 1:m]
-
-@test mcmcobj.cluster[1].v == v[1]
-@test mcmcobj.cluster[1].unit == [1; 2; 3; 4; zeros(Int, settings.maxclust - 4)]
-@test mcmcobj.cluster[1].n1s == n1s[:, 1]
-@test mcmcobj.cluster[1].loglik == sum(logmarglik(n1s[:, 1], v[1],
-                                       priorC.A[linearidx],
-                                       priorC.B[linearidx]))
-
-linearidx = [(mcmcobj.C[2, b] + 4 * (b - 1))::Int for b in 1:m]
-
-@test mcmcobj.cluster[2].v == v[2]
-@test mcmcobj.cluster[2].unit == [5; 6; zeros(Int, settings.maxclust - 2)]
-@test mcmcobj.cluster[2].n1s == n1s[:, 2]
-@test mcmcobj.cluster[2].loglik == sum(logmarglik(n1s[:, 2], v[2],
-                                       priorC.A[linearidx],
-                                       priorC.B[linearidx]))
-
-@test mcmcobj.emptycluster == [false; false; trues(settings.maxclust - 2)]
-
-@test mcmcobj.k == k
+@test mcmcobj.v == [v; 0]
+@test mcmcobj.n1s == vcat(n1s', zeros(Float64, 1, m))
+@test mcmcobj.unit == Vector{Int}[sum(R .== g) > 0 ? find(R .== g) : [0]
+                                  for g in 1:3]
 
 @test mcmcobj.logprR == logdPriorRow(n, k, v, priorR)
-@test mcmcobj.logprC == logpriorC(mcmcobj.C, mcmcobj.emptycluster,
-                                  priorC.logγ, priorC.logω)
-
-@test mcmcobj.loglik == mcmcobj.cluster[1].loglik + mcmcobj.cluster[2].loglik
+@test_approx_eq_eps mcmcobj.logprC logpriorC(mcmcobj.C, mcmcobj.cl, priorC.logγ,
+                                             priorC.logω) eps()
+@test_approx_eq_eps mcmcobj.logpocC logcondpostC(mcmcobj.C, mcmcobj.cl,
+                                                 mcmcobj.v, mcmcobj.n1s,
+                                                 priorC.logγ, priorC.logω,
+                                                 priorC.A, priorC.B) eps()
 
 # is linearidx approach correct?
 C = UInt8[1 1 1 4 2 1 4 3 1 1 1 1 1 1 1 1 1 2;
@@ -148,3 +135,15 @@ loglik[2] = sum(logmarglik(n1s[:, 2], v[2], priorC.A[linearidx],
 
 @test loglik[1] == sum(logmarglik(n1s[:, 1], v[1], A[:, 1], B[:, 1]))
 @test loglik[2] == sum(logmarglik(n1s[:, 2], v[2], A[:, 2], B[:, 2]))
+
+loglik = zeros(Float64, 2)
+linearidx = [(mcmcobj.C[1, b] + 4 * (b - 1))::Int for b in 1:m]
+loglik[1] = sum(logmarglik(vec(mcmcobj.n1s[1, :]), mcmcobj.v[1],
+                           priorC.A[linearidx], priorC.B[linearidx]))
+
+linearidx = [(mcmcobj.C[2, b] + 4 * (b - 1))::Int for b in 1:m]
+loglik[2] = sum(logmarglik(vec(mcmcobj.n1s[2, :]), mcmcobj.v[2],
+                           priorC.A[linearidx], priorC.B[linearidx]))
+
+ll = loglik[1] + loglik[2]
+@test_approx_eq_eps mcmcobj.loglik ll ε

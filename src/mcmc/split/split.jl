@@ -105,11 +105,18 @@ function split!(ij::Vector{Int},
   end
 
   # new index of cluster hi
+  gi = 0
   idx = 0
   for g in mcmcobj.cl
     idx += 1
     support.filledcluster[idx] = true
-    support.v[idx] = g != hi ? mcmcobj.v[g] : support.vi
+
+    if g != hi
+      support.v[idx] = mcmcobj.v[g]
+    else
+      gi = idx
+      support.v[idx] = support.vi
+    end
   end
 
   support.filledcluster[k] = true
@@ -129,29 +136,34 @@ function split!(ij::Vector{Int},
 #  end
 #  copy!(support.unit[gi], 1, support.ui, 1, support.vi)
 
-  cl = collect(1:k)
-
-  rpostpartitioncols!(support.C, cl, support.v, support.n1s,
-                      priorC.logγ, logω, priorC.A, priorC.B)
+  logprC, logpocC = rpostpartitioncols!(support.C, k, hi, support.vi,
+                                        support.ni, support.vj, support.nj,
+                                        mcmcobj.cl, mcmcobj.v, mcmcobj.n1s,
+                                        priorC.logγ, logω, priorC.A, priorC.B)
 
   distwm = Distributions.Beta(settings.parawm + support.vi,
                               settings.parawm + support.vj)
 
   logsrR = logSplitRatioPriorRow(k, support.vi, support.vj, priorR)
-  logprC = logpriorC(support.C, cl, priorC.logγ, logω)
 
   lidx = 0
   loglik = 0.0
   for b in 1:size(data, 1)
-    for g in cl
-      lidx = support.C[g, b] + 4 * (b - 1)
-      loglik += logmarglik(support.n1s[g, b], support.v[g], priorC.A[lidx],
-                           priorC.B[lidx])
+    idx = 0
+    for g in mcmcobj.cl
+      lidx = support.C[idx += 1, b] + 4 * (b - 1)
+      if g != hi
+        loglik += logmarglik(mcmcobj.n1s[g, b], mcmcobj.v[g], priorC.A[lidx],
+                             priorC.B[lidx])
+      else
+        loglik += logmarglik(support.ni[b], support.vi, priorC.A[lidx],
+                             priorC.B[lidx])
+      end
     end
+    lidx = support.C[idx += 1, b] + 4 * (b - 1)
+    loglik += logmarglik(support.nj[b], support.vj, priorC.A[lidx],
+                         priorC.B[lidx])
   end
-
-  logpocC = logcondpostC(support.C, cl, support.v, support.n1s, priorC.logγ,
-                         logω, priorC.A, priorC.B)
 
   ratio = exp(logsrR +
               logprC - mcmcobj.logprC +
@@ -183,14 +195,11 @@ function split!(ij::Vector{Int},
       len = min(settings.maxclust,
                 size(data, 2) - length(mcmcobj.filledcluster)) - 1
 
-      mcmcobj.C = vcat(C, zeros(UInt8, len, m))
-
-      mcmcobj.cluster = vcat(cluster,
-                             [KCluster(0, zeros(Int, 1), zeros(Float64, 1))
-                              for g in 1:len])
-
-      mcmcobj.emptycluster = vcat(mcmcobj.emptycluster, false, trues(len))
-    end
+      mcmcobj.C = zeros(UInt8, k + len, size(data, 1))
+      mcmcobj.filledcluster = falses(k + len)
+      mcmcobj.v = zeros(Int, k + len)
+      mcmcobj.n1s = zeros(Float64, k + len, size(data, 1))
+     end
 
     # move units to their new cluster
     mcmcobj.R[support.gj.unit[1:support.gj.v]] = hj
