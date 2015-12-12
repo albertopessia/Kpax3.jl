@@ -1,5 +1,26 @@
 # This file is part of Kpax3. License is MIT.
 
-support = KSupport(18, 6)
+m = 18
+n = 6
+maxclust = 1
+maxunit = 1
 
-# TODO: propert testing
+support = KSupport(m, n, maxclust, maxunit)
+
+@test support.vi == 0
+@test support.ni == zeros(Float64, m)
+@test support.ui == zeros(Int, maxunit)
+@test isa(support.wi, KWeight)
+@test support.wi.c == zeros(Float64, m)
+@test support.wi.w == zeros(Float64, 4, m)
+@test support.wi.z == zeros(Float64, 4, m)
+
+@test support.vj == 0
+@test support.nj == zeros(Float64, m)
+@test support.uj == zeros(Int, maxunit)
+@test isa(support.wj, KWeight)
+@test support.wj.c == zeros(Float64, m)
+@test support.wj.w == zeros(Float64, 4, m)
+@test support.wj.z == zeros(Float64, 4, m)
+
+@test support.C == zeros(UInt8, maxclust, m)

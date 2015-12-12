@@ -95,7 +95,7 @@ maxclust = 100
 θ = 1.0
 priorR = EwensPitman(α, θ)
 
-R = [1; 1; 1; 1; 2; 2]
+R = [1; 1; 1; 2; 2; 3]
 
 k = maximum(R)
 
@@ -105,31 +105,24 @@ priorC = AminoAcidPriorCol(data, k, g, r)
 
 C = zeros(UInt8, maxclust, m)
 
-emptycluster = trues(maxclust)
-emptycluster[13] = false
-emptycluster[76] = false
+cl = [13; 42; 76]
 
-cl = find(!emptycluster)
+v = zeros(Int, maxclust)
+n1s = zeros(Float64, maxclust, m)
 
-cluster = [KCluster(0, zeros(Int, 1), zeros(Float64, 1))
-           for g in 1:maxclust]
+v[cl[1]] = sum(R .== 1)
+n1s[cl[1], :] = copy(sum(float(data[:, R .== 1]), 2))
 
-cluster[cl[1]].v = sum(R .== 1)
-cluster[cl[1]].unit = find(R .== 1)
-cluster[cl[1]].n1s = zeros(Float64, m)
-for a in cluster[cl[1]].unit
-  cluster[cl[1]].n1s += data[:, a]
-end
+v[cl[2]] = sum(R .== 2)
+n1s[cl[2], :] = copy(sum(float(data[:, R .== 2]), 2))
 
-cluster[cl[2]].v = sum(R .== 2)
-cluster[cl[2]].unit = find(R .== 2)
-cluster[cl[2]].n1s = zeros(Float64, m)
-for a in cluster[cl[2]].unit
-  cluster[cl[2]].n1s += data[:, a]
-end
+v[cl[3]] = sum(R .== 3)
+n1s[cl[3], :] = copy(sum(float(data[:, R .== 3]), 2))
 
-cs = ([0x01; 0x01], [0x02; 0x02], [0x03; 0x03],
-      [0x03; 0x04], [0x04; 0x03], [0x04; 0x04])
+cs = ([0x01; 0x01; 0x01], [0x02; 0x02; 0x02], [0x03; 0x03; 0x03],
+      [0x03; 0x03; 0x04], [0x03; 0x04; 0x03], [0x04; 0x03; 0x03],
+      [0x03; 0x04; 0x04], [0x04; 0x03; 0x04], [0x04; 0x04; 0x03],
+      [0x04; 0x04; 0x04])
 
 logp1 = zeros(Float64, (2 + 2^k)^m)
 logp2 = zeros(Float64, (2 + 2^k)^m)
@@ -143,10 +136,11 @@ for c1 in cs, c2 in cs, c3 in cs, c4 in cs
 
   C[cl[1], :] = tmp[1, :]
   C[cl[2], :] = tmp[2, :]
+  C[cl[3], :] = tmp[3, :]
 
-  logp1[l] = logpriorC(C, emptycluster, priorC.logγ, priorC.logω)
-  logp2[l] = logcondpostC(C, cluster, emptycluster, priorC.logγ, priorC.logω,
-                          priorC.A, priorC.B)
+  logp1[l] = logpriorC(C, cl, priorC.logγ, priorC.logω)
+  logp2[l] = logcondpostC(C, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
+                          priorC.B)
 end
 
 M = maximum(logp1)
@@ -165,8 +159,8 @@ l = 0
 for s1 in ss, s2 in ss, s3 in ss, s4 in ss
   l += 1
   S = [s1; s2; s3; s4]
-  logp3[l] = logcondpostS(S, cluster, emptycluster, priorC.logγ, priorC.logω,
-                          priorC.A, priorC.B)
+  logp3[l] = logcondpostS(S, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
+                          priorC.B)
 end
 
 M = maximum(logp3)
@@ -175,35 +169,37 @@ p3 = exp(M + log(sum(exp(logp3 - M))))
 @test_approx_eq_eps p3 1.0 ε
 
 # configuration with the highest posterior probability
-Ctest = [0x02 0x02 0x01 0x01; 0x02 0x02 0x01 0x01]
+Ctest = [0x01 0x01 0x01 0x01; 0x01 0x01 0x01 0x01; 0x01 0x01 0x01 0x01]
 N = 10000000
 Sp = zeros(Float64, 3, m)
 Cp = zero(Float64)
 
-trueSp = hcat([0.388699761141992228274943954602349549531936645507812500
-               0.404110835846893112766053945961175486445426940917968750
-               0.207189403011114547936699636920820921659469604492187500],
-              [0.388699761141992228274943954602349549531936645507812500
-               0.404110835846893112766053945961175486445426940917968750
-               0.207189403011114547936699636920820921659469604492187500],
-              [0.768636427030134350424361855402821674942970275878906250
-               0.231359112662804122795279226920683868229389190673828125
-               0.000004460307061158063528846090539659030582697596400977],
-              [0.745422155055375235122028243495151400566101074218750000
-               0.254411468571633325730374508566455915570259094238281250
-               0.000166376372991255944535152200280947454302804544568062])
+trueSp = hcat([0.650881788845628306283686015376588329672813415527343750000000
+               0.345392727967450685611083827097900211811065673828125000000000
+               0.003725483186920867158947734409935037547256797552108764648438],
+              [0.650854890249376039079720612789969891309738159179687500000000
+               0.345378454132021173172972794418456032872200012207031250000000
+               0.003766655618603001551975006933048462087754160165786743164063],
+              [0.746989515332794340451982861850410699844360351562500000000000
+               0.252948830588882567216302277302020229399204254150390625000000
+               0.000061654078322953418311511142313463551545282825827598571777],
+              [0.730447714956305782507683943549636751413345336914062500000000
+               0.266613264143007511197680514669627882540225982666015625000000
+               0.002939020900686826857917122168828427675180137157440185546875])
 
 for t in 1:N
-  rpostpartitioncols!(C, cluster, emptycluster, priorC.logγ, priorC.logω,
-                      priorC.A, priorC.B)
+  rpostpartitioncols!(C, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
+                      priorC.B)
 
   for b in 1:m
     if C[cl[1], b] == 0x01
       @test C[cl[2], b] == 0x01
+      @test C[cl[3], b] == 0x01
 
       Sp[1, b] += 1.0
     elseif C[cl[1], b] == 0x02
       @test C[cl[2], b] == 0x02
+      @test C[cl[3], b] == 0x02
 
       Sp[2, b] += 1.0
     else
@@ -220,8 +216,15 @@ Sp /= N
 Cp /= N
 
 C[cl, :] = Ctest
-p4 = exp(logcondpostC(C, cluster, emptycluster, priorC.logγ, priorC.logω,
-                      priorC.A, priorC.B))
+p4 = exp(logcondpostC(C, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
+                      priorC.B))
 
 @test maximum(abs(Sp - trueSp)) < 0.001
 @test_approx_eq_eps Cp p4 0.001
+
+logpr, logpo = rpostpartitioncols!(C, cl, v, n1s, priorC.logγ, priorC.logω,
+                                   priorC.A, priorC.B)
+
+@test_approx_eq_eps logpr logpriorC(C, cl, priorC.logγ, priorC.logω) ε
+@test_approx_eq_eps logpo logcondpostC(C, cl, v, n1s, priorC.logγ, priorC.logω,
+                                       priorC.A, priorC.B) ε

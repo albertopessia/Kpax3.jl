@@ -19,6 +19,22 @@ function logpriorC(C::Matrix{UInt8},
   logp
 end
 
+function logpriorC(C::Matrix{UInt8},
+                   k::Int,
+                   logγ::Vector{Float64},
+                   logω::Vector{Float64})
+  logp = 0.0
+
+  for b in 1:size(C, 2)
+    logp += logγ[C[1, b]] + logω[C[1, b]]
+    for g in 2:k
+      logp += logω[C[g, b]]
+    end
+  end
+
+  logp
+end
+
 """
 logp(S | R, X)
 """

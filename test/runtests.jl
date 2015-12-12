@@ -5,7 +5,6 @@ using Base.Test
 include("../src/boot.jl")
 
 tests = ["dataprocessing";
-         "typescluster";
          "typessettings";
          "typessupport";
          "typesdata";
