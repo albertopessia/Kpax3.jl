@@ -1,9 +1,9 @@
 # This file is part of Kpax3. License is MIT.
 
-function merge!(ij::Array{Int, 1},
-                neighbours::Array{Int, 1},
+function merge!(ij::Vector{Int},
+                neighbours::Vector{Int},
                 S::Int,
-                data::Array{UInt8, 2},
+                data::Matrix{UInt8},
                 priorR::PriorRowPartition,
                 priorC::PriorColPartition,
                 settings::KSettings,
@@ -12,32 +12,36 @@ function merge!(ij::Array{Int, 1},
   hi = mcmcobj.R[ij[1]]
   hj = mcmcobj.R[ij[2]]
 
-  m, n = size(data)
-
   # number of clusters after the merge
-  k = mcmcobj.k - 1
+  k = length(mcmcobj.cl) - 1
 
   logω = [0.0; 0.0; log(k - 1.0) - log(k); -log(k)]
 
-  initializeSupport!(support, ij[1], data[:, ij[1]], ij[2], data[:, ij[2]], S,
-                     priorC.logγ, logω, priorC.A, priorC.B)
+  initializeSupport!(support, ij[1], ij[2], S, k, data, priorC.logγ, logω,
+                     priorC.A, priorC.B)
 
-  distwm = Distributions.Beta(settings.parawm + mcmcobj.cluster[hi].v,
-                              settings.parawm + mcmcobj.cluster[hj].v)
+  distwm = Distributions.Beta(settings.parawm + mcmcobj.v[hi],
+                              settings.parawm + mcmcobj.v[hj])
 
   # sample a new proportion for cluster 'hi'
   wm = Distributions.rand(distwm)
 
   # logarithm of the product of sequential probabilities
-  lq = zero(Float64)
+  lq = 0.0
 
   # temporary / support variables
-  g = zero(Int)
-  u = zero(Int)
+  u = 0
+  M = 0.0
   lcp = zeros(Float64, 2)
   tmp = zeros(Float64, 4)
-  M = zero(Float64)
-  wv = zeros(Float64, 2)
+  z = 0.0
+  p = 0.0
+
+  vi = mcmcobj.v[hi] + mcmcobj.v[hj]
+  ni = zeros(Float64, size(data, 1))
+  for b in 1:size(data, 1)
+    ni[b] = mcmcobj.n1s[hi, b] + mcmcobj.n1s[hj, b]
+  end
 
   # allocate the neighbours of i and j
   for l in 1:S
@@ -45,23 +49,19 @@ function merge!(ij::Array{Int, 1},
     lcp[1] = lcp[2] = 0.0
 
     # compute p(x_{u} | x_{hi,1:(u-1)}) and p(x_{u} | x_{hj,1:(u-1)})
-    for b in 1:m
+    for b in 1:size(data, 1)
       support.wi.z[1, b] = support.wi.w[1, b] +
-                           logcondmarglik(data[b, u], support.gi.n1s[b],
-                                          support.gi.v, priorC.A[1, b],
-                                          priorC.B[1, b])
+                           logcondmarglik(data[b, u], support.ni[b], support.vi,
+                                          priorC.A[1, b], priorC.B[1, b])
       support.wi.z[2, b] = support.wi.w[2, b]+
-                           logcondmarglik(data[b, u], support.gi.n1s[b],
-                                          support.gi.v, priorC.A[2, b],
-                                          priorC.B[2, b])
+                           logcondmarglik(data[b, u], support.ni[b], support.vi,
+                                          priorC.A[2, b], priorC.B[2, b])
       support.wi.z[3, b] = support.wi.w[3, b]+
-                           logcondmarglik(data[b, u], support.gi.n1s[b],
-                                          support.gi.v, priorC.A[3, b],
-                                          priorC.B[3, b])
+                           logcondmarglik(data[b, u], support.ni[b], support.vi,
+                                          priorC.A[3, b], priorC.B[3, b])
       support.wi.z[4, b] = support.wi.w[4, b] +
-                           logcondmarglik(data[b, u], support.gi.n1s[b],
-                                          support.gi.v, priorC.A[4, b],
-                                          priorC.B[4, b])
+                           logcondmarglik(data[b, u], support.ni[b], support.vi,
+                                          priorC.A[4, b], priorC.B[4, b])
 
       tmp[1] = support.wi.z[1, b] - support.wi.c[b]
       tmp[2] = support.wi.z[2, b] - support.wi.c[b]
@@ -74,21 +74,17 @@ function merge!(ij::Array{Int, 1},
                         exp(tmp[3] - M) + exp(tmp[4] - M))
 
       support.wj.z[1, b] = support.wj.w[1, b] +
-                           logcondmarglik(data[b, u], support.gj.n1s[b],
-                                          support.gj.v, priorC.A[1, b],
-                                          priorC.B[1, b])
+                           logcondmarglik(data[b, u], support.nj[b], support.vj,
+                                          priorC.A[1, b], priorC.B[1, b])
       support.wj.z[2, b] = support.wj.w[2, b]+
-                           logcondmarglik(data[b, u], support.gj.n1s[b],
-                                          support.gj.v, priorC.A[2, b],
-                                          priorC.B[2, b])
+                           logcondmarglik(data[b, u], support.nj[b], support.vj,
+                                          priorC.A[2, b], priorC.B[2, b])
       support.wj.z[3, b] = support.wj.w[3, b]+
-                           logcondmarglik(data[b, u], support.gj.n1s[b],
-                                          support.gj.v, priorC.A[3, b],
-                                          priorC.B[3, b])
+                           logcondmarglik(data[b, u], support.nj[b], support.vj,
+                                          priorC.A[3, b], priorC.B[3, b])
       support.wj.z[4, b] = support.wj.w[4, b] +
-                           logcondmarglik(data[b, u], support.gj.n1s[b],
-                                          support.gj.v, priorC.A[4, b],
-                                          priorC.B[4, b])
+                           logcondmarglik(data[b, u], support.nj[b], support.vj,
+                                          priorC.A[4, b], priorC.B[4, b])
 
       tmp[1] = support.wj.z[1, b] - support.wj.c[b]
       tmp[2] = support.wj.z[2, b] - support.wj.c[b]
@@ -103,56 +99,19 @@ function merge!(ij::Array{Int, 1},
 
     # (w * p1) / (w * p1 + (1 - w) * p2) = 1 / (1 + ((1 - w) / w) * (p2 / p1))
     # => e^(-log(1 + e^(log(1 - w) - log(w) + log(p2) - log(p1))))
-    wv[1] = -log1p(exp(log(1.0 - wm) - log(wm) + lcp[2] - lcp[1]))
-    wv[2] =  log1p(-exp(wv[1]))
+    z = -log1p(exp(log(1.0 - wm) - log(wm) + lcp[2] - lcp[1]))
+    p = exp(z)
 
     if mcmcobj.R[u] == hi
-      updateSupport!(support.gi, support.wi, u, data[:, u])
-      lq += wv[1]
+      updateClusteri!(support, u, data)
+      lq += z
     else
-      updateSupport!(support.gj, support.wj, u, data[:, u])
-      lq += wv[2]
+      updateClusterj!(support, u, data)
+      lq += log1p(-p)
     end
   end
 
-  # sample a new candidate for C
-  emptycluster = falses(k)
-
-  ec = falses(length(mcmcobj.emptycluster))
-  ec[:] = mcmcobj.emptycluster
-  ec[hj] = true
-
-  C = zeros(UInt8, k, size(data, 1))
-
-  cluster = [KCluster(mcmcobj.cluster[g].v, mcmcobj.cluster[g].unit,
-                      mcmcobj.cluster[g].n1s) for g in find(!ec)]
-
-  # new index of cluster hi
-  gi = sum(!ec[1:hi])
-
-  cluster[gi].v = support.gi.v + support.gj.v
-  if length(cluster[gi].unit) > cluster[gi].v
-    cluster[gi].unit[1:cluster[gi].v] = vcat(ij, neighbours[1:S])
-  else
-    cluster[gi].unit = vcat(ij, neighbours[1:S])
-  end
-  cluster[gi].n1s = support.gi.n1s
-
-  rpostpartitioncols!(C, cluster, emptycluster, priorC.logγ, logω, priorC.A,
-                      priorC.B)
-
-  logsrR = logMergeRatioPriorRow(k, support.gi.v, support.gj.v, priorR)
-  logprC = logpriorC(C, emptycluster, priorC.logγ, logω)
-
-  loglik = zero(Float64)
-  for g in 1:k
-    linearidx = [(C[g, b] + 4 * (b - 1))::Int for b in 1:m]
-    loglik += sum(logmarglik(cluster[g].n1s, cluster[g].v, priorC.A[linearidx],
-                             priorC.B[linearidx]))
-  end
-
-  logpocC = logcondpostC(C, cluster, emptycluster, priorC.logγ, logω, priorC.A,
-                         priorC.B)
+  logprC, logpocC = mergesimc!(k, hi, logω, priorC, support, mcmcobj)
 
   ratio = exp(logsrR +
               logprC - mcmcobj.logprC +

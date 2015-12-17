@@ -42,28 +42,29 @@ function logcondpostS(S::Vector{UInt8},
                       cl::Vector{Int},
                       v::Vector{Int},
                       n1s::Matrix{Float64},
-                      logγ::Vector{Float64},
                       logω::Vector{Float64},
-                      A::Matrix{Float64},
-                      B::Matrix{Float64})
+                      priorC::AminoAcidPriorCol)
   logp = 0.0
+
   lγ = zeros(Float64, 3)
 
   tmp1 = zeros(Float64, 2)
   tmp2 = 0.0
 
   for b in 1:length(S)
-    lγ[1] = logγ[1]
-    lγ[2] = logγ[2]
-    lγ[3] = logγ[3]
+    lγ[1] = priorC.logγ[1]
+    lγ[2] = priorC.logγ[2]
+    lγ[3] = priorC.logγ[3]
 
     for g in cl
-      lγ[1] += logmarglik(n1s[g, b], v[g], A[1, b], B[1, b])
-      lγ[2] += logmarglik(n1s[g, b], v[g], A[2, b], B[2, b])
+      lγ[1] += logmarglik(n1s[g, b], v[g], priorC.A[1, b], priorC.B[1, b])
+      lγ[2] += logmarglik(n1s[g, b], v[g], priorC.A[2, b], priorC.B[2, b])
 
-      tmp1[1] = logω[3] + logmarglik(n1s[g, b], v[g], A[3, b], B[3, b])
+      tmp1[1] = logω[3] +
+                logmarglik(n1s[g, b], v[g], priorC.A[3, b], priorC.B[3, b])
 
-      tmp1[2] = logω[4] + logmarglik(n1s[g, b], v[g], A[4, b], B[4, b])
+      tmp1[2] = logω[4] +
+                logmarglik(n1s[g, b], v[g], priorC.A[4, b], priorC.B[4, b])
 
       if tmp1[1] > tmp1[2]
         lγ[3] += tmp1[1] + log1p(exp(tmp1[2] - tmp1[1]))
@@ -93,11 +94,10 @@ function logcondpostC(C::Matrix{UInt8},
                       cl::Vector{Int},
                       v::Vector{Int},
                       n1s::Matrix{Float64},
-                      logγ::Vector{Float64},
                       logω::Vector{Float64},
-                      A::Matrix{Float64},
-                      B::Matrix{Float64})
+                      priorC::AminoAcidPriorCol)
   logp = 0.0
+
   lγ = zeros(Float64, 3)
 
   logq = zeros(Float64, 4, length(cl))
@@ -106,17 +106,19 @@ function logcondpostC(C::Matrix{UInt8},
   tmp = 0.0
 
   for b in 1:size(C, 2)
-    lγ[1] = logγ[1]
-    lγ[2] = logγ[2]
-    lγ[3] = logγ[3]
+    lγ[1] = priorC.logγ[1]
+    lγ[2] = priorC.logγ[2]
+    lγ[3] = priorC.logγ[3]
 
     for l in 1:length(cl)
       g = cl[l]
 
-      logq[1, l] = logmarglik(n1s[g, b], v[g], A[1, b], B[1, b])
-      logq[2, l] = logmarglik(n1s[g, b], v[g], A[2, b], B[2, b])
-      logq[3, l] = logω[3] + logmarglik(n1s[g, b], v[g], A[3, b], B[3, b])
-      logq[4, l] = logω[4] + logmarglik(n1s[g, b], v[g], A[4, b], B[4, b])
+      logq[1, l] = logmarglik(n1s[g, b], v[g], priorC.A[1, b], priorC.B[1, b])
+      logq[2, l] = logmarglik(n1s[g, b], v[g], priorC.A[2, b], priorC.B[2, b])
+      logq[3, l] = logω[3] +
+                   logmarglik(n1s[g, b], v[g], priorC.A[3, b], priorC.B[3, b])
+      logq[4, l] = logω[4] +
+                   logmarglik(n1s[g, b], v[g], priorC.A[4, b], priorC.B[4, b])
 
       lγ[1] += logq[1, l]
       lγ[2] += logq[2, l]

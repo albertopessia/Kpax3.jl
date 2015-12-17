@@ -27,6 +27,8 @@ type KSupport
   uj::Vector{Int}
   wj::KWeight
 
+  tmp::Vector{Float64}
+
   C::Matrix{UInt8}
 end
 
@@ -44,7 +46,9 @@ function KSupport(m::Int,
   uj = zeros(Int, maxunit)
   wj = KWeight(zeros(Float64, m), zeros(Float64, 4, m), zeros(Float64, 4, m))
 
+  tmp = zeros(Float64, 4)
+
   C = zeros(UInt8, maxclust, m)
 
-  KSupport(vi, ni, ui, wi, vj, nj, uj, wj, C)
+  KSupport(vi, ni, ui, wi, vj, nj, uj, wj, tmp, C)
 end

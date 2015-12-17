@@ -68,8 +68,7 @@ function AminoAcidMCMC(data::Matrix{UInt8},
     end
   end
 
-  logprC, logpocC = rpostpartitioncols!(C, cl, v, n1s, priorC.logγ, priorC.logω,
-                                        priorC.A, priorC.B)
+  logprC, logpocC = rpostpartitioncols!(C, cl, v, n1s, priorC)
 
   logprR = logdPriorRow(n, length(cl), v, priorR)
   loglik = 0.0

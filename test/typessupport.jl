@@ -23,4 +23,6 @@ support = KSupport(m, n, maxclust, maxunit)
 @test support.wj.w == zeros(Float64, 4, m)
 @test support.wj.z == zeros(Float64, 4, m)
 
+@test support.tmp == zeros(Float64, 4)
+
 @test support.C == zeros(UInt8, maxclust, m)

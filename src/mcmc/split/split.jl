@@ -9,29 +9,24 @@ function split!(ij::Vector{Int},
                 settings::KSettings,
                 support::KSupport,
                 mcmcobj::AminoAcidMCMC)
-  hi = mcmcobj.R[ij[1]]
-
   # number of clusters after the split
   k = length(mcmcobj.cl) + 1
 
   logω = [0.0; 0.0; log(k - 1.0) - log(k); -log(k)]
 
-  initializeSupport!(support, ij[1], ij[2], S, k, data, priorC.logγ, logω,
-                     priorC.A, priorC.B)
+  initsupport!(ij, S, k, data, logω, priorC, support)
 
   # sample a new proportion for cluster 'hi'
-  ws = Distributions.rand(settings.distws)
+  w = Distributions.rand(settings.distws)
 
   # logarithm of the product of sequential probabilities
   lq = 0.0
 
   # temporary / support variables
-  g = 0
   u = 0
-  M = 0.0
   lcp = zeros(Float64, 2)
-  tmp = zeros(Float64, 4)
-  wv = zeros(Float64, 2)
+  z = 0.0
+  p = 0.0
 
   # allocate the neighbours of i and j
   for l in 1:S
@@ -40,130 +35,34 @@ function split!(ij::Vector{Int},
 
     # compute p(x_{u} | x_{hi,1:(u-1)}) and p(x_{u} | x_{hj,1:(u-1)})
     for b in 1:size(data, 1)
-      support.wi.z[1, b] = support.wi.w[1, b] +
-                           logcondmarglik(data[b, u], support.ni[b], support.vi,
-                                          priorC.A[1, b], priorC.B[1, b])
-      support.wi.z[2, b] = support.wi.w[2, b]+
-                           logcondmarglik(data[b, u], support.ni[b], support.vi,
-                                          priorC.A[2, b], priorC.B[2, b])
-      support.wi.z[3, b] = support.wi.w[3, b]+
-                           logcondmarglik(data[b, u], support.ni[b], support.vi,
-                                          priorC.A[3, b], priorC.B[3, b])
-      support.wi.z[4, b] = support.wi.w[4, b] +
-                           logcondmarglik(data[b, u], support.ni[b], support.vi,
-                                          priorC.A[4, b], priorC.B[4, b])
-
-      tmp[1] = support.wi.z[1, b] - support.wi.c[b]
-      tmp[2] = support.wi.z[2, b] - support.wi.c[b]
-      tmp[3] = support.wi.z[3, b] - support.wi.c[b]
-      tmp[4] = support.wi.z[4, b] - support.wi.c[b]
-
-      M = max(tmp[1], tmp[2], tmp[3], tmp[4])
-
-      lcp[1] += M + log(exp(tmp[1] - M) + exp(tmp[2] - M) +
-                        exp(tmp[3] - M) + exp(tmp[4] - M))
-
-      support.wj.z[1, b] = support.wj.w[1, b] +
-                           logcondmarglik(data[b, u], support.nj[b], support.vj,
-                                          priorC.A[1, b], priorC.B[1, b])
-      support.wj.z[2, b] = support.wj.w[2, b]+
-                           logcondmarglik(data[b, u], support.nj[b], support.vj,
-                                          priorC.A[2, b], priorC.B[2, b])
-      support.wj.z[3, b] = support.wj.w[3, b]+
-                           logcondmarglik(data[b, u], support.nj[b], support.vj,
-                                          priorC.A[3, b], priorC.B[3, b])
-      support.wj.z[4, b] = support.wj.w[4, b] +
-                           logcondmarglik(data[b, u], support.nj[b], support.vj,
-                                          priorC.A[4, b], priorC.B[4, b])
-
-      tmp[1] = support.wj.z[1, b] - support.wj.c[b]
-      tmp[2] = support.wj.z[2, b] - support.wj.c[b]
-      tmp[3] = support.wj.z[3, b] - support.wj.c[b]
-      tmp[4] = support.wj.z[4, b] - support.wj.c[b]
-
-      M = max(tmp[1], tmp[2], tmp[3], tmp[4])
-
-      lcp[2] += M + log(exp(tmp[1] - M) + exp(tmp[2] - M) +
-                        exp(tmp[3] - M) + exp(tmp[4] - M))
+      lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, support)
+      lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, support)
     end
 
     # (w * p1) / (w * p1 + (1 - w) * p2) = 1 / (1 + ((1 - w) / w) * (p2 / p1))
     # => e^(-log(1 + e^(log(1 - w) - log(w) + log(p2) - log(p1))))
-    wv[1] = exp(-log1p(exp(log(1 - ws) - log(ws) + lcp[2] - lcp[1])))
-    wv[2] = 1 - wv[1]
+    z = -log1p(exp(log(1 - w) - log(w) + lcp[2] - lcp[1]))
+    p = exp(z)
 
-    z = StatsBase.WeightVec(wv)
-    g = StatsBase.sample(1:2, z)
-
-    if g == 1
-      updateClusteri!(support, u, data)
+    if rand() <= p
+      updateclusteri!(u, data, support)
+      lq += z
     else
-      updateClusterj!(support, u, data)
-    end
-
-    lq += log(values(z)[g])
-  end
-
-  # new index of cluster hi
-  gi = 0
-  idx = 0
-  for g in mcmcobj.cl
-    idx += 1
-    support.filledcluster[idx] = true
-
-    if g != hi
-      support.v[idx] = mcmcobj.v[g]
-    else
-      gi = idx
-      support.v[idx] = support.vi
+      updateclusterj!(u, data, support)
+      lq += log1p(-p)
     end
   end
 
-  support.filledcluster[k] = true
-  support.v[k] = support.vj
+  hi = mcmcobj.R[ij[1]]
 
-  for b in 1:size(data, 1)
-    support.n1s[k, b] = support.nj[b]
-
-    idx = 0
-    for g in mcmcobj.cl
-      support.n1s[idx += 1, b] = g != hi ? mcmcobj.n1s[g, b] : support.ni[b]
-    end
-  end
-
-#  if length(support.unit[gi]) < support.vi
-#    support.unit[gi] = zeros(Int, support.vi)
-#  end
-#  copy!(support.unit[gi], 1, support.ui, 1, support.vi)
-
-  logprC, logpocC = rpostpartitioncols!(support.C, k, hi, support.vi,
-                                        support.ni, support.vj, support.nj,
-                                        mcmcobj.cl, mcmcobj.v, mcmcobj.n1s,
-                                        priorC.logγ, logω, priorC.A, priorC.B)
+  logprC, logpocC = simcsplit!(k, hi, logω, priorC, support, mcmcobj)
 
   distwm = Distributions.Beta(settings.parawm + support.vi,
                               settings.parawm + support.vj)
 
-  logsrR = logSplitRatioPriorRow(k, support.vi, support.vj, priorR)
+  logsrR = logpriorrowsplitratio(k, support.vi, support.vj, priorR)
 
-  lidx = 0
-  loglik = 0.0
-  for b in 1:size(data, 1)
-    idx = 0
-    for g in mcmcobj.cl
-      lidx = support.C[idx += 1, b] + 4 * (b - 1)
-      if g != hi
-        loglik += logmarglik(mcmcobj.n1s[g, b], mcmcobj.v[g], priorC.A[lidx],
-                             priorC.B[lidx])
-      else
-        loglik += logmarglik(support.ni[b], support.vi, priorC.A[lidx],
-                             priorC.B[lidx])
-      end
-    end
-    lidx = support.C[idx += 1, b] + 4 * (b - 1)
-    loglik += logmarglik(support.nj[b], support.vj, priorC.A[lidx],
-                         priorC.B[lidx])
-  end
+  loglik = logliksplit!(hi, priorC, support, mcmcobj)
 
   ratio = exp(logsrR +
               logprC - mcmcobj.logprC +
@@ -171,23 +70,39 @@ function split!(ij::Vector{Int},
               Distributions.logpdf(distwm, ws) + mcmcobj.logpocC -
               Distributions.logpdf(settings.distws, ws) - lq - logpocC)
 
-  if ratio >= 1.0 || (ratio > 0 &&
-                      Distributions.rand(Distributions.Bernoulli(ratio)) == 1)
+  if ratio >= 1 || (ratio > 0 &&
+                    Distributions.rand(Distributions.Bernoulli(ratio)) == 1)
     hj = findfirst(!mcmcobj.filledcluster)
 
     if hj > 0
-      mcmcobj.C[!mcmcobj.emptycluster, :] = C[1:mcmcobj.k, :]
-      mcmcobj.C[hj, :] = C[k, :]
+      idx = 0
+      for g in mcmcobj.cl
+        mcmcobj.C[g, 1] = support.C[idx += 1, 1]
 
-      mcmcobj.v[hi] = support.v[gi]
-      mcmcobj.unit[hi] = support.unit[gi]
-      mcmcobj.n1s[hi, :] = support.n1s[gi, :]
+        if g == hi
+          mcmcobj.v[g] = support.vi
+          mcmcobj.n1s[g, 1] = support.ni[1]
+          mcmcobj.unit[g] = copy(support.ui[1:support.vi])
+        end
+      end
 
-      mcmcobj.v[hj] = support.v[k]
-      mcmcobj.unit[hj] = support.unit[k]
-      mcmcobj.n1s[hj, :] = support.n1s[k, :]
+      mcmcobj.C[hj, 1] = support.C[idx += 1, 1]
 
       mcmcobj.filledcluster[hj] = true
+
+      mcmcobj.v[hj] = support.vj
+      mcmcobj.n1s[hj, 1] = support.nj[1]
+      mcmcobj.unit[hj] = copy(support.uj[1:support.vj])
+
+      for b in 2:size(data, 1)
+        idx = 0
+        for g in mcmcobj.cl
+          mcmcobj.C[g, b] = support.C[idx += 1, b]
+          mcmcobj.n1s[g, b] = g != hi ? mcmcobj.n1s[g, b] : support.ni[b]
+        end
+        mcmcobj.C[hj, b] = support.C[idx += 1, b]
+        mcmcobj.n1s[hj, b] = support.nj[b]
+      end
     else
       hj = k
 
@@ -195,18 +110,62 @@ function split!(ij::Vector{Int},
       len = min(settings.maxclust,
                 size(data, 2) - length(mcmcobj.filledcluster)) - 1
 
-      mcmcobj.C = zeros(UInt8, k + len, size(data, 1))
-      mcmcobj.filledcluster = falses(k + len)
-      mcmcobj.v = zeros(Int, k + len)
-      mcmcobj.n1s = zeros(Float64, k + len, size(data, 1))
-     end
+      C = zeros(UInt8, k + len, size(data, 1))
+
+      filledcluster = falses(k + len)
+      v = zeros(Int, k + len)
+      n1s = zeros(Float64, k + len, size(data, 1))
+      unit = Vector{Int}[zeros(Int, settings.maxunit) for g in 1:(k + len)]
+
+      idx = 0
+      for g in mcmcobj.cl
+        C[g, 1] = support.C[idx += 1, 1]
+
+        filledcluster[g] = true
+
+        if g != hi
+          v[g] = mcmcobj.v[g]
+          n1s[g, 1] = mcmcobj.n1s[g, 1]
+          unit[g] = copy(mcmcobj.unit[g])
+        else
+          v[g] = support.vi
+          n1s[g, 1] = support.ni[1]
+          unit[g] = copy(support.ui[1:support.vi])
+        end
+      end
+
+      C[k, 1] = support.C[idx += 1, 1]
+
+      filledcluster[k] = true
+
+      v[k] = support.vj
+      n1s[k, 1] = support.nj[1]
+      unit[k] = copy(support.uj[1:support.vj])
+
+      for b in 2:size(data, 1)
+        idx = 0
+        for g in mcmcobj.cl
+          C[g, b] = support.C[idx += 1, b]
+          n1s[g, b] = g != hi ? mcmcobj.n1s[g, b] : support.ni[b]
+        end
+        C[k, b] = support.C[idx += 1, b]
+        n1s[k, b] = support.nj[b]
+      end
+
+      mcmcobj.C = C
+
+      mcmcobj.filledcluster = filledcluster
+      mcmcobj.cl = find(mcmcobj.filledcluster)
+
+      mcmcobj.v = v
+      mcmcobj.n1s = n1s
+      mcmcobj.unit = unit
+    end
 
     # move units to their new cluster
-    mcmcobj.R[support.gj.unit[1:support.gj.v]] = hj
+    mcmcobj.R[support.uj[1:support.vj]] = hj
 
-    mcmcobj.k = k
-
-    mcmcobj.logprR = logdPriorRow(n, k, Int[cluster[g].v for g in 1:k], priorR)
+    mcmcobj.logprR += logsrR
     mcmcobj.logprC = logprC
     mcmcobj.loglik = loglik
 
