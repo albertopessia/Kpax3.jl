@@ -82,42 +82,25 @@ for k in 1:n
   end
 end
 
-data = UInt8[0x01 0x01 0x01 0x01 0x00 0x00;
-             0x00 0x00 0x00 0x00 0x01 0x01;
-             0x01 0x01 0x00 0x00 0x01 0x00;
+settings = KSettings("typesmcmc.bin", 1, 0, 1, [1.0; 0.0; 0.0], 0.0, 1.0,
+                     [0.6; 0.35; 0.05], 135.0, 1.0, 1.0, 5.0, 100, 1, true, 1)
+
+data = UInt8[0x01 0x01 0x01 0x00 0x00 0x00;
+             0x00 0x00 0x00 0x01 0x01 0x00;
+             0x01 0x01 0x00 0x01 0x00 0x01;
              0x01 0x01 0x00 0x00 0x00 0x00]
 
 m, n = size(data)
 
-maxclust = 100
+R = [13; 13; 13; 42; 42; 76]
+k = length(unique(R))
 
-α = 0.0
-θ = 1.0
-priorR = EwensPitman(α, θ)
+priorR = EwensPitman(settings.α, settings.θ)
+priorC = AminoAcidPriorCol(data, k, settings.γ, settings.r)
 
-R = [1; 1; 1; 2; 2; 3]
+no = AminoAcidMCMC(data, R, priorR, priorC, settings)
 
-k = maximum(R)
-
-g = [0.6; 0.35; 0.05]
-r = log(0.001) / log(0.95)
-priorC = AminoAcidPriorCol(data, k, g, r)
-
-C = zeros(UInt8, maxclust, m)
-
-cl = [13; 42; 76]
-
-v = zeros(Int, maxclust)
-n1s = zeros(Float64, maxclust, m)
-
-v[cl[1]] = sum(R .== 1)
-n1s[cl[1], :] = copy(sum(float(data[:, R .== 1]), 2))
-
-v[cl[2]] = sum(R .== 2)
-n1s[cl[2], :] = copy(sum(float(data[:, R .== 2]), 2))
-
-v[cl[3]] = sum(R .== 3)
-n1s[cl[3], :] = copy(sum(float(data[:, R .== 3]), 2))
+C = zeros(UInt8, settings.maxclust, m)
 
 cs = ([0x01; 0x01; 0x01], [0x02; 0x02; 0x02], [0x03; 0x03; 0x03],
       [0x03; 0x03; 0x04], [0x03; 0x04; 0x03], [0x04; 0x03; 0x03],
@@ -126,6 +109,7 @@ cs = ([0x01; 0x01; 0x01], [0x02; 0x02; 0x02], [0x03; 0x03; 0x03],
 
 logp1 = zeros(Float64, (2 + 2^k)^m)
 logp2 = zeros(Float64, (2 + 2^k)^m)
+logp3 = zeros(Float64, (2 + 2^k)^m)
 
 l = 0
 
@@ -134,13 +118,13 @@ for c1 in cs, c2 in cs, c3 in cs, c4 in cs
 
   tmp = hcat(c1, c2, c3, c4)
 
-  C[cl[1], :] = tmp[1, :]
-  C[cl[2], :] = tmp[2, :]
-  C[cl[3], :] = tmp[3, :]
+  no.C[no.cl[1], :] = C[1, :] = tmp[1, :]
+  no.C[no.cl[2], :] = C[2, :] = tmp[2, :]
+  no.C[no.cl[3], :] = C[3, :] = tmp[3, :]
 
-  logp1[l] = logpriorC(C, cl, priorC.logγ, priorC.logω)
-  logp2[l] = logcondpostC(C, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
-                          priorC.B)
+  logp1[l] = logpriorC(no.C, no.cl, priorC.logγ, priorC.logω)
+  logp2[l] = logpriorC(C, k, priorC.logγ, priorC.logω)
+  logp3[l] = logcondpostC(no.C, no.cl, no.v, no.n1s, priorC.logω, priorC)
 end
 
 M = maximum(logp1)
@@ -149,77 +133,177 @@ p1 = exp(M + log(sum(exp(logp1 - M))))
 M = maximum(logp2)
 p2 = exp(M + log(sum(exp(logp2 - M))))
 
+M = maximum(logp3)
+p3 = exp(M + log(sum(exp(logp3 - M))))
+
 @test_approx_eq_eps p1 1.0 ε
 @test_approx_eq_eps p2 1.0 ε
+@test_approx_eq_eps p3 1.0 ε
 
 ss = [0x01; 0x02; 0x03]
-logp3 = zeros(Float64, 3^m)
+logp4 = zeros(Float64, 3^m)
 l = 0
 
 for s1 in ss, s2 in ss, s3 in ss, s4 in ss
   l += 1
   S = [s1; s2; s3; s4]
-  logp3[l] = logcondpostS(S, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
-                          priorC.B)
+  logp4[l] = logcondpostS(S, no.cl, no.v, no.n1s, priorC.logω, priorC)
 end
 
-M = maximum(logp3)
-p3 = exp(M + log(sum(exp(logp3 - M))))
+M = maximum(logp4)
+p4 = exp(M + log(sum(exp(logp4 - M))))
 
-@test_approx_eq_eps p3 1.0 ε
+@test_approx_eq_eps p4 1.0 ε
 
-# configuration with the highest posterior probability
-Ctest = [0x01 0x01 0x01 0x01; 0x01 0x01 0x01 0x01; 0x01 0x01 0x01 0x01]
+# suppose we merge cluster 1 and cluster 2
+me = AminoAcidMCMC(data, R, priorR, priorC, settings)
+
+mergesupport = KSupport(size(data, 1), size(data, 2), settings.maxclust,
+                        size(data, 2))
+mergevi = me.v[me.cl[2]] + me.v[me.cl[3]]
+mergeni = vec(no.n1s[no.cl[2], :] + no.n1s[no.cl[3], :])
+mergelogω = [0.0; 0.0; log(k - 2.0) - log(k - 1.0); - log(k - 1.0)]
+
+# suppose we split cluster 1
+sp = AminoAcidMCMC(data, R, priorR, priorC, settings)
+
+splitsupport = KSupport(size(data, 1), size(data, 2), settings.maxclust,
+                        size(data, 2))
+splitsupport.vi = sp.v[sp.cl[1]] - 1
+splitsupport.ni = vec(sp.n1s[sp.cl[1], :]) - float(data[:, 3])
+splitsupport.vj = 1
+splitsupport.nj = float(data[:, 3])
+splitlogω = [0.0; 0.0; log(k) - log(k + 1.0); - log(k + 1.0)]
+
 N = 10000000
-Sp = zeros(Float64, 3, m)
-Cp = zero(Float64)
 
-trueSp = hcat([0.650881788845628306283686015376588329672813415527343750000000
-               0.345392727967450685611083827097900211811065673828125000000000
-               0.003725483186920867158947734409935037547256797552108764648438],
-              [0.650854890249376039079720612789969891309738159179687500000000
-               0.345378454132021173172972794418456032872200012207031250000000
-               0.003766655618603001551975006933048462087754160165786743164063],
-              [0.746989515332794340451982861850410699844360351562500000000000
-               0.252948830588882567216302277302020229399204254150390625000000
-               0.000061654078322953418311511142313463551545282825827598571777],
-              [0.730447714956305782507683943549636751413345336914062500000000
-               0.266613264143007511197680514669627882540225982666015625000000
-               0.002939020900686826857917122168828427675180137157440185546875])
+Sp1 = zeros(Float64, 3, m)
+Sp2 = zeros(Float64, 3, m)
+Sp3 = zeros(Float64, 3, m)
+
+Cp1 = zero(Float64)
+Cp2 = zero(Float64)
+Cp3 = zero(Float64)
+
+Ctest1 = [0x04 0x02 0x01 0x02; 0x03 0x02 0x01 0x02; 0x03 0x02 0x01 0x02]
+Ctest2 = [0x04 0x02 0x01 0x02; 0x03 0x02 0x01 0x02]
+Ctest3 = [0x02 0x03 0x01 0x02; 0x02 0x03 0x01 0x02; 0x02 0x04 0x01 0x02;
+          0x02 0x03 0x01 0x02]
+
+trueSp1 = hcat([0.400605930740163984626889259743620641529560089111328125000000
+                0.402853999936236828460778269800357520580291748046875000000000
+                0.196540069323599270179059317342762369662523269653320312500000],
+               [0.469929717191958196131906788650667294859886169433593750000000
+                0.356242671218090556362056986472452990710735321044921875000000
+                0.173827611589951080972582531103398650884628295898437500000000],
+               [0.469929717191958196131906788650667294859886169433593750000000
+                0.356242671218090556362056986472452990710735321044921875000000
+                0.173827611589951080972582531103398650884628295898437500000000],
+               [0.469929717191958196131906788650667294859886169433593750000000
+                0.356242671218090556362056986472452990710735321044921875000000
+                0.173827611589951080972582531103398650884628295898437500000000])
+
+trueSp2 = hcat([0.343752696310923200329057181079406291246414184570312500000000
+                0.424245751920919844657476005522767081856727600097656250000000
+                0.232001551768157093791344891542394179850816726684570312500000],
+               [0.669677308216207967106470277940388768911361694335937500000000
+                0.326357115550276744020408159485668875277042388916015625000000
+                0.003965576233515530867046461338532026275061070919036865234375],
+               [0.788118240486919030551860032574040815234184265136718750000000
+                0.211824568291017867327497015139670111238956451416015625000000
+                0.000057191222062770490303443282620321497233817353844642639160],
+               [0.669677308216207967106470277940388768911361694335937500000000
+                0.326357115550276744020408159485668875277042388916015625000000
+                0.003965576233515523928152557431303648627363145351409912109375])
+
+trueSp3 = hcat([0.508985055567922284325277360039763152599334716796875000000000
+                0.417055884580573688058535708478302694857120513916015625000000
+                0.073959059851504208027428433069871971383690834045410156250000],
+               [0.536479879971808792937792986776912584900856018066406250000000
+                0.304601180625598655371533141078543849289417266845703125000000
+                0.158918939402592551690673872144543565809726715087890625000000],
+               [0.714885118733651014899521669576643034815788269042968750000000
+                0.284126957067931396050397552244248799979686737060546875000000
+                0.000987924198417838416580449845127986918669193983078002929688],
+               [0.536479879971808792937792986776912584900856018066406250000000
+                0.304601180625598655371533141078543849289417266845703125000000
+                0.158918939402592440668371409628889523446559906005859375000000])
 
 for t in 1:N
-  rpostpartitioncols!(C, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
-                      priorC.B)
+  rpostpartitioncols!(no.C, no.cl, no.v, no.n1s, priorC)
+  simcmerge!(k - 1, me.cl[1], me.cl[2], mergevi, mergeni, mergelogω, priorC,
+             mergesupport, me)
+  simcsplit!(k + 1, sp.cl[1], splitlogω, priorC, splitsupport, sp)
 
   for b in 1:m
-    if C[cl[1], b] == 0x01
-      @test C[cl[2], b] == 0x01
-      @test C[cl[3], b] == 0x01
+    if no.C[no.cl[1], b] == 0x01
+      @test no.C[no.cl[2], b] == 0x01
+      @test no.C[no.cl[3], b] == 0x01
 
-      Sp[1, b] += 1.0
-    elseif C[cl[1], b] == 0x02
-      @test C[cl[2], b] == 0x02
-      @test C[cl[3], b] == 0x02
+      Sp1[1, b] += 1.0
+    elseif no.C[no.cl[1], b] == 0x02
+      @test no.C[no.cl[2], b] == 0x02
+      @test no.C[no.cl[3], b] == 0x02
 
-      Sp[2, b] += 1.0
+      Sp1[2, b] += 1.0
     else
-      Sp[3, b] += 1.0
+      Sp1[3, b] += 1.0
+    end
+
+    if mergesupport.C[1, b] == 0x01
+      @test mergesupport.C[2, b] == 0x01
+
+      Sp2[1, b] += 1.0
+    elseif mergesupport.C[1, b] == 0x02
+      @test mergesupport.C[2, b] == 0x02
+
+      Sp2[2, b] += 1.0
+    else
+      Sp2[3, b] += 1.0
+    end
+
+    if splitsupport.C[1, b] == 0x01
+      @test splitsupport.C[2, b] == 0x01
+      @test splitsupport.C[3, b] == 0x01
+      @test splitsupport.C[4, b] == 0x01
+
+      Sp3[1, b] += 1.0
+    elseif splitsupport.C[1, b] == 0x02
+      @test splitsupport.C[2, b] == 0x02
+      @test splitsupport.C[3, b] == 0x02
+      @test splitsupport.C[4, b] == 0x02
+
+      Sp3[2, b] += 1.0
+    else
+      Sp3[3, b] += 1.0
     end
   end
 
-  if C[cl, :] == Ctest
-    Cp += 1.0
+  if no.C[no.cl, :] == Ctest1
+    Cp1 += 1.0
+  end
+
+  if mergesupport.C[1:2, :] == Ctest2
+    Cp2 += 1.0
+  end
+
+  if splitsupport.C[1:4, :] == Ctest3
+    Cp3 += 1.0
   end
 end
 
-Sp /= N
-Cp /= N
+Sp1 /= N
+Sp2 /= N
+Sp3 /= N
 
-C[cl, :] = Ctest
-p4 = exp(logcondpostC(C, cl, v, n1s, priorC.logγ, priorC.logω, priorC.A,
-                      priorC.B))
+Cp1 /= N
+Cp2 /= N
+Cp3 /= N
 
-@test maximum(abs(Sp - trueSp)) < 0.001
+C[cl, :] = Ctest1
+p4 = exp(logcondpostC(C, no.cl, no.v, no.n1s, priorC.logω, priorC))
+
+@test maximum(abs(Sp1 - trueSp1)) < 0.001
 @test_approx_eq_eps Cp p4 0.001
 
 logpr, logpo = rpostpartitioncols!(C, cl, v, n1s, priorC.logγ, priorC.logω,
