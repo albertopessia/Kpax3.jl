@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-ε = 1.0e-15
+ε = 1.0e-14
 
 data = UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
              0x01 0x01 0x01 0x01 0x01 0x00;
@@ -155,7 +155,7 @@ p4 = exp(M + log(sum(exp(logp4 - M))))
 
 @test_approx_eq_eps p4 1.0 ε
 
-# suppose we merge cluster 1 and cluster 2
+# suppose we merge cluster 2 and cluster 3
 me = AminoAcidMCMC(data, R, priorR, priorC, settings)
 
 mergesupport = KSupport(size(data, 1), size(data, 2), settings.maxclust,
@@ -187,7 +187,7 @@ Cp3 = zero(Float64)
 
 Ctest1 = [0x04 0x02 0x01 0x02; 0x03 0x02 0x01 0x02; 0x03 0x02 0x01 0x02]
 Ctest2 = [0x04 0x02 0x01 0x02; 0x03 0x02 0x01 0x02]
-Ctest3 = [0x02 0x03 0x01 0x02; 0x02 0x03 0x01 0x02; 0x02 0x04 0x01 0x02;
+Ctest3 = [0x02 0x03 0x01 0x02; 0x02 0x04 0x01 0x02; 0x02 0x03 0x01 0x02;
           0x02 0x03 0x01 0x02]
 
 trueSp1 = hcat([0.400605930740163984626889259743620641529560089111328125000000
@@ -196,12 +196,12 @@ trueSp1 = hcat([0.400605930740163984626889259743620641529560089111328125000000
                [0.469929717191958196131906788650667294859886169433593750000000
                 0.356242671218090556362056986472452990710735321044921875000000
                 0.173827611589951080972582531103398650884628295898437500000000],
-               [0.469929717191958196131906788650667294859886169433593750000000
-                0.356242671218090556362056986472452990710735321044921875000000
-                0.173827611589951080972582531103398650884628295898437500000000],
-               [0.469929717191958196131906788650667294859886169433593750000000
-                0.356242671218090556362056986472452990710735321044921875000000
-                0.173827611589951080972582531103398650884628295898437500000000])
+               [0.796475635596692543849428602698026224970817565917968750000000
+                0.203499409017467020044378500642778817564249038696289062500000
+                0.000024955385840355038363580844618105913923500338569283485413],
+               [0.730452799237661709597091430623549968004226684570312500000000
+                0.266615119904645703208245777204865589737892150878906250000000
+                0.002932080857692189075625055494356274721212685108184814453125])
 
 trueSp2 = hcat([0.343752696310923200329057181079406291246414184570312500000000
                 0.424245751920919844657476005522767081856727600097656250000000
@@ -229,9 +229,13 @@ trueSp3 = hcat([0.508985055567922284325277360039763152599334716796875000000000
                 0.304601180625598655371533141078543849289417266845703125000000
                 0.158918939402592440668371409628889523446559906005859375000000])
 
+trueCp1 = 0.0148123191595730674396946824344922788441181182861328125
+trueCp2 = 0.0194745023689023473434378530555477482266724109649658203125
+trueCp3 = 0.01435615231057929368219117094440662185661494731903076171875
+
 for t in 1:N
   rpostpartitioncols!(no.C, no.cl, no.v, no.n1s, priorC)
-  simcmerge!(k - 1, me.cl[1], me.cl[2], mergevi, mergeni, mergelogω, priorC,
+  simcmerge!(k - 1, me.cl[2], me.cl[3], mergevi, mergeni, mergelogω, priorC,
              mergesupport, me)
   simcsplit!(k + 1, sp.cl[1], splitlogω, priorC, splitsupport, sp)
 
@@ -279,15 +283,15 @@ for t in 1:N
     end
   end
 
-  if no.C[no.cl, :] == Ctest1
+  if all(no.C[no.cl, :] .== Ctest1)
     Cp1 += 1.0
   end
 
-  if mergesupport.C[1:2, :] == Ctest2
+  if all(mergesupport.C[1:2, :] .== Ctest2)
     Cp2 += 1.0
   end
 
-  if splitsupport.C[1:4, :] == Ctest3
+  if all(splitsupport.C[1:4, :] .== Ctest3)
     Cp3 += 1.0
   end
 end
@@ -296,19 +300,49 @@ Sp1 /= N
 Sp2 /= N
 Sp3 /= N
 
+@test maximum(abs(Sp1 - trueSp1)) < 0.0005
+@test maximum(abs(Sp2 - trueSp2)) < 0.0005
+@test maximum(abs(Sp3 - trueSp3)) < 0.0005
+
 Cp1 /= N
 Cp2 /= N
 Cp3 /= N
 
-C[cl, :] = Ctest1
-p4 = exp(logcondpostC(C, no.cl, no.v, no.n1s, priorC.logω, priorC))
+@test_approx_eq_eps Cp1 trueCp1 0.0005
+@test_approx_eq_eps Cp2 trueCp2 0.0005
+@test_approx_eq_eps Cp3 trueCp3 0.0005
 
-@test maximum(abs(Sp1 - trueSp1)) < 0.001
-@test_approx_eq_eps Cp p4 0.001
+C = copy(no.C)
+cl = copy(no.cl)
+v = copy(no.v)
+n1s = copy(no.n1s)
+logω = copy(priorC.logω)
 
-logpr, logpo = rpostpartitioncols!(C, cl, v, n1s, priorC.logγ, priorC.logω,
-                                   priorC.A, priorC.B)
+logpr, logpo = rpostpartitioncols!(C, cl, v, n1s, priorC)
 
-@test_approx_eq_eps logpr logpriorC(C, cl, priorC.logγ, priorC.logω) ε
-@test_approx_eq_eps logpo logcondpostC(C, cl, v, n1s, priorC.logγ, priorC.logω,
-                                       priorC.A, priorC.B) ε
+@test_approx_eq_eps logpr logpriorC(C, cl, priorC.logγ, logω) ε
+@test_approx_eq_eps logpo logcondpostC(C, cl, v, n1s, logω, priorC) ε
+
+cl = [1; 2]
+v = [3; 3]
+n1s = [3.0  0.0  2.0  2.0; 0.0  2.0  2.0  0.0]
+logω = copy(mergelogω)
+
+logpr, logpo = simcmerge!(k - 1, me.cl[2], me.cl[3], mergevi, mergeni, logω,
+                          priorC, mergesupport, me)
+
+@test_approx_eq_eps logpr logpriorC(mergesupport.C, cl, priorC.logγ, logω) ε
+@test_approx_eq_eps logpo logcondpostC(mergesupport.C, cl, v, n1s, logω,
+                                       priorC) ε
+
+cl = [1; 2; 3; 4]
+v = [2; 2; 1; 1]
+n1s = [2.0  0.0  2.0  2.0; 0.0  2.0  1.0  0.0; 0.0  0.0  1.0  0.0;
+       1.0  0.0  0.0  0.0]
+logω = copy(splitlogω)
+
+logpr, logpo = simcsplit!(k + 1, sp.cl[1], logω, priorC, splitsupport, sp)
+
+@test_approx_eq_eps logpr logpriorC(splitsupport.C, cl, priorC.logγ, logω) ε
+@test_approx_eq_eps logpo logcondpostC(splitsupport.C, cl, v, n1s, logω,
+                                       priorC) ε
