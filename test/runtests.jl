@@ -14,6 +14,7 @@ tests = ["dataprocessing";
          "likelihoods";
          "partitioncols";
          "partitionrows";
+         "mcmcfunctions";
          "posterior"]
 
 for t in tests

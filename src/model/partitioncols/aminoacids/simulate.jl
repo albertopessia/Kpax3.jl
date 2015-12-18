@@ -7,12 +7,12 @@ function samplenoise!(C::Matrix{UInt8},
                       x::Float64,
                       logγ::Vector{Float64},
                       logω::Vector{Float64})
+  logp[1] += logγ[1]
+  logp[2] += x
+
   for g in cl
     C[g, b] = 0x01
   end
-
-  logp[1] += logγ[1] + logω[1]
-  logp[2] += x
 
   nothing
 end
@@ -24,24 +24,27 @@ function sampleweaksignal!(C::Matrix{UInt8},
                            x::Float64,
                            logγ::Vector{Float64},
                            logω::Vector{Float64})
+  logp[1] += logγ[2]
+  logp[2] += x
+
   for g in cl
     C[g, b] = 0x02
   end
-
-  logp[1] += logγ[2] + logω[2]
-  logp[2] += x
 
   nothing
 end
 
 function samplestrongsignal!(C::Matrix{UInt8},
                              logp::Vector{Float64},
-                             cl,
+                             cl::Vector{Int},
                              b::Int,
                              x::Float64,
                              logγ::Vector{Float64},
                              logω::Vector{Float64},
                              lω::Matrix{Float64})
+  logp[1] += logγ[3]
+  logp[2] += x
+
   for l in 1:length(cl)
     if rand() <= exp(lω[1, l])
       C[cl[l], b] = 0x03
@@ -56,8 +59,33 @@ function samplestrongsignal!(C::Matrix{UInt8},
     end
   end
 
+  nothing
+end
+
+function samplestrongsignal!(C::Matrix{UInt8},
+                             logp::Vector{Float64},
+                             cl::UnitRange{Int},
+                             b::Int,
+                             x::Float64,
+                             logγ::Vector{Float64},
+                             logω::Vector{Float64},
+                             lω::Matrix{Float64})
   logp[1] += logγ[3]
   logp[2] += x
+
+  for l in cl
+    if rand() <= exp(lω[1, l])
+      C[l, b] = 0x03
+
+      logp[1] += logω[3]
+      logp[2] += lω[1, l]
+    else
+      C[l, b] = 0x04
+
+      logp[1] += logω[4]
+      logp[2] += lω[2, l]
+    end
+  end
 
   nothing
 end
@@ -84,15 +112,15 @@ function computeclusterlogprobs!(logq::Matrix{Float64},
 
     lγ[3] += logq[3, l] + tmp
 
-    lω[1, l] = exp(-tmp)
-    lω[2, l] = exp(logq[4, l] - logq[3, l] - tmp)
+    lω[1, l] = -tmp
+    lω[2, l] = logq[4, l] - logq[3, l] - tmp
   else
     tmp = log1p(exp(logq[3, l] - logq[4, l]))
 
     lγ[3] += logq[4, l] + tmp
 
-    lω[1, l] = exp(logq[3, l] - logq[4, l] - tmp)
-    lω[2, l] = exp(-tmp)
+    lω[1, l] = logq[3, l] - logq[4, l] - tmp
+    lω[2, l] = -tmp
   end
 
   nothing
@@ -238,14 +266,13 @@ function simcsplit!(k::Int,
       if g != hi
         computeclusterlogprobs!(logq, lγ, lω, b, l, mcmcobj.n1s[g, b],
                                 mcmcobj.v[g], logω, priorC)
-        l += 1
+      else
+        computeclusterlogprobs!(logq, lγ, lω, b, l, support.ni[b], support.vi,
+                                logω, priorC)
       end
+
+      l += 1
     end
-
-    computeclusterlogprobs!(logq, lγ, lω, b, l, support.ni[b], support.vi, logω,
-                            priorC)
-
-    l += 1
 
     computeclusterlogprobs!(logq, lγ, lω, b, l, support.nj[b], support.vj, logω,
                             priorC)
