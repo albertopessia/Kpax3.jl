@@ -3,10 +3,7 @@
 abstract PriorColPartition
 
 type AminoAcidPriorCol <: PriorColPartition
-  γ::Vector{Float64}
   logγ::Vector{Float64}
-
-  ω::Vector{Float64}
   logω::Vector{Float64}
 
   A::Matrix{Float64}
@@ -49,7 +46,6 @@ function AminoAcidPriorCol(data::Matrix{UInt8},
   # no NaN can be produced even if some γ[i] are zero
   logγ = [log(γ[1]); log(γ[2]); log(γ[3]); log(γ[3])]
 
-  ω = [1.0; 1.0; (k - 1.0) / k; 1.0 / k]
   logω = [0.0; 0.0; log(k - 1.0) - log(k); -log(k)]
 
   n1s = zeros(Float64, m)
@@ -102,5 +98,5 @@ function AminoAcidPriorCol(data::Matrix{UInt8},
     end
   end
 
-  AminoAcidPriorCol(γ, logγ, ω, logω, A, B)
+  AminoAcidPriorCol(logγ, logω, A, B)
 end

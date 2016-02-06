@@ -2,7 +2,9 @@
 
 include("functions.jl")
 
-include("merge/merge.jl")
-include("split/split.jl")
+include("io.jl")
+
+include("merge.jl")
+include("split.jl")
 
 include("algorithm.jl")

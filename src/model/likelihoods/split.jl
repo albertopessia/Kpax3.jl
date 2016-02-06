@@ -1,35 +1,34 @@
 # This file is part of Kpax3. License is MIT.
 
-function splitloglik!(hi::Int,
+function logliksplit!(hi::Int,
                       priorC::AminoAcidPriorCol,
                       support::KSupport,
                       mcmcobj::AminoAcidMCMC)
+  support.loglik = 0.0
+  l = 1
   lidx = 0
-  loglik = 0.0
-  idx = 1
-  for g in mcmcobj.cl
-    if g != hi
-      for b in 1:size(support.C, 2)
-        lidx = support.C[idx, b] + 4 * (b - 1)
-        loglik += logmarglik(mcmcobj.n1s[g, b], mcmcobj.v[g], priorC.A[lidx],
-                             priorC.B[lidx])
-      end
-    else
-      for b in 1:size(support.C, 2)
-        lidx = support.C[idx, b] + 4 * (b - 1)
-        loglik += logmarglik(support.ni[b], support.vi, priorC.A[lidx],
-                             priorC.B[lidx])
-      end
-    end
-
-    idx += 1
-  end
 
   for b in 1:size(support.C, 2)
-    lidx = support.C[idx, b] + 4 * (b - 1)
-    loglik += logmarglik(support.nj[b], support.vj, priorC.A[lidx],
-                         priorC.B[lidx])
+    l = 1
+
+    for g in mcmcobj.cl
+      lidx = support.C[l, b] + 4 * (b - 1)
+
+      if g != hi
+        support.loglik += logmarglik(mcmcobj.n1s[g, b], mcmcobj.v[g],
+                                     priorC.A[lidx], priorC.B[lidx])
+      else
+        support.loglik += logmarglik(support.ni[b], support.vi, priorC.A[lidx],
+                                     priorC.B[lidx])
+      end
+
+      l += 1
+    end
+
+    lidx = support.C[l, b] + 4 * (b - 1)
+    support.loglik += logmarglik(support.nj[b], support.vj, priorC.A[lidx],
+                                 priorC.B[lidx])
   end
 
-  loglik
+  nothing
 end

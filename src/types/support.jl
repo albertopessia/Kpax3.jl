@@ -30,6 +30,12 @@ type KSupport
   tmp::Vector{Float64}
 
   C::Matrix{UInt8}
+
+  logω::Vector{Float64}
+
+  logpC::Vector{Float64}
+  lograR::Float64
+  loglik::Float64
 end
 
 function KSupport(m::Int,
@@ -50,5 +56,9 @@ function KSupport(m::Int,
 
   C = zeros(UInt8, maxclust, m)
 
-  KSupport(vi, ni, ui, wi, vj, nj, uj, wj, tmp, C)
+  logω = zeros(Float64, 4)
+
+  logpC = zeros(Float64, 2)
+
+  KSupport(vi, ni, ui, wi, vj, nj, uj, wj, tmp, C, logω, logpC, 0.0, 0.0)
 end

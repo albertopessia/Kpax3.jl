@@ -1,8 +1,8 @@
 # This file is part of Kpax3. License is MIT.
 
-fastafile = "data/mcmc.fasta"
-partition = "data/mcmc.csv"
-outfile = "../build/output.dat"
+fastafile = "data/mcmc_6.fasta"
+partition = "data/mcmc_6.csv"
+outfile = "../build/mcmc_6.dat"
 T = 1000000
 burnin = 100000
 tstep = 1
@@ -19,15 +19,15 @@ maxunit = 1
 verbose = true
 verbosestep = 10000
 
-# true parameters are
-# R = [1; 1; 1; 1; 2; 2]
-# S = [1; 1; 3; 3]
-# C = [1 1 4 3;
-#      1 1 3 4]
+# parameters to test are
+# R = [1; 1; 2; 2; 3; 2]
+# S = [2; 3; 1; 2]
+# C = [2 3 1 2;
+#      2 4 1 2;
+#      2 3 1 2]
 
 #=
 # compute log(normalization constant) as accurate as possible
-# first of all, find the posterior mode
 include("data/partitions.jl")
 
 function computelognormconst(cs,
@@ -50,10 +50,10 @@ function computelognormconst(cs,
 
   M = -Inf
 
-  p = zero(Float64)
-  logprR = zero(Float64)
+  p = 0.0
+  logprR = 0.0
+  logpost = 0.0
   logp = zeros(Float64, m)
-  logpost = zero(Float64)
 
   for l in st:en
     R = po.partition[:, l]
@@ -64,11 +64,11 @@ function computelognormconst(cs,
       n1s[: , g] = sum(float(data[:, R .== g]), 2)
     end
 
-    for c1 in cs, c2 in cs, c3 in cs, c4 in cs
+    for c1 in cs, c2 in cs#, c3 in cs, c4 in cs
       C[1, :] = c1
       C[2, :] = c2
-      C[3, :] = c3
-      C[4, :] = c4
+      #C[3, :] = c3
+      #C[4, :] = c4
 
       idx = C[:, 1] + 4 * collect(0:(m - 1))
       logp = priorC.logγ[C[:, 1]] + priorC.logω[C[:, 1]] +
@@ -173,11 +173,11 @@ function computeProbs(cs,
         end
       end
 
-      for c1 in cs[k], c2 in cs[k], c3 in cs[k], c4 in cs[k]
+      for c1 in cs[k], c2 in cs[k]#, c3 in cs[k], c4 in cs[k]
         C[1, :] = c1
         C[2, :] = c2
-        C[3, :] = c3
-        C[4, :] = c4
+        #C[3, :] = c3
+        #C[4, :] = c4
 
         idx = C[:, 1] + 4 * collect(0:(m - 1))
         logp = priorC.logγ[C[:, 1]] + priorC.logω[C[:, 1]] +
@@ -219,11 +219,11 @@ function computeProbs(cs,
   v = ones(Float64, k)
   n1s = float(data)
 
-  for c1 in cs[k], c2 in cs[k], c3 in cs[k], c4 in cs[k]
+  for c1 in cs[k], c2 in cs[k]#, c3 in cs[k], c4 in cs[k]
     C[1, :] = c1
     C[2, :] = c2
-    C[3, :] = c3
-    C[4, :] = c4
+    #C[3, :] = c3
+    #C[4, :] = c4
 
     idx = C[:, 1] + 4 * collect(0:(m - 1))
     logp = priorC.logγ[C[:, 1]] + priorC.logω[C[:, 1]] +

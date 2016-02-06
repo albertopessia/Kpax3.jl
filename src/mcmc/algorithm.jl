@@ -10,15 +10,6 @@ function randompermute!(x::Vector{Int},
   nothing
 end
 
-function saveresults!(fp::IOStream,
-                      mcmcobj::AminoAcidMCMC)
-  write(fp, mcmcobj.k)
-  write(fp, mcmcobj.R)
-  #write(fp, vec(mcmcobj.C[!mcmcobj.emptycluster, :][1, :]))
-
-  nothing
-end
-
 function splitmerge!(ij::Vector{Int},
                      neighbours::Vector{Int},
                      data::Matrix{UInt8},

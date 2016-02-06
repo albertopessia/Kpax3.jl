@@ -3,6 +3,8 @@
 include("joint/densities.jl")
 
 include("likelihoods/marglik.jl")
+include("likelihoods/merge.jl")
+include("likelihoods/split.jl")
 
 include("partitioncols/aminoacids/densities.jl")
 include("partitioncols/aminoacids/simulate.jl")

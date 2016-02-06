@@ -126,18 +126,17 @@ end
 
 function initclusteriweights!(x::UInt8,
                               b::Int,
-                              logω::Vector{Float64},
                               priorC::AminoAcidPriorCol,
                               support::KSupport)
   support.ni[b] = Float64(x)
 
-  support.wi.w[1, b] = priorC.logγ[1] + logω[1] +
+  support.wi.w[1, b] = priorC.logγ[1] + support.logω[1] +
                        logmarglik(x, 1, priorC.A[1, b], priorC.B[1, b])
-  support.wi.w[2, b] = priorC.logγ[2] + logω[2] +
+  support.wi.w[2, b] = priorC.logγ[2] + support.logω[2] +
                        logmarglik(x, 1, priorC.A[2, b], priorC.B[2, b])
-  support.wi.w[3, b] = priorC.logγ[3] + logω[3] +
+  support.wi.w[3, b] = priorC.logγ[3] + support.logω[3] +
                        logmarglik(x, 1, priorC.A[3, b], priorC.B[3, b])
-  support.wi.w[4, b] = priorC.logγ[4] + logω[4] +
+  support.wi.w[4, b] = priorC.logγ[4] + support.logω[4] +
                        logmarglik(x, 1, priorC.A[4, b], priorC.B[4, b])
 
   M = max(support.wi.w[1, b], support.wi.w[2, b],
@@ -153,18 +152,17 @@ end
 
 function initclusterjweights!(x::UInt8,
                               b::Int,
-                              logω::Vector{Float64},
                               priorC::AminoAcidPriorCol,
                               support::KSupport)
   support.nj[b] = Float64(x)
 
-  support.wj.w[1, b] = priorC.logγ[1] + logω[1] +
+  support.wj.w[1, b] = priorC.logγ[1] + support.logω[1] +
                        logmarglik(x, 1, priorC.A[1, b], priorC.B[1, b])
-  support.wj.w[2, b] = priorC.logγ[2] + logω[2] +
+  support.wj.w[2, b] = priorC.logγ[2] + support.logω[2] +
                        logmarglik(x, 1, priorC.A[2, b], priorC.B[2, b])
-  support.wj.w[3, b] = priorC.logγ[3] + logω[3] +
+  support.wj.w[3, b] = priorC.logγ[3] + support.logω[3] +
                        logmarglik(x, 1, priorC.A[3, b], priorC.B[3, b])
-  support.wj.w[4, b] = priorC.logγ[4] + logω[4] +
+  support.wj.w[4, b] = priorC.logγ[4] + support.logω[4] +
                        logmarglik(x, 1, priorC.A[4, b], priorC.B[4, b])
 
   M = max(support.wj.w[1, b], support.wj.w[2, b],
@@ -182,9 +180,10 @@ function initsupport!(ij::Vector{Int},
                       S::Int,
                       k::Int,
                       data::Matrix{UInt8},
-                      logω::Vector{Float64},
                       priorC::AminoAcidPriorCol,
                       support::KSupport)
+  copy!(support.logω, [0.0; 0.0; log(k - 1.0) - log(k); -log(k)])
+
   support.vi = 1
   support.vj = 1
 
@@ -201,8 +200,8 @@ function initsupport!(ij::Vector{Int},
   end
 
   for b in 1:size(data, 1)
-    initclusteriweights!(data[b, ij[1]], b, logω, priorC, support)
-    initclusterjweights!(data[b, ij[2]], b, logω, priorC, support)
+    initclusteriweights!(data[b, ij[1]], b, priorC, support)
+    initclusterjweights!(data[b, ij[2]], b, priorC, support)
   end
 
   nothing
