@@ -69,12 +69,12 @@ mcmcobj = AminoAcidMCMC(data, R, priorR, priorC, settings)
 @test mcmcobj.unit == Vector{Int}[sum(R .== g) > 0 ? find(R .== g) : [0]
                                   for g in 1:settings.maxclust]
 
-@test mcmcobj.logprR == logdPriorRow(n, k, v, priorR)
-@test_approx_eq_eps mcmcobj.logprC logpriorC(mcmcobj.C, mcmcobj.cl, priorC.logγ,
-                                             priorC.logω) eps()
-@test_approx_eq_eps mcmcobj.logpocC logcondpostC(mcmcobj.C, mcmcobj.cl,
-                                                 mcmcobj.v, mcmcobj.n1s,
-                                                 priorC.logω, priorC) eps()
+@test mcmcobj.logpR == logdPriorRow(n, k, v, priorR)
+@test_approx_eq_eps mcmcobj.logpC[1] logpriorC(mcmcobj.C, mcmcobj.cl,
+                                               priorC.logγ, priorC.logω) eps()
+@test_approx_eq_eps mcmcobj.logpC[2] logcondpostC(mcmcobj.C, mcmcobj.cl,
+                                                  mcmcobj.v, mcmcobj.n1s,
+                                                  priorC.logω, priorC) eps()
 
 # is linearidx approach correct?
 C = UInt8[1 1 1 4 2 1 4 3 1 1 1 1 1 1 1 1 1 2;

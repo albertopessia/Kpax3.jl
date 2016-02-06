@@ -61,14 +61,10 @@ for k in 1:n
     x2 = AminoAcidPriorCol(data, k, γ, r2)
 
     for s in 1:3
-      @test_approx_eq_eps x1.γ[s] (γ[s] / sum(γ)) ε
       @test_approx_eq_eps x1.logγ[s] log(γ[s] / sum(γ)) ε
-      @test_approx_eq_eps x1.ω[s] ω[s] ε
       @test_approx_eq_eps x1.logω[s] log(ω[s]) ε
 
-      @test_approx_eq_eps x2.γ[s] (γ[s] / sum(γ)) ε
       @test_approx_eq_eps x2.logγ[s] log(γ[s] / sum(γ)) ε
-      @test_approx_eq_eps x2.ω[s] ω[s] ε
       @test_approx_eq_eps x2.logω[s] log(ω[s]) ε
     end
 
@@ -162,7 +158,7 @@ mergesupport = KSupport(size(data, 1), size(data, 2), settings.maxclust,
                         size(data, 2))
 mergevi = me.v[me.cl[2]] + me.v[me.cl[3]]
 mergeni = vec(no.n1s[no.cl[2], :] + no.n1s[no.cl[3], :])
-mergelogω = [0.0; 0.0; log(k - 2.0) - log(k - 1.0); - log(k - 1.0)]
+mergesupport.logω = [0.0; 0.0; log(k - 2.0) - log(k - 1.0); - log(k - 1.0)]
 
 # suppose we split cluster 1
 sp = AminoAcidMCMC(data, R, priorR, priorC, settings)
@@ -173,7 +169,7 @@ splitsupport.vi = sp.v[sp.cl[1]] - 1
 splitsupport.ni = vec(sp.n1s[sp.cl[1], :]) - float(data[:, 3])
 splitsupport.vj = 1
 splitsupport.nj = float(data[:, 3])
-splitlogω = [0.0; 0.0; log(k) - log(k + 1.0); - log(k + 1.0)]
+splitsupport.logω = [0.0; 0.0; log(k) - log(k + 1.0); - log(k + 1.0)]
 
 N = 10000000
 
@@ -235,9 +231,9 @@ trueCp3 = 0.01435615231057929368219117094440662185661494731903076171875
 
 for t in 1:N
   rpostpartitioncols!(no.C, no.cl, no.v, no.n1s, priorC)
-  simcmerge!(k - 1, me.cl[2], me.cl[3], mergevi, mergeni, mergelogω, priorC,
+  simcmerge!(k - 1, me.cl[2], me.cl[3], mergevi, mergeni, priorC,
              mergesupport, me)
-  simcsplit!(k + 1, sp.cl[1], splitlogω, priorC, splitsupport, sp)
+  simcsplit!(k + 1, sp.cl[1], priorC, splitsupport, sp)
 
   for b in 1:m
     if no.C[no.cl[1], b] == 0x01
@@ -318,31 +314,33 @@ v = copy(no.v)
 n1s = copy(no.n1s)
 logω = copy(priorC.logω)
 
-logpr, logpo = rpostpartitioncols!(C, cl, v, n1s, priorC)
+logpC = rpostpartitioncols!(C, cl, v, n1s, priorC)
 
-@test_approx_eq_eps logpr logpriorC(C, cl, priorC.logγ, logω) ε
-@test_approx_eq_eps logpo logcondpostC(C, cl, v, n1s, logω, priorC) ε
+@test_approx_eq_eps logpC[1] logpriorC(C, cl, priorC.logγ, logω) ε
+@test_approx_eq_eps logpC[2] logcondpostC(C, cl, v, n1s, logω, priorC) ε
 
 cl = [1; 2]
 v = [3; 3]
 n1s = [3.0  0.0  2.0  2.0; 0.0  2.0  2.0  0.0]
-logω = copy(mergelogω)
+logω = copy(mergesupport.logω)
 
-logpr, logpo = simcmerge!(k - 1, me.cl[2], me.cl[3], mergevi, mergeni, logω,
-                          priorC, mergesupport, me)
+simcmerge!(k - 1, me.cl[2], me.cl[3], mergevi, mergeni, priorC, mergesupport,
+           me)
 
-@test_approx_eq_eps logpr logpriorC(mergesupport.C, cl, priorC.logγ, logω) ε
-@test_approx_eq_eps logpo logcondpostC(mergesupport.C, cl, v, n1s, logω,
-                                       priorC) ε
+@test_approx_eq_eps mergesupport.logpC[1] logpriorC(mergesupport.C, cl,
+                                                    priorC.logγ, logω) ε
+@test_approx_eq_eps mergesupport.logpC[2] logcondpostC(mergesupport.C, cl, v,
+                                                       n1s, logω, priorC) ε
 
 cl = [1; 2; 3; 4]
 v = [2; 2; 1; 1]
 n1s = [2.0  0.0  2.0  2.0; 0.0  2.0  1.0  0.0; 0.0  0.0  1.0  0.0;
        1.0  0.0  0.0  0.0]
-logω = copy(splitlogω)
+logω = copy(splitsupport.logω)
 
-logpr, logpo = simcsplit!(k + 1, sp.cl[1], logω, priorC, splitsupport, sp)
+simcsplit!(k + 1, sp.cl[1], priorC, splitsupport, sp)
 
-@test_approx_eq_eps logpr logpriorC(splitsupport.C, cl, priorC.logγ, logω) ε
-@test_approx_eq_eps logpo logcondpostC(splitsupport.C, cl, v, n1s, logω,
-                                       priorC) ε
+@test_approx_eq_eps splitsupport.logpC[1] logpriorC(splitsupport.C, cl,
+                                                    priorC.logγ, logω) ε
+@test_approx_eq_eps splitsupport.logpC[2] logcondpostC(splitsupport.C, cl, v,
+                                                       n1s, logω, priorC) ε

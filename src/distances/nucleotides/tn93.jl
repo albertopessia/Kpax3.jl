@@ -45,8 +45,8 @@ Value:
     To access the distance between units i and j (i < j), use
     d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
 =#
-function distnttn93(rawdata::Array{Uint8, 2},
-                    ref::Array{Uint8, 1})
+function distnttn93(rawdata::Matrix{UInt8},
+                    ref::Vector{UInt8})
   n = size(rawdata, 2)
   d = zeros(Float64, div(n * (n - 1), 2))
 
@@ -74,10 +74,9 @@ function distnttn93(rawdata::Array{Uint8, 2},
   k2 = (gb[2] * gb[4]) / gy
   k3 = gr * gy - k1 * gy - k2 * gr
 
-  idx = 1
+  idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx] = nttn93(rawdata[:, i], rawdata[:, j], h, gr, gy, k1, k2, k3)
-    idx += 1
+    d[idx += 1] = nttn93(rawdata, i, j, h, gr, gy, k1, k2, k3)
   end
 
   d
@@ -116,8 +115,8 @@ Value:
     To access the distance between units i and j (i < j), use
     d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
 =#
-function distntmtn93(rawdata::Array{Uint8, 2},
-                     ref::Array{Uint8, 1})
+function distntmtn93(rawdata::Matrix{UInt8},
+                     ref::Vector{UInt8})
   n = size(rawdata, 2)
   d = zeros(Float64, div(n * (n - 1), 2))
 
@@ -145,10 +144,9 @@ function distntmtn93(rawdata::Array{Uint8, 2},
   k2 = (gb[2] * gb[4]) / gy
   k3 = gr * gy - k1 * gy - k2 * gr
 
-  idx = 1
+  idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx] = ntmtn93(rawdata[:, i], rawdata[:, j], gt, h, gr, gy, k1, k2, k3)
-    idx += 1
+    d[idx += 1] = ntmtn93(rawdata, i, j, gt, h, gr, gy, k1, k2, k3)
   end
 
   d
@@ -186,8 +184,9 @@ Value:
   d::Float64
     evolutionary distance between the two dna sequences
 =#
-function nttn93(x1::Array{Uint8, 1},
-                x2::Array{Uint8, 1},
+function nttn93(x::Matrix{UInt8},
+                i::Int,
+                j::Int,
                 n::Float64,
                 gr::Float64,
                 gy::Float64,
@@ -205,16 +204,18 @@ function nttn93(x1::Array{Uint8, 1},
   # proportions of transversional differences
   ry = 0.0
 
-  for i in 1:length(x1)
-    if (0 < x1[i] < 5) && (0 < x2[i] < 5)
-      if ((x1[i] == 1) && (x2[i] == 3)) || ((x1[i] == 3) && (x2[i] == 1))
+  for b in 1:size(x, 1)
+    if (0 < x[b, i] < 5) && (0 < x[b, j] < 5)
+      if ((x[b, i] == 1) && (x[b, j] == 3)) ||
+         ((x[b, i] == 3) && (x[b, j] == 1))
         ag += 1
-      elseif ((x1[i] == 2) && (x2[i] == 4)) || ((x1[i] == 4) && (x2[i] == 2))
+      elseif ((x[b, i] == 2) && (x[b, j] == 4)) ||
+             ((x[b, i] == 4) && (x[b, j] == 2))
         ct += 1
-      elseif (((x1[i] == 1) || (x1[i] == 3)) &&
-              ((x2[i] == 2) || (x2[i] == 4))) ||
-             (((x1[i] == 2) || (x1[i] == 4)) &&
-              ((x2[i] == 1) || (x2[i] == 3)))
+      elseif (((x[b, i] == 1) || (x[b, i] == 3)) &&
+              ((x[b, j] == 2) || (x[b, j] == 4))) ||
+             (((x[b, i] == 2) || (x[b, i] == 4)) &&
+              ((x[b, j] == 1) || (x[b, j] == 3)))
         ry += 1
       end
 
@@ -280,9 +281,10 @@ Value:
   d::Float64
     evolutionary distance between the two dna sequences
 =#
-function ntmtn93(x1::Array{Uint8, 1},
-                 x2::Array{Uint8, 1},
-                 gt::Array{Float64, 1},
+function ntmtn93(x::Matrix{UInt8},
+                 i::Int,
+                 j::Int,
+                 gt::Vector{Float64},
                  h::Float64,
                  gr::Float64,
                  gy::Float64,
@@ -293,15 +295,11 @@ function ntmtn93(x1::Array{Uint8, 1},
 
   # effective length, i.e. total number of sites at which both sequences have
   # non-missing values
-  n = zeros(Float64, 3)
-  n[:] = h
+  n = fill(h, 3)
 
   # proportion of observed nucleotides
-  g1 = zeros(Float64, 4)
-  g1[:] = gt
-
-  g2 = zeros(Float64, 4)
-  g2[:] = gt
+  g1 = copy(gt)
+  g2 = copy(gt)
 
   # proportions of transitional differences between nucleotides A and G
   ag = 0.0
@@ -318,26 +316,28 @@ function ntmtn93(x1::Array{Uint8, 1},
   r2 = 0.0
   y2 = 0.0
 
-  for i in 1:length(x1)
-    if 0 < x1[i] < 5
-      g1[x1[i]] += 1
+  for b in 1:size(x, 1)
+    if 0 < x[b, i] < 5
+      g1[x[b, i]] += 1
       n[1] += 1
     end
 
-    if 0 < x2[i] < 5
-      g2[x2[i]] += 1
+    if 0 < x[b, j] < 5
+      g2[x[b, j]] += 1
       n[2] += 1
     end
 
-    if (0 < x1[i] < 5) && (0 < x2[i] < 5)
-      if ((x1[i] == 1) && (x2[i] == 3)) || ((x1[i] == 3) && (x2[i] == 1))
+    if (0 < x[b, i] < 5) && (0 < x[b, j] < 5)
+      if ((x[b, i] == 1) && (x[b, j] == 3)) ||
+         ((x[b, i] == 3) && (x[b, j] == 1))
         ag += 1
-      elseif ((x1[i] == 2) && (x2[i] == 4)) || ((x1[i] == 4) && (x2[i] == 2))
+      elseif ((x[b, i] == 2) && (x[b, j] == 4)) ||
+             ((x[b, i] == 4) && (x[b, j] == 2))
         ct += 1
-      elseif (((x1[i] == 1) || (x1[i] == 3)) &&
-              ((x2[i] == 2) || (x2[i] == 4))) ||
-             (((x1[i] == 2) || (x1[i] == 4)) &&
-              ((x2[i] == 1) || (x2[i] == 3)))
+      elseif (((x[b, i] == 1) || (x[b, i] == 3)) &&
+              ((x[b, j] == 2) || (x[b, j] == 4))) ||
+             (((x[b, i] == 2) || (x[b, i] == 4)) &&
+              ((x[b, j] == 1) || (x[b, j] == 3)))
         ry += 1
       end
 

@@ -21,11 +21,9 @@ type AminoAcidMCMC <: KMCMC
   n1s::Matrix{Float64}
   unit::Vector{Vector{Int}}
 
-  logprR::Float64
-  logprC::Float64
+  logpR::Float64
+  logpC::Vector{Float64}
   loglik::Float64
-
-  logpocC::Float64
 end
 
 function AminoAcidMCMC(data::Matrix{UInt8},
@@ -46,12 +44,6 @@ function AminoAcidMCMC(data::Matrix{UInt8},
   n1s = zeros(Float64, settings.maxclust, m)
   unit = Vector{Int}[zeros(Int, settings.maxunit) for g in 1:settings.maxclust]
 
-  logprR = 0.0
-  logprC = 0.0
-  loglik = 0.0
-
-  logpocC = 0.0
-
   for a in 1:n
     g = R[a]
 
@@ -68,9 +60,8 @@ function AminoAcidMCMC(data::Matrix{UInt8},
     end
   end
 
-  logprC, logpocC = rpostpartitioncols!(C, cl, v, n1s, priorC)
-
-  logprR = logdPriorRow(n, length(cl), v, priorR)
+  logpR = logdPriorRow(n, length(cl), v, priorR)
+  logpC = rpostpartitioncols!(C, cl, v, n1s, priorC)
   loglik = 0.0
 
   # If array A has dimension (d_{1}, ..., d_{l}, ..., d_{L}), to access
@@ -89,6 +80,5 @@ function AminoAcidMCMC(data::Matrix{UInt8},
     end
   end
 
-  AminoAcidMCMC(R, C, filledcluster, cl, v, n1s, unit, logprR, logprC, loglik,
-                logpocC)
+  AminoAcidMCMC(R, C, filledcluster, cl, v, n1s, unit, logpR, logpC, loglik)
 end

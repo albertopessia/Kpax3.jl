@@ -40,4 +40,6 @@ function kpax3aa(x::AminoAcidData,
   mcmcobj = AminoAcidMCMC(x.data, R, priorR, priorC, settings)
 
   kpax3mcmc!(x.data, priorR, priorC, settings, support, mcmcobj)
+
+  nothing
 end
