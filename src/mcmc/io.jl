@@ -21,8 +21,8 @@ function readresults(fp::IOStream)
     absfreqk[k[1]] += 1
 
     idx = 0
-    for j in 1:(n[1] - 1), i in (j + 1):n[1]
-      absfreqR[idx += 1] += Float64(R[j] == R[i])
+    for i in 1:(n[1] - 1), j in (i + 1):n[1]
+      absfreqR[idx += 1] += Float64(R[i] == R[j])
     end
 
     T += 1

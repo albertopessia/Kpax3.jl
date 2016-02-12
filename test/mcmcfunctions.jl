@@ -2,7 +2,7 @@
 
 ε = eps()
 
-settings = KSettings("typesmcmc.bin", 1, 0, 1, [1.0; 0.0; 0.0], 0.0, 1.0,
+settings = KSettings("../build/output.dat", 1, 0, 1, [1.0; 0.0; 0.0], 0.0, 1.0,
                      [0.6; 0.35; 0.05], 135.0, 1.0, 1.0, 5.0, 3, 1, true, 1)
 
 data = UInt8[0x00 0x00 0x00 0x00 0x00 0x01;

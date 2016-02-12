@@ -77,8 +77,7 @@ function merge!(ij::Vector{Int},
               Distributions.logpdf(distwm, w) +
               lq)
 
-  if ratio >= 1 ||
-     (ratio > 0 && Distributions.rand(Distributions.Bernoulli(ratio)) == 1)
+  if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
     performmerge!(hi, hj, ni, vi, priorC, support, mcmcobj)
   end
 
