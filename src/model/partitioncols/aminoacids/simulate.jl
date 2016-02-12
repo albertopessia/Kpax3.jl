@@ -5,8 +5,7 @@ function samplenoise!(C::Matrix{UInt8},
                       cl,
                       b::Int,
                       x::Float64,
-                      logγ::Vector{Float64},
-                      logω::Vector{Float64})
+                      logγ::Vector{Float64})
   logp[1] += logγ[1]
   logp[2] += x
 
@@ -22,8 +21,7 @@ function sampleweaksignal!(C::Matrix{UInt8},
                            cl,
                            b::Int,
                            x::Float64,
-                           logγ::Vector{Float64},
-                           logω::Vector{Float64})
+                           logγ::Vector{Float64})
   logp[1] += logγ[2]
   logp[2] += x
 
@@ -140,9 +138,9 @@ function rpostpartitioncols!(C::Matrix{UInt8},
     p = rand()
 
     if p <= exp(lγ[1])
-      samplenoise!(C, logp, cl, b, lγ[1], priorC.logγ, priorC.logω)
+      samplenoise!(C, logp, cl, b, lγ[1], priorC.logγ)
     elseif p <= exp(lγ[1]) + exp(lγ[2])
-      sampleweaksignal!(C, logp, cl, b, lγ[2], priorC.logγ, priorC.logω)
+      sampleweaksignal!(C, logp, cl, b, lγ[2], priorC.logγ)
     else
       samplestrongsignal!(C, logp, cl, b, lγ[3], priorC.logγ, priorC.logω, lω)
     end
@@ -176,14 +174,18 @@ function simcmerge!(k::Int,
 
     l = 1
     for g in mcmcobj.cl
-      if (g != hi) && (g != hj)
-        computeclusterlogprobs!(logq, lγ, lω, b, l, mcmcobj.n1s[g, b],
-                                mcmcobj.v[g], support.logω, priorC)
+      if g != hj
+        if g != hi
+          computeclusterlogprobs!(logq, lγ, lω, b, l, mcmcobj.n1s[g, b],
+                                  mcmcobj.v[g], support.logω, priorC)
+        else
+          computeclusterlogprobs!(logq, lγ, lω, b, l, ni[b], vi, support.logω,
+                                  priorC)
+        end
+
         l += 1
       end
     end
-
-    computeclusterlogprobs!(logq, lγ, lω, b, l, ni[b], vi, support.logω, priorC)
 
     if (lγ[1] >= lγ[2]) && (lγ[1] >= lγ[3])
       tmp = lγ[1] + log1p(exp(lγ[2] - lγ[1]) + exp(lγ[3] - lγ[1]))
@@ -200,11 +202,9 @@ function simcmerge!(k::Int,
     p = rand()
 
     if p <= exp(lγ[1])
-      samplenoise!(support.C, support.logpC, 1:k, b, lγ[1], priorC.logγ,
-                   support.logω)
+      samplenoise!(support.C, support.logpC, 1:k, b, lγ[1], priorC.logγ)
     elseif p <= exp(lγ[1]) + exp(lγ[2])
-      sampleweaksignal!(support.C, support.logpC, 1:k, b, lγ[2], priorC.logγ,
-                        support.logω)
+      sampleweaksignal!(support.C, support.logpC, 1:k, b, lγ[2], priorC.logγ)
     else
       samplestrongsignal!(support.C, support.logpC, 1:k, b, lγ[3], priorC.logγ,
                           support.logω, lω)
@@ -265,11 +265,9 @@ function simcsplit!(k::Int,
     p = rand()
 
     if p <= exp(lγ[1])
-      samplenoise!(support.C, support.logpC, 1:k, b, lγ[1], priorC.logγ,
-                   support.logω)
+      samplenoise!(support.C, support.logpC, 1:k, b, lγ[1], priorC.logγ)
     elseif p <= exp(lγ[1]) + exp(lγ[2])
-      sampleweaksignal!(support.C, support.logpC, 1:k, b, lγ[2], priorC.logγ,
-                        support.logω)
+      sampleweaksignal!(support.C, support.logpC, 1:k, b, lγ[2], priorC.logγ)
     else
       samplestrongsignal!(support.C, support.logpC, 1:k, b, lγ[3], priorC.logγ,
                           support.logω, lω)

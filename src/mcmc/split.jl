@@ -70,8 +70,7 @@ function split!(ij::Vector{Int},
               Distributions.logpdf(settings.distws, w) -
               lq)
 
-  if ratio >= 1 ||
-     (ratio > 0 && Distributions.rand(Distributions.Bernoulli(ratio)) == 1)
+  if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
     performsplit!(hi, k, priorC, settings, support, mcmcobj)
   end
 
@@ -117,7 +116,6 @@ function performsplit!(hi::Int,
       end
 
       mcmcobj.C[hj, b] = support.C[idx += 1, b]
-
       mcmcobj.n1s[hj, b] = support.nj[b]
     end
   else
