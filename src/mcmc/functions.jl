@@ -176,13 +176,16 @@ function initclusterjweights!(x::UInt8,
   nothing
 end
 
-function initsupport!(ij::Vector{Int},
-                      S::Int,
-                      k::Int,
-                      data::Matrix{UInt8},
-                      priorC::AminoAcidPriorCol,
-                      support::KSupport)
-  copy!(support.logω, [0.0; 0.0; log(k - 1.0) - log(k); -log(k)])
+function initsupportsplitmerge!(ij::Vector{Int},
+                                S::Int,
+                                k::Int,
+                                data::Matrix{UInt8},
+                                priorC::AminoAcidPriorCol,
+                                support::KSupport)
+  support.logω[1] = 0.0
+  support.logω[2] = 0.0
+  support.logω[3] = log(k - 1.0) - log(k)
+  support.logω[4] = -log(k)
 
   support.vi = 1
   support.vj = 1
@@ -202,6 +205,34 @@ function initsupport!(ij::Vector{Int},
   for b in 1:size(data, 1)
     initclusteriweights!(data[b, ij[1]], b, priorC, support)
     initclusterjweights!(data[b, ij[2]], b, priorC, support)
+  end
+
+  nothing
+end
+
+function initsupportbrw!(k::Int,
+                         i::Int,
+                         vi::Int,
+                         data::Matrix{UInt8},
+                         support::KSupport)
+  support.logω[1] = 0.0
+  support.logω[2] = 0.0
+  support.logω[3] = log(k - 1.0) - log(k)
+  support.logω[4] = -log(k)
+
+  for b in 1:size(data, 1)
+    support.ni[b] = data[b, i]
+  end
+
+  support.vi = vi
+
+  if length(support.ui) <= vi
+    support.ui = zeros(Int, vi)
+    support.uj = zeros(Int, vi)
+  end
+
+  if size(support.C, 1) < k
+    support.C = zeros(UInt8, k, size(data, 1))
   end
 
   nothing
