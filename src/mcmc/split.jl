@@ -12,7 +12,7 @@ function split!(ij::Vector{Int},
   # number of clusters after the split
   k = length(mcmcobj.cl) + 1
 
-  initsupport!(ij, S, k, data, priorC, support)
+  initsupportsplitmerge!(ij, S, k, data, priorC, support)
 
   # sample a new proportion for cluster 'hi'
   w = Distributions.rand(settings.distws)
@@ -86,38 +86,25 @@ function performsplit!(hi::Int,
   hj = findfirst(!mcmcobj.filledcluster)
 
   if hj > 0
-    idx = 0
-    for g in mcmcobj.cl
-      mcmcobj.C[g, 1] = support.C[idx += 1, 1]
-
-      if g == hi
-        mcmcobj.v[g] = support.vi
-        mcmcobj.n1s[g, 1] = support.ni[1]
-        mcmcobj.unit[g] = copy(support.ui[1:support.vi])
-      end
-    end
-
-    mcmcobj.C[hj, 1] = support.C[idx += 1, 1]
-
-    mcmcobj.filledcluster[hj] = true
-
-    mcmcobj.v[hj] = support.vj
-    mcmcobj.n1s[hj, 1] = support.nj[1]
-    mcmcobj.unit[hj] = copy(support.uj[1:support.vj])
-
-    for b in 2:size(mcmcobj.C, 2)
+    for b in 1:size(mcmcobj.C, 2)
       idx = 0
       for g in mcmcobj.cl
         mcmcobj.C[g, b] = support.C[idx += 1, b]
-
-        if g == hi
-          mcmcobj.n1s[g, b] = support.ni[b]
-        end
       end
 
       mcmcobj.C[hj, b] = support.C[idx += 1, b]
+
+      mcmcobj.n1s[hi, b] = support.ni[b]
       mcmcobj.n1s[hj, b] = support.nj[b]
     end
+
+    mcmcobj.filledcluster[hj] = true
+
+    mcmcobj.v[hi] = support.vi
+    mcmcobj.unit[hi] = copy(support.ui[1:support.vi])
+
+    mcmcobj.v[hj] = support.vj
+    mcmcobj.unit[hj] = copy(support.uj[1:support.vj])
   else
     hj = k
 
@@ -128,29 +115,27 @@ function performsplit!(hi::Int,
 
     filledcluster = falses(len)
     v = zeros(Int, len)
-    n1s = zeros(Float64, len, length(mcmcobj.R))
-    unit = Vector{Int}[zeros(Int, settings.maxunit) for g in 1:len]
+    n1s = zeros(Float64, len, size(mcmcobj.C, 2))
+    unit = Vector{Int}[zeros(Int, 0) for g in 1:len]
 
     idx = 0
     for g in mcmcobj.cl
       C[g, 1] = support.C[idx += 1, 1]
 
-      filledcluster[g] = true
+      v[g] = mcmcobj.v[g]
+      n1s[g, 1] = mcmcobj.n1s[g, 1]
+      unit[g] = copy(mcmcobj.unit[g])
 
-      if g != hi
-        v[g] = mcmcobj.v[g]
-        n1s[g, 1] = mcmcobj.n1s[g, 1]
-        unit[g] = copy(mcmcobj.unit[g])
-      else
-        v[g] = support.vi
-        n1s[g, 1] = support.ni[1]
-        unit[g] = copy(support.ui[1:support.vi])
-      end
+      filledcluster[g] = true
     end
 
     C[k, 1] = support.C[idx += 1, 1]
 
     filledcluster[k] = true
+
+    v[hi] = support.vi
+    n1s[hi, 1] = support.ni[1]
+    unit[hi] = copy(support.ui[1:support.vi])
 
     v[k] = support.vj
     n1s[k, 1] = support.nj[1]
@@ -160,9 +145,12 @@ function performsplit!(hi::Int,
       idx = 0
       for g in mcmcobj.cl
         C[g, b] = support.C[idx += 1, b]
-        n1s[g, b] = g != hi ? mcmcobj.n1s[g, b] : support.ni[b]
+        n1s[g, b] = mcmcobj.n1s[g, b]
       end
+
       C[k, b] = support.C[idx += 1, b]
+
+      n1s[hi, b] = support.ni[b]
       n1s[k, b] = support.nj[b]
     end
 
@@ -176,7 +164,9 @@ function performsplit!(hi::Int,
   end
 
   # move units to their new cluster
-  mcmcobj.R[support.uj[1:support.vj]] = hj
+  for j in 1:support.vj
+    mcmcobj.R[support.uj[j]] = hj
+  end
 
   mcmcobj.cl = find(mcmcobj.filledcluster)
 

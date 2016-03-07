@@ -12,7 +12,7 @@ function logratiopriorrowsplit(k::Real,
                                vi::Real,
                                vj::Real,
                                ep::EwensPitmanPAZT)
-  log((k - 1) * ep.α) - lgamma(1 - ep.α) +
+  log(k - 1) + log(ep.α) - lgamma(1 - ep.α) +
   lgamma(vi - ep.α) + lgamma(vj - ep.α) - lgamma(vi + vj - ep.α)
 end
 

@@ -97,7 +97,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
           splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
                       mcmcobj)
         elseif operator[t] == 0x02
-          nothing
+          biased_random_walk!(data, priorR, priorC, settings, support, mcmcobj)
         elseif operator[t] == 0x03
           nothing
         end
@@ -123,7 +123,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
         splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
                     mcmcobj)
       elseif operator[t] == 0x02
-        nothing
+        biased_random_walk!(data, priorR, priorC, settings, support, mcmcobj)
       elseif operator[t] == 0x03
         nothing
       end

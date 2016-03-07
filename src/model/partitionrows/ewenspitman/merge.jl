@@ -12,8 +12,8 @@ function logratiopriorrowmerge(k::Real,
                                vi::Real,
                                vj::Real,
                                ep::EwensPitmanPAZT)
-  lgamma(1 - ep.α) + lgamma(vi + vj - ep.α) - log(k * ep.α) - lgamma(vi - ep.α) -
-  lgamma(vj - ep.α)
+  lgamma(1 - ep.α) + lgamma(vi + vj - ep.α) - log(k) - log(ep.α) -
+  lgamma(vi - ep.α) - lgamma(vj - ep.α)
 end
 
 function logratiopriorrowmerge(k::Real,

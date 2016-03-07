@@ -12,7 +12,7 @@ function merge!(ij::Vector{Int},
   # number of clusters after the merge
   k = length(mcmcobj.cl) - 1
 
-  initsupport!(ij, S, k, data, priorC, support)
+  initsupportsplitmerge!(ij, S, k, data, priorC, support)
 
   hi = mcmcobj.R[ij[1]]
   hj = mcmcobj.R[ij[2]]
@@ -91,33 +91,25 @@ function performmerge!(hi::Int,
                        priorC::PriorColPartition,
                        support::KSupport,
                        mcmcobj::AminoAcidMCMC)
-  mcmcobj.R[mcmcobj.unit[hj][1:mcmcobj.v[hj]]] = hi
+  for j in 1:mcmcobj.v[hj]
+    mcmcobj.R[mcmcobj.unit[hj][j]] = hi
+  end
 
   mcmcobj.filledcluster[hj] = false
   mcmcobj.cl = find(mcmcobj.filledcluster)
 
-  idx = 0
-  for g in mcmcobj.cl
-    mcmcobj.C[g, 1] = support.C[idx += 1, 1]
-
-    if g == hi
-      mcmcobj.unit[g] = [mcmcobj.unit[hi][1:mcmcobj.v[hi]];
-                         mcmcobj.unit[hj][1:mcmcobj.v[hj]]]
-      mcmcobj.n1s[g, 1] = ni[1]
-      mcmcobj.v[g] = vi
-    end
-  end
-
-  for b in 2:size(mcmcobj.C, 2)
+  for b in 1:size(mcmcobj.C, 2)
     idx = 0
     for g in mcmcobj.cl
       mcmcobj.C[g, b] = support.C[idx += 1, b]
-
-      if g == hi
-        mcmcobj.n1s[g, b] = ni[b]
-      end
     end
+
+    mcmcobj.n1s[hi, b] = ni[b]
   end
+
+  mcmcobj.unit[hi] = [mcmcobj.unit[hi][1:mcmcobj.v[hi]];
+                      mcmcobj.unit[hj][1:mcmcobj.v[hj]]]
+  mcmcobj.v[hi] = vi
 
   mcmcobj.logpR += support.lograR
   copy!(mcmcobj.logpC, support.logpC)
