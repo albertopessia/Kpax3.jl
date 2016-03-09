@@ -387,34 +387,28 @@ priorC = AminoAcidPriorCol(data, k, settings.γ, settings.r)
 brwsupport = KSupport(m, n, 1, 1)
 brwlogω = [0.0; 0.0; log(2.0 - 1.0) - log(2.0); -log(2.0)]
 
-initsupportbrw!(k - 1, 4, data, brwsupport)
+initsupportbrw!(k - 1, 4, 1, data, brwsupport)
 
 @test brwsupport.logω == brwlogω
 @test brwsupport.ni == float(data[:, 4])
-
-# move unit 4 into cluster 42
-brwsupport = KSupport(m, n, 1, 1)
-brwlogω = [0.0; 0.0; log(k - 1.0) - log(k); -log(k)]
-
-initsupportbrw!(k, 4, data, brwsupport)
-
-@test brwsupport.logω == brwlogω
-@test brwsupport.ni == float(data[:, 4])
+@test brwsupport.vi == 1
 
 # move unit 3 into its own cluster
 brwsupport = KSupport(m, n, 1, 1)
 brwlogω = [0.0; 0.0; log(4.0 - 1.0) - log(4.0); -log(4.0)]
 
-initsupportbrw!(k + 1, 3, data, brwsupport)
+initsupportbrw!(k + 1, 3, 3, data, brwsupport)
 
 @test brwsupport.logω == brwlogω
 @test brwsupport.ni == float(data[:, 3])
+@test brwsupport.vi == 3
 
 # move unit 3 into cluster 42
 brwsupport = KSupport(m, n, 1, 1)
 brwlogω = [0.0; 0.0; log(k - 1.0) - log(k); -log(k)]
 
-initsupportbrw!(k, 3, data, brwsupport)
+initsupportbrw!(k, 3, 3, data, brwsupport)
 
 @test brwsupport.logω == brwlogω
 @test brwsupport.ni == float(data[:, 3])
+@test brwsupport.vi == 3

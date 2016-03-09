@@ -99,7 +99,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
         elseif operator[t] == 0x02
           biased_random_walk!(data, priorR, priorC, settings, support, mcmcobj)
         elseif operator[t] == 0x03
-          nothing
+          updateC!(priorC, mcmcobj)
         end
 
         if settings.verbose && (t % settings.verbosestep == 0)
@@ -125,7 +125,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
       elseif operator[t] == 0x02
         biased_random_walk!(data, priorR, priorC, settings, support, mcmcobj)
       elseif operator[t] == 0x03
-        nothing
+        updateC!(priorC, mcmcobj)
       end
 
       if t % settings.tstep == 0

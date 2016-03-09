@@ -98,8 +98,8 @@ priorR = EwensPitman(settings.α, settings.θ)
 priorC = AminoAcidPriorCol(data, 3, settings.γ, settings.r)
 mcmcobj = AminoAcidMCMC(data, [1; 1; 1; 3; 3; 2], priorR, priorC, settings)
 
-brwsupport_1 = KSupport(m, n, settings.maxclust, settings.maxunit)
-brwsupport_1.C[1:2, :] = UInt8[3 1 2 1 1 1 4 3 2 1 2 1 1 1 1 1 2 1;
+brwsupport = KSupport(m, n, settings.maxclust, settings.maxunit)
+brwsupport.C[1:2, :] = UInt8[3 1 2 1 1 1 4 3 2 1 2 1 1 1 1 1 2 1;
                                4 1 2 1 1 1 3 4 2 1 2 1 1 1 1 1 2 1]
 
 R = [1; 1; 1; 3; 3; 3]
@@ -109,63 +109,28 @@ hj = 3
 n1s = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 3]), 2))'
 v = [3; 3]
 
-brwsupport_1.ni = vec(data[:, 6])
+brwsupport.ni = vec(data[:, 6])
 
-loglikbrw!(k, hi, hj, priorC, brwsupport_1, mcmcobj)
-
-correctloglik = 0.0
-lidx = 0
-for b in 1:m
-  lidx = brwsupport_1.C[1, b] + 4 * (b - 1)
-  correctloglik += logmarglik(n1s[1, b], v[1], priorC.A[lidx], priorC.B[lidx])
-  lidx = brwsupport_1.C[2, b] + 4 * (b - 1)
-  correctloglik += logmarglik(n1s[2, b], v[2], priorC.A[lidx], priorC.B[lidx])
-end
-
-@test_approx_eq_eps brwsupport_1.loglik correctloglik ε
-
-# [1; 1; 1; 3; 3; 2] => [1; 1; 1; 3; 3; 2]
-priorR = EwensPitman(settings.α, settings.θ)
-priorC = AminoAcidPriorCol(data, 3, settings.γ, settings.r)
-mcmcobj = AminoAcidMCMC(data, [1; 1; 1; 3; 3; 2], priorR, priorC, settings)
-
-brwsupport_2 = KSupport(m, n, settings.maxclust, settings.maxunit)
-brwsupport_2.C[1:3, :] = UInt8[3 1 2 1 1 1 4 3 2 1 2 1 1 1 1 1 2 1;
-                               4 1 2 1 1 1 3 4 2 1 2 1 1 1 1 1 2 1;
-                               3 1 2 1 1 1 3 4 2 1 2 1 1 1 1 1 2 1]
-
-R = [1; 1; 1; 3; 3; 2]
-k = 3
-hi = 2
-hj = 2
-n1s = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2),
-           sum(float(data[:, R .== 3]), 2))'
-v = [3; 1; 2]
-
-brwsupport_2.ni = vec(data[:, 6])
-
-loglikbrw!(k, hi, hj, priorC, brwsupport_2, mcmcobj)
+loglikbrw!(k, hi, hj, priorC, brwsupport, mcmcobj)
 
 correctloglik = 0.0
 lidx = 0
 for b in 1:m
-  lidx = brwsupport_2.C[1, b] + 4 * (b - 1)
+  lidx = brwsupport.C[1, b] + 4 * (b - 1)
   correctloglik += logmarglik(n1s[1, b], v[1], priorC.A[lidx], priorC.B[lidx])
-  lidx = brwsupport_2.C[2, b] + 4 * (b - 1)
+  lidx = brwsupport.C[2, b] + 4 * (b - 1)
   correctloglik += logmarglik(n1s[2, b], v[2], priorC.A[lidx], priorC.B[lidx])
-  lidx = brwsupport_2.C[3, b] + 4 * (b - 1)
-  correctloglik += logmarglik(n1s[3, b], v[3], priorC.A[lidx], priorC.B[lidx])
 end
 
-@test_approx_eq_eps brwsupport_2.loglik correctloglik ε
+@test_approx_eq_eps brwsupport.loglik correctloglik ε
 
 # [1; 1; 1; 3; 3; 2] => [1; 1; 2; 3; 3; 2]
 priorR = EwensPitman(settings.α, settings.θ)
 priorC = AminoAcidPriorCol(data, 3, settings.γ, settings.r)
 mcmcobj = AminoAcidMCMC(data, [1; 1; 1; 3; 3; 2], priorR, priorC, settings)
 
-brwsupport_3 = KSupport(m, n, settings.maxclust, settings.maxunit)
-brwsupport_3.C[1:3, :] = UInt8[3 1 2 1 1 1 4 3 2 1 2 1 1 1 1 1 2 1;
+brwsupport = KSupport(m, n, settings.maxclust, settings.maxunit)
+brwsupport.C[1:3, :] = UInt8[3 1 2 1 1 1 4 3 2 1 2 1 1 1 1 1 2 1;
                                4 1 2 1 1 1 3 4 2 1 2 1 1 1 1 1 2 1;
                                3 1 2 1 1 1 3 4 2 1 2 1 1 1 1 1 2 1]
 
@@ -177,30 +142,30 @@ n1s = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2),
            sum(float(data[:, R .== 3]), 2))'
 v = [2; 2; 2]
 
-brwsupport_3.ni = vec(data[:, 3])
+brwsupport.ni = vec(data[:, 3])
 
-loglikbrw!(k, hi, hj, priorC, brwsupport_3, mcmcobj)
+loglikbrw!(k, hi, hj, priorC, brwsupport, mcmcobj)
 
 correctloglik = 0.0
 lidx = 0
 for b in 1:m
-  lidx = brwsupport_3.C[1, b] + 4 * (b - 1)
+  lidx = brwsupport.C[1, b] + 4 * (b - 1)
   correctloglik += logmarglik(n1s[1, b], v[1], priorC.A[lidx], priorC.B[lidx])
-  lidx = brwsupport_3.C[2, b] + 4 * (b - 1)
+  lidx = brwsupport.C[2, b] + 4 * (b - 1)
   correctloglik += logmarglik(n1s[2, b], v[2], priorC.A[lidx], priorC.B[lidx])
-  lidx = brwsupport_3.C[3, b] + 4 * (b - 1)
+  lidx = brwsupport.C[3, b] + 4 * (b - 1)
   correctloglik += logmarglik(n1s[3, b], v[3], priorC.A[lidx], priorC.B[lidx])
 end
 
-@test_approx_eq_eps brwsupport_3.loglik correctloglik ε
+@test_approx_eq_eps brwsupport.loglik correctloglik ε
 
 # [1; 1; 1; 4; 4; 2] => [1; 1; 3; 4; 4; 2]
 priorR = EwensPitman(settings.α, settings.θ)
 priorC = AminoAcidPriorCol(data, 3, settings.γ, settings.r)
 mcmcobj = AminoAcidMCMC(data, [1; 1; 1; 4; 4; 2], priorR, priorC, settings)
 
-brwsupport_4 = KSupport(m, n, settings.maxclust, settings.maxunit)
-brwsupport_4.C[1:4, :] = UInt8[3 1 2 1 1 1 4 3 2 1 2 1 1 1 1 1 2 1;
+brwsupport = KSupport(m, n, settings.maxclust, settings.maxunit)
+brwsupport.C[1:4, :] = UInt8[3 1 2 1 1 1 4 3 2 1 2 1 1 1 1 1 2 1;
                                4 1 2 1 1 1 3 4 2 1 2 1 1 1 1 1 2 1;
                                3 1 2 1 1 1 3 4 2 1 2 1 1 1 1 1 2 1;
                                3 1 2 1 1 1 4 3 2 1 2 1 1 1 1 1 2 1]
@@ -213,21 +178,21 @@ n1s = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2),
            sum(float(data[:, R .== 3]), 2), sum(float(data[:, R .== 4]), 2))'
 v = [2; 1; 1; 2]
 
-brwsupport_4.ni = vec(data[:, 3])
+brwsupport.ni = vec(data[:, 3])
 
-loglikbrw!(k, hi, hj, priorC, brwsupport_4, mcmcobj)
+loglikbrw!(k, hi, hj, priorC, brwsupport, mcmcobj)
 
 correctloglik = 0.0
 lidx = 0
 for b in 1:m
-  lidx = brwsupport_4.C[1, b] + 4 * (b - 1)
+  lidx = brwsupport.C[1, b] + 4 * (b - 1)
   correctloglik += logmarglik(n1s[1, b], v[1], priorC.A[lidx], priorC.B[lidx])
-  lidx = brwsupport_4.C[2, b] + 4 * (b - 1)
+  lidx = brwsupport.C[2, b] + 4 * (b - 1)
   correctloglik += logmarglik(n1s[2, b], v[2], priorC.A[lidx], priorC.B[lidx])
-  lidx = brwsupport_4.C[3, b] + 4 * (b - 1)
+  lidx = brwsupport.C[3, b] + 4 * (b - 1)
   correctloglik += logmarglik(n1s[4, b], v[4], priorC.A[lidx], priorC.B[lidx])
-  lidx = brwsupport_4.C[4, b] + 4 * (b - 1)
+  lidx = brwsupport.C[4, b] + 4 * (b - 1)
   correctloglik += logmarglik(n1s[3, b], v[3], priorC.A[lidx], priorC.B[lidx])
 end
 
-@test_approx_eq_eps brwsupport_4.loglik correctloglik ε
+@test_approx_eq_eps brwsupport.loglik correctloglik ε

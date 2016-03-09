@@ -7,5 +7,6 @@ include("io.jl")
 include("merge.jl")
 include("split.jl")
 include("biasedrw.jl")
+include("updatec.jl")
 
 include("algorithm.jl")

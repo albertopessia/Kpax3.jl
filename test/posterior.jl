@@ -3,10 +3,10 @@
 fastafile = "data/mcmc_6.fasta"
 partition = "data/mcmc_6.csv"
 outfile = "../build/mcmc_6.dat"
-T = 1000000
-burnin = 100000
+T = 10000000
+burnin = 500000
 tstep = 1
-op = [0.0; 1.0; 0.0]
+op = [0.6; 0.3; 0.1]
 α = 0.0
 θ = 1.0
 γ = [0.6; 0.35; 0.05]
@@ -17,7 +17,7 @@ parawm = 5.0
 maxclust = 1
 maxunit = 1
 verbose = true
-verbosestep = 10000
+verbosestep = 1000000
 
 # parameters to test are
 # R = [1; 1; 2; 2; 3; 2]
