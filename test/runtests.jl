@@ -16,7 +16,8 @@ tests = ["dataprocessing";
          "partitionrows";
          "mcmcfunctions";
          "mcmcpartitionratio";
-         "mcmcloglik"]
+         "mcmcloglik"
+         "mcmcbrw"]
 
 for t in tests
   include(string(t, ".jl"))

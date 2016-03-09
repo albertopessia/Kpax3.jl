@@ -2,39 +2,28 @@
 
 ε = 1.0e-13
 
-# suppose we split a cluster with 15 units into two clusters of 8 and 7 units
-# respectively, moving from k = 5 to k = 6
-n = 50
-v = [22; 15; 7; 5; 1]
-z = [22;  8; 7; 5; 1; 7]
-
-ka = 5
-kb = 6
-
-vi = 8
-vj = 7
+# suppose we
+# a) split a cluster with 15 units into two clusters of 8 and 7 units
+#    respectively, moving from k = 5 to k = 6
+# b) move a unit from a cluster with 15 units to a new cluster (split)
+# c) move a unit from a cluster with 15 units to another cluster with 7 units
 
 for (α, θ) in ((0.4, -0.3), (0.4, 0.0), (0.4, 2.1), (0.0, 2.1), (-2.4, 10))
   ep = EwensPitman(α, θ)
-  logratio = logdPriorRow(n, kb, z, ep) - logdPriorRow(n, ka, v, ep)
-  @test_approx_eq_eps logratiopriorrowsplit(kb, vi, vj, ep) logratio ε
-  @test_approx_eq_eps logratiopriorrowmerge(ka, vi, vj, ep) -logratio ε
-end
+  lr1 = logdPriorRow(50, 6, [22;  8; 7; 5; 1; 7], ep) -
+        logdPriorRow(50, 5, [22; 15; 7; 5; 1], ep)
 
-# biased random walk
-n = 50
-v = [22; 15; 7; 5; 1]
-z = [22; 14; 7; 5; 1; 1]
+  @test_approx_eq_eps logratiopriorrowsplit(6, 8, 7, ep) lr1 ε
+  @test_approx_eq_eps logratiopriorrowmerge(5, 8, 7, ep) -lr1 ε
 
-ka = 5
-kb = 6
+  lr2 = logdPriorRow(50, 6, [22; 14; 7; 5; 1; 1], ep) -
+        logdPriorRow(50, 5, [22; 15; 7; 5; 1], ep)
 
-vi = 14
-vj = 1
+  @test_approx_eq_eps logratiopriorrowbrwsplit(6, 15, ep) lr2 ε
+  @test_approx_eq_eps logratiopriorrowbrwmerge(5, 14, ep) -lr2 ε
 
-for (α, θ) in ((0.4, -0.3), (0.4, 0.0), (0.4, 2.1), (0.0, 2.1), (-2.4, 10))
-  ep = EwensPitman(α, θ)
-  logratio = logdPriorRow(n, kb, z, ep) - logdPriorRow(n, ka, v, ep)
-  @test_approx_eq_eps logratiopriorrowbrwsplit(kb, vi + vj, ep) logratio ε
-  @test_approx_eq_eps logratiopriorrowbrwmerge(ka, vi, ep) -logratio ε
+  lr3 = logdPriorRow(50, 5, [22; 14; 8; 5; 1], ep) -
+        logdPriorRow(50, 5, [22; 15; 7; 5; 1], ep)
+
+  @test_approx_eq_eps logratiopriorrowbrwmove(15, 7, ep) lr3 ε
 end

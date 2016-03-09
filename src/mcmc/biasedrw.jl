@@ -6,32 +6,37 @@ function biased_random_walk!(data::Matrix{UInt8},
                              settings::KSettings,
                              support::KSupport,
                              mcmcobj::AminoAcidMCMC)
-  i = StatsBase.sample(1:size(data, 2))
-
-  # "new" cluster will get the same label if mcmcobj.v[hi] == 1
-  hi = mcmcobj.R[i]
-  hj = hi
-
   k = length(mcmcobj.cl)
-  v = StatsBase.sample(1:k)
 
-  if v == k
-    # move i to a new cluster
-    if mcmcobj.v[hi] > 1
-      k += 1
+  i = StatsBase.sample(1:size(data, 2))
+  hi = mcmcobj.R[i]
+
+  if mcmcobj.v[hi] > 1
+    if k > 1
+      v = StatsBase.sample(1:k)
+
+      if v == k
+        # move i to a new cluster
+        k += 1
+        hj = findfirst(!mcmcobj.filledcluster)
+        support.lograR = logratiopriorrowbrwsplit(k, mcmcobj.v[hi], priorR)
+      else
+        hj = mcmcobj.cl[v] < hi ? mcmcobj.cl[v] : mcmcobj.cl[v + 1]
+        support.lograR = logratiopriorrowbrwmove(mcmcobj.v[hi], mcmcobj.v[hj],
+                                                 priorR)
+      end
+    else
+      # move i to a new cluster
+      k = 2
       hj = findfirst(!mcmcobj.filledcluster)
       support.lograR = logratiopriorrowbrwsplit(k, mcmcobj.v[hi], priorR)
     end
   else
-    hj = v < hi ? mcmcobj.cl[v] : mcmcobj.cl[v + 1]
-
-    if mcmcobj.v[hi] > 1
-      support.lograR = logratiopriorrowbrwmove(mcmcobj.v[hi], mcmcobj.v[hj],
-                                               priorR)
-    else
-      k -= 1
-      support.lograR = logratiopriorrowbrwmerge(k, mcmcobj.v[hj], priorR)
-    end
+    # move i to another cluster
+    k -= 1
+    v = StatsBase.sample(1:k)
+    hj = mcmcobj.cl[v] < hi ? mcmcobj.cl[v] : mcmcobj.cl[v + 1]
+    support.lograR = logratiopriorrowbrwmerge(k, mcmcobj.v[hj], priorR)
   end
 
   initsupportbrw!(k, i, mcmcobj.v[hi], data, support)
@@ -60,30 +65,26 @@ function performbrw!(i::Int,
                      settings::KSettings,
                      support::KSupport,
                      mcmcobj::AminoAcidMCMC)
-  if hi == hj
-    performbrwupdate!(support, mcmcobj)
-  else
-    # remove i from the list of units of cluster hi
-    idx = 0
-    for j in 1:mcmcobj.v[hi]
-      if mcmcobj.unit[hi][j] != i
-        support.ui[idx += 1] = mcmcobj.unit[hi][j]
-      end
+  # remove i from the list of units of cluster hi
+  idx = 0
+  for j in 1:mcmcobj.v[hi]
+    if mcmcobj.unit[hi][j] != i
+      support.ui[idx += 1] = mcmcobj.unit[hi][j]
     end
+  end
 
-    if hj > 0
-      if mcmcobj.v[hi] > 1
-        if mcmcobj.filledcluster[hj]
-          performbrwmove!(i, hi, hj, support, mcmcobj)
-        else
-          performbrwsplit!(i, hi, hj, priorC, support, mcmcobj)
-        end
+  if hj > 0
+    if mcmcobj.v[hi] > 1
+      if mcmcobj.filledcluster[hj]
+        performbrwmove!(i, hi, hj, support, mcmcobj)
       else
-        performbrwmerge!(i, hi, hj, priorC, support, mcmcobj)
+        performbrwsplit!(i, hi, hj, priorC, support, mcmcobj)
       end
     else
-      performbrwsplitallocate!(i, hi, k, priorC, settings, support, mcmcobj)
+      performbrwmerge!(i, hi, hj, priorC, support, mcmcobj)
     end
+  else
+    performbrwsplitallocate!(i, hi, k, priorC, settings, support, mcmcobj)
   end
 
   mcmcobj.logpR += support.lograR
@@ -244,18 +245,6 @@ function performbrwsplitallocate!(i::Int,
   mcmcobj.unit = unit
 
   copy!(priorC.logω, support.logω)
-
-  nothing
-end
-
-function performbrwupdate!(support::KSupport,
-                           mcmcobj::AminoAcidMCMC)
-  for b in 1:size(mcmcobj.C, 2)
-    idx = 0
-    for g in mcmcobj.cl
-      mcmcobj.C[g, b] = support.C[idx += 1, b]
-    end
-  end
 
   nothing
 end
