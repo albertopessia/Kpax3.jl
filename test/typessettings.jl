@@ -3,7 +3,7 @@
 import StatsBase: WeightVec
 import Distributions: Beta
 
-outfile = "outfile.bin"
+outfile = "../build/test.bin"
 T = 1000000
 burnin = 10000
 tstep = 1
@@ -41,3 +41,46 @@ settings = KSettings(outfile, T, burnin, tstep, op, α, θ, γ, r, λs1, λs2,
 @test settings.maxunit == maxunit
 @test settings.verbose == verbose
 @test settings.verbosestep == verbosestep
+
+@test_throws KDomainError KSettings(outfile, 0, burnin, tstep, op, α, θ, γ, r,
+                                    λs1, λs2, parawm, maxclust, maxunit,
+                                    verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, -1, tstep, op, α, θ, γ, r,
+                                    λs1, λs2, parawm, maxclust, maxunit,
+                                    verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, burnin, -1, op, α, θ, γ, r,
+                                    λs1, λs2, parawm, maxclust, maxunit,
+                                    verbose, verbosestep)
+@test_throws KInputError KSettings(outfile, T, burnin, tstep, [1.0; 0.0], α,
+                                    θ, γ, r, λs1, λs2, parawm, maxclust,
+                                    maxunit, verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, burnin, tstep, [1.0; 0.0; -1.0],
+                                    α, θ, γ, r, λs1, λs2, parawm, maxclust,
+                                    maxunit, verbose, verbosestep)
+@test_throws KInputError KSettings(outfile, T, burnin, tstep, op, α, θ,
+                                    [1.0; 0.0], r, λs1, λs2, parawm, maxclust,
+                                    maxunit, verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, burnin, tstep, op, α, θ,
+                                    [1.0; 0.0; -1.0], r, λs1, λs2, parawm,
+                                    maxclust, maxunit, verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, burnin, tstep, op, α, θ, γ, 0.0,
+                                    λs1, λs2, parawm, maxclust, maxunit,
+                                    verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, burnin, tstep, op, α, θ, γ, r,
+                                    0.0, λs2, parawm, maxclust, maxunit,
+                                    verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, burnin, tstep, op, α, θ, γ, r,
+                                    λs1, 0.0, parawm, maxclust, maxunit,
+                                    verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, burnin, tstep, op, α, θ, γ, r,
+                                    λs1, λs2, 0.0, maxclust, maxunit,
+                                    verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, burnin, tstep, op, α, θ, γ, r,
+                                    λs1, λs2, parawm, 0, maxunit,
+                                    verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, burnin, tstep, op, α, θ, γ, r,
+                                    λs1, λs2, parawm, maxclust, 0,
+                                    verbose, verbosestep)
+@test_throws KDomainError KSettings(outfile, T, burnin, tstep, op, α, θ, γ, r,
+                                    λs1, λs2, parawm, maxclust, maxunit,
+                                    verbose, -1)

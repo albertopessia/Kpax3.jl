@@ -1,7 +1,5 @@
 # This file is part of Kpax3. License is MIT.
 
-ε = 1.0e-13
-
 # suppose we
 # a) split a cluster with 15 units into two clusters of 8 and 7 units
 #    respectively, moving from k = 5 to k = 6

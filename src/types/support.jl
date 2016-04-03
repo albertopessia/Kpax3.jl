@@ -17,6 +17,9 @@ allocation of the same objects over and over again.
 
 """
 type KSupport
+  m::Int
+  n::Int
+
   vi::Int
   ni::Vector{Float64}
   ui::Vector{Int}
@@ -28,6 +31,9 @@ type KSupport
   wj::KWeight
 
   tmp::Vector{Float64}
+
+  cl::Vector{Int}
+  k::Int
 
   C::Matrix{UInt8}
 
@@ -54,11 +60,15 @@ function KSupport(m::Int,
 
   tmp = zeros(Float64, 4)
 
+  cl = zeros(Int, n)
+  k = 0
+
   C = zeros(UInt8, maxclust, m)
 
   logω = zeros(Float64, 4)
 
   logpC = zeros(Float64, 2)
 
-  KSupport(vi, ni, ui, wi, vj, nj, uj, wj, tmp, C, logω, logpC, 0.0, 0.0)
+  KSupport(m, n, vi, ni, ui, wi, vj, nj, uj, wj, tmp, cl, k, C, logω, logpC,
+           0.0, 0.0)
 end

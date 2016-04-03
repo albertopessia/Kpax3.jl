@@ -59,7 +59,7 @@ end
 function updateclusteriweights!(x::UInt8,
                                 b::Int,
                                 support::KSupport)
-  support.ni[b] += Float64(x)
+  support.ni[b] += float(x)
 
   support.wi.w[1, b] = support.wi.z[1, b]
   support.wi.w[2, b] = support.wi.z[2, b]
@@ -83,7 +83,7 @@ function updateclusteri!(u::Int,
   support.vi += 1
   support.ui[support.vi] = u
 
-  for b in 1:size(data, 1)
+  for b in 1:support.m
     updateclusteriweights!(data[b, u], b, support)
   end
 
@@ -93,7 +93,7 @@ end
 function updateclusterjweights!(x::UInt8,
                                 b::Int,
                                 support::KSupport)
-  support.nj[b] += Float64(x)
+  support.nj[b] += float(x)
 
   support.wj.w[1, b] = support.wj.z[1, b]
   support.wj.w[2, b] = support.wj.z[2, b]
@@ -117,7 +117,7 @@ function updateclusterj!(u::Int,
   support.vj += 1
   support.uj[support.vj] = u
 
-  for b in 1:size(data, 1)
+  for b in 1:support.m
     updateclusterjweights!(data[b, u], b, support)
   end
 
@@ -128,7 +128,7 @@ function initclusteriweights!(x::UInt8,
                               b::Int,
                               priorC::AminoAcidPriorCol,
                               support::KSupport)
-  support.ni[b] = Float64(x)
+  support.ni[b] = float(x)
 
   support.wi.w[1, b] = priorC.logγ[1] + support.logω[1] +
                        logmarglik(x, 1, priorC.A[1, b], priorC.B[1, b])
@@ -154,7 +154,7 @@ function initclusterjweights!(x::UInt8,
                               b::Int,
                               priorC::AminoAcidPriorCol,
                               support::KSupport)
-  support.nj[b] = Float64(x)
+  support.nj[b] = float(x)
 
   support.wj.w[1, b] = priorC.logγ[1] + support.logω[1] +
                        logmarglik(x, 1, priorC.A[1, b], priorC.B[1, b])
@@ -181,6 +181,7 @@ function initsupportsplitmerge!(ij::Vector{Int},
                                 k::Int,
                                 data::Matrix{UInt8},
                                 priorC::AminoAcidPriorCol,
+                                settings::KSettings,
                                 support::KSupport)
   support.logω[1] = 0.0
   support.logω[2] = 0.0
@@ -191,18 +192,20 @@ function initsupportsplitmerge!(ij::Vector{Int},
   support.vj = 1
 
   if length(support.ui) <= S
-    support.ui = zeros(Int, S + 1)
-    support.uj = zeros(Int, S + 1)
+    len = min(support.n, S + settings.maxunit)
+    support.ui = zeros(Int, len)
+    support.uj = zeros(Int, len)
   end
 
   support.ui[1] = ij[1]
   support.uj[1] = ij[2]
 
   if size(support.C, 1) < k
-    support.C = zeros(UInt8, k, size(data, 1))
+    len = min(support.n, k + settings.maxclust - 1)
+    support.C = zeros(UInt8, k, support.m)
   end
 
-  for b in 1:size(data, 1)
+  for b in 1:support.m
     initclusteriweights!(data[b, ij[1]], b, priorC, support)
     initclusterjweights!(data[b, ij[2]], b, priorC, support)
   end
@@ -214,25 +217,28 @@ function initsupportbrw!(k::Int,
                          i::Int,
                          vi::Int,
                          data::Matrix{UInt8},
+                         settings::KSettings,
                          support::KSupport)
   support.logω[1] = 0.0
   support.logω[2] = 0.0
   support.logω[3] = log(k - 1.0) - log(k)
   support.logω[4] = -log(k)
 
-  for b in 1:size(data, 1)
-    support.ni[b] = data[b, i]
+  for b in 1:support.m
+    support.ni[b] = float(data[b, i])
   end
 
   support.vi = vi
 
   if length(support.ui) <= vi
-    support.ui = zeros(Int, vi)
-    support.uj = zeros(Int, vi)
+    len = min(support.n, vi + settings.maxunit)
+    support.ui = zeros(Int, len)
+    support.uj = zeros(Int, len)
   end
 
   if size(support.C, 1) < k
-    support.C = zeros(UInt8, k, size(data, 1))
+    len = min(support.n, k + settings.maxclust - 1)
+    support.C = zeros(UInt8, len, support.m)
   end
 
   nothing

@@ -7,48 +7,44 @@ function loglikbrw!(k::Int,
                     support::KSupport,
                     mcmcobj::AminoAcidMCMC)
   support.loglik = 0.0
-  l = 1
   lidx = 0
+  g = 0
 
-  for b in 1:size(support.C, 2)
-    l = 1
+  if k >= mcmcobj.k
+    h = support.k - 2
+  else
+    h = support.k - 1
+  end
 
-    for g in mcmcobj.cl
+  for b in 1:support.m
+    for l in 1:h
+      g = support.cl[l]
       lidx = support.C[l, b] + 4 * (b - 1)
-
-      if g != hi
-        if g != hj
-          # this cluster is not being affected by the move
-          support.loglik += logmarglik(mcmcobj.n1s[g, b], mcmcobj.v[g],
-                                       priorC.A[lidx], priorC.B[lidx])
-        else
-          # we are moving i into an existing cluster
-          support.loglik += logmarglik(mcmcobj.n1s[g, b] + support.ni[b],
-                                       mcmcobj.v[g] + 1, priorC.A[lidx],
-                                       priorC.B[lidx])
-        end
-
-        l += 1
-      else
-        if g == hj
-          # move singleton i into the same cluster
-          support.loglik += logmarglik(support.ni[b], 1, priorC.A[lidx],
-                                       priorC.B[lidx])
-          l += 1
-        elseif mcmcobj.v[g] > 1
-          # remove i from this cluster
-          support.loglik += logmarglik(mcmcobj.n1s[g, b] - support.ni[b],
-                                       mcmcobj.v[g] - 1, priorC.A[lidx],
-                                       priorC.B[lidx])
-          l += 1
-        end
-      end
+      support.loglik += logmarglik(mcmcobj.n1s[g, b], mcmcobj.v[g],
+                                   priorC.A[lidx], priorC.B[lidx])
     end
 
-    if length(mcmcobj.cl) < k
-      # move i into a new cluster of its own
-      lidx = support.C[l, b] + 4 * (b - 1)
-      support.loglik += logmarglik(support.ni[b], 1, priorC.A[lidx],
+    if k == mcmcobj.k
+      lidx = support.C[support.k - 1, b] + 4 * (b - 1)
+      support.loglik += logmarglik(mcmcobj.n1s[hi, b] - support.ni[b],
+                                   mcmcobj.v[hi] - 1, priorC.A[lidx],
+                                   priorC.B[lidx])
+      lidx = support.C[support.k, b] + 4 * (b - 1)
+      support.loglik += logmarglik(mcmcobj.n1s[hj, b] + support.ni[b],
+                                   mcmcobj.v[hj] + 1, priorC.A[lidx],
+                                   priorC.B[lidx])
+    elseif k > mcmcobj.k
+      lidx = support.C[support.k - 1, b] + 4 * (b - 1)
+      support.loglik += logmarglik(mcmcobj.n1s[hi, b] - support.ni[b],
+                                   mcmcobj.v[hi] - 1, priorC.A[lidx],
+                                   priorC.B[lidx])
+     lidx = support.C[support.k, b] + 4 * (b - 1)
+     support.loglik += logmarglik(support.ni[b], 1, priorC.A[lidx],
+                                  priorC.B[lidx])
+    else
+      lidx = support.C[support.k, b] + 4 * (b - 1)
+      support.loglik += logmarglik(mcmcobj.n1s[hj, b] + support.ni[b],
+                                   mcmcobj.v[hj] + 1, priorC.A[lidx],
                                    priorC.B[lidx])
     end
   end

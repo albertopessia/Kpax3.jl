@@ -10,9 +10,9 @@ function merge!(ij::Vector{Int},
                 support::KSupport,
                 mcmcobj::AminoAcidMCMC)
   # number of clusters after the merge
-  k = length(mcmcobj.cl) - 1
+  k = mcmcobj.k - 1
 
-  initsupportsplitmerge!(ij, S, k, data, priorC, support)
+  initsupportsplitmerge!(ij, S, k, data, priorC, settings, support)
 
   hi = mcmcobj.R[ij[1]]
   hj = mcmcobj.R[ij[2]]
@@ -33,8 +33,8 @@ function merge!(ij::Vector{Int},
   p = 0.0
 
   vi = mcmcobj.v[hi] + mcmcobj.v[hj]
-  ni = zeros(Float64, size(data, 1))
-  for b in 1:size(data, 1)
+  ni = zeros(Float64, support.m)
+  for b in 1:support.m
     ni[b] = mcmcobj.n1s[hi, b] + mcmcobj.n1s[hj, b]
   end
 
@@ -44,7 +44,7 @@ function merge!(ij::Vector{Int},
     lcp[1] = lcp[2] = 0.0
 
     # compute p(x_{u} | x_{hi,1:(u-1)}) and p(x_{u} | x_{hj,1:(u-1)})
-    for b in 1:size(data, 1)
+    for b in 1:support.m
       lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, support)
       lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, support)
     end
@@ -78,7 +78,7 @@ function merge!(ij::Vector{Int},
               lq)
 
   if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
-    performmerge!(hi, hj, ni, vi, priorC, support, mcmcobj)
+    performmerge!(hi, hj, ni, vi, priorC, settings, support, mcmcobj)
   end
 
   nothing
@@ -89,26 +89,43 @@ function performmerge!(hi::Int,
                        ni::Vector{Float64},
                        vi::Int,
                        priorC::PriorColPartition,
+                       settings::KSettings,
                        support::KSupport,
                        mcmcobj::AminoAcidMCMC)
   for j in 1:mcmcobj.v[hj]
     mcmcobj.R[mcmcobj.unit[hj][j]] = hi
   end
 
-  mcmcobj.filledcluster[hj] = false
-  mcmcobj.cl = find(mcmcobj.filledcluster)
+  mcmcobj.emptycluster[hj] = true
 
-  for b in 1:size(mcmcobj.C, 2)
-    idx = 0
-    for g in mcmcobj.cl
-      mcmcobj.C[g, b] = support.C[idx += 1, b]
+  k = 0
+  for a in 1:length(mcmcobj.emptycluster)
+    if !mcmcobj.emptycluster[a]
+      mcmcobj.cl[k += 1] = a
     end
+  end
+
+  mcmcobj.k = k
+
+  for b in 1:support.m
+    for l in 1:(support.k - 1)
+      mcmcobj.C[support.cl[l], b] = support.C[l, b]
+    end
+    mcmcobj.C[hi, b] = support.C[support.k, b]
 
     mcmcobj.n1s[hi, b] = ni[b]
   end
 
-  mcmcobj.unit[hi] = [mcmcobj.unit[hi][1:mcmcobj.v[hi]];
-                      mcmcobj.unit[hj][1:mcmcobj.v[hj]]]
+  if length(mcmcobj.unit[hi]) < vi
+    tmp = zeros(Int, min(support.n, vi + settings.maxunit - 1))
+    copy!(tmp, 1, mcmcobj.unit[hi], 1, mcmcobj.v[hi])
+    copy!(tmp, mcmcobj.v[hi] + 1, mcmcobj.unit[hj], 1, mcmcobj.v[hj])
+    mcmcobj.unit[hi] = tmp
+  else
+    copy!(mcmcobj.unit[hi], mcmcobj.v[hi] + 1, mcmcobj.unit[hj], 1,
+          mcmcobj.v[hj])
+  end
+
   mcmcobj.v[hi] = vi
 
   mcmcobj.logpR += support.lograR

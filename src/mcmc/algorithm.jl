@@ -19,7 +19,7 @@ function splitmerge!(ij::Vector{Int},
                      support::KSupport,
                      mcmcobj::AminoAcidMCMC)
   # cluster founders (units i and j)
-  StatsBase.sample!(1:size(data, 2), ij, replace=false, ordered=false)
+  StatsBase.sample!(1:support.n, ij, replace=false, ordered=false)
 
   # clusters of i and j respectively
   gi = mcmcobj.R[ij[1]]
@@ -77,11 +77,11 @@ function kpax3mcmc!(data::Matrix{UInt8},
   ij = zeros(Int, 2)
 
   # neighbour indices
-  neighbours = zeros(Int, size(data, 2))
+  neighbours = zeros(Int, support.n)
 
   try
-    write(fp, size(data, 2))
-    write(fp, size(data, 1))
+    write(fp, support.n)
+    write(fp, support.m)
 
     if settings.burnin > 0
       if settings.verbose

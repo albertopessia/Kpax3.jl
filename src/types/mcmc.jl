@@ -14,8 +14,9 @@ type AminoAcidMCMC <: KMCMC
   R::Vector{Int}
   C::Matrix{UInt8}
 
-  filledcluster::BitArray{1}
+  emptycluster::BitArray{1}
   cl::Vector{Int}
+  k::Int
 
   v::Vector{Int}
   n1s::Matrix{Float64}
@@ -35,17 +36,20 @@ function AminoAcidMCMC(data::Matrix{UInt8},
 
   C = zeros(UInt8, settings.maxclust, m)
 
-  filledcluster = falses(settings.maxclust)
-  filledcluster[unique(R)] = true
-
-  cl = find(filledcluster)
+  emptycluster = trues(settings.maxclust)
+  cl = zeros(Int, settings.maxclust)
 
   v = zeros(Int, settings.maxclust)
   n1s = zeros(Float64, settings.maxclust, m)
   unit = Vector{Int}[zeros(Int, settings.maxunit) for g in 1:settings.maxclust]
 
+  g = 0
   for a in 1:n
     g = R[a]
+
+    if emptycluster[g]
+      emptycluster[g] = false
+    end
 
     if v[g] == length(unit[g])
       tmp = zeros(Int, min(v[g] + settings.maxunit, n))
@@ -56,12 +60,22 @@ function AminoAcidMCMC(data::Matrix{UInt8},
     unit[g][v[g]] = a
 
     for b in 1:m
-      n1s[g, b] += Float64(data[b, a])
+      n1s[g, b] += float(data[b, a])
     end
   end
 
-  logpR = logdPriorRow(n, length(cl), v, priorR)
-  logpC = rpostpartitioncols!(C, cl, v, n1s, priorC)
+  # we do it here and not in the previous loop because we want them sorted
+  # it is not really necessary but they will be sorted during the simulation
+  # anyway (we will loop on emptycluster from now on)
+  k = 0
+  for a in 1:length(emptycluster)
+    if !emptycluster[a]
+      cl[k += 1] = a
+    end
+  end
+
+  logpR = logdPriorRow(n, k, v, priorR)
+  logpC = rpostpartitioncols!(C, cl, k, v, n1s, priorC)
   loglik = 0.0
 
   # If array A has dimension (d_{1}, ..., d_{l}, ..., d_{L}), to access
@@ -74,11 +88,12 @@ function AminoAcidMCMC(data::Matrix{UInt8},
   # A[i_{1}, ..., i_{l}, ..., i_{L}] == A[lidx]
   lidx = 0
   for b in 1:m
-    for g in cl
-      lidx = C[g, b] + 4 * (b - 1)
-      loglik += logmarglik(n1s[g, b], v[g], priorC.A[lidx], priorC.B[lidx])
+    for l in 1:k
+      lidx = C[cl[l], b] + 4 * (b - 1)
+      loglik += logmarglik(n1s[cl[l], b], v[cl[l]], priorC.A[lidx],
+                           priorC.B[lidx])
     end
   end
 
-  AminoAcidMCMC(R, C, filledcluster, cl, v, n1s, unit, logpR, logpC, loglik)
+  AminoAcidMCMC(R, C, emptycluster, cl, k, v, n1s, unit, logpR, logpC, loglik)
 end

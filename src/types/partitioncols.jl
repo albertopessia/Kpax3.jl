@@ -16,17 +16,11 @@ function AminoAcidPriorCol(data::Matrix{UInt8},
                            r::Float64)
   if length(g) != 3
     throw(KInputError("Argument 'g' does not have length 3."))
-  end
-
-  if g[1] < 0
+  elseif g[1] < 0
     throw(KDomainError("Argument 'g[1]' is negative."))
-  end
-
-  if g[2] < 0
+  elseif g[2] < 0
     throw(KDomainError("Argument 'g[2]' is negative."))
-  end
-
-  if g[3] < 0
+  elseif g[3] < 0
     throw(KDomainError("Argument 'g[3]' is negative."))
   end
 
@@ -50,7 +44,7 @@ function AminoAcidPriorCol(data::Matrix{UInt8},
 
   n1s = zeros(Float64, m)
   for a in 1:n, b in 1:m
-    n1s[b] += Float64(data[b, a])
+    n1s[b] += float(data[b, a])
   end
 
   A = zeros(Float64, 4, m)

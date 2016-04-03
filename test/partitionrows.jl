@@ -2,8 +2,6 @@
 
 include("data/partitions.jl")
 
-ε = 3.0e-15
-
 for (α, θ) in ((0.4, -0.3), (0.4, 0.0), (0.4, 2.1), (0.0, 2.1), (-2.4, 3))
   ep = EwensPitman(α, θ)
 

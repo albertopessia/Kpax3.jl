@@ -23,6 +23,7 @@ include("initpartition.jl")
 # Load the rest #
 #################
 include("dataprocessing/dataprocessing.jl")
+include("distances/distances.jl")
 include("model/model.jl")
 include("mcmc/mcmc.jl")
 include("kpax3.jl")

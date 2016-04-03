@@ -1,28 +1,26 @@
 # This file is part of Kpax3. License is MIT.
 
-ε = eps()
-
-settings = KSettings("../build/output.dat", 1, 0, 1, [1.0; 0.0; 0.0], 0.0, 1.0,
+settings = KSettings("../build/test.bin", 1, 0, 1, [1.0; 0.0; 0.0], 0.0, 1.0,
                      [0.6; 0.35; 0.05], 135.0, 1.0, 1.0, 5.0, 3, 1, true, 1)
 
-data = UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
-             0x01 0x01 0x01 0x01 0x01 0x00;
-             0x00 0x00 0x01 0x00 0x01 0x01;
-             0x01 0x01 0x00 0x01 0x00 0x00;
-             0x01 0x01 0x00 0x00 0x00 0x00;
-             0x00 0x00 0x00 0x01 0x01 0x00;
-             0x01 0x01 0x01 0x00 0x00 0x00;
-             0x00 0x00 0x00 0x01 0x01 0x01;
-             0x00 0x00 0x01 0x00 0x00 0x00;
-             0x01 0x00 0x00 0x01 0x00 0x01;
-             0x00 0x01 0x00 0x00 0x01 0x00;
-             0x00 0x00 0x00 0x00 0x00 0x01;
-             0x01 0x01 0x01 0x00 0x00 0x00;
-             0x00 0x00 0x00 0x01 0x01 0x00;
-             0x01 0x01 0x00 0x00 0x01 0x01;
-             0x00 0x00 0x01 0x01 0x00 0x00;
-             0x01 0x01 0x00 0x01 0x00 0x00;
-             0x00 0x00 0x01 0x00 0x01 0x01]
+data = UInt8[0 0 0 0 0 1;
+             1 1 1 1 1 0;
+             0 0 1 0 1 1;
+             1 1 0 1 0 0;
+             1 1 0 0 0 0;
+             0 0 0 1 1 0;
+             1 1 1 0 0 0;
+             0 0 0 1 1 1;
+             0 0 1 0 0 0;
+             1 0 0 1 0 1;
+             0 1 0 0 1 0;
+             0 0 0 0 0 1;
+             1 1 1 0 0 0;
+             0 0 0 1 1 0;
+             1 1 0 0 1 1;
+             0 0 1 1 0 0;
+             1 1 0 1 0 0;
+             0 0 1 0 1 1]
 
 m, n = size(data)
 
@@ -41,7 +39,7 @@ u = 5
 mergesupport = KSupport(m, n, 1, 1)
 mergelogω = [0.0; 0.0; log(k - 1.0) - log(k); -log(k)]
 
-initsupportsplitmerge!(ij, S, k, data, priorC, mergesupport)
+initsupportsplitmerge!(ij, S, k, data, priorC, settings, mergesupport)
 
 wi = zeros(Float64, 4, m)
 for col in 1:m
@@ -86,7 +84,7 @@ cj = [log(sum(exp(mergesupport.wj.w[:, b])))::Float64 for b in 1:m]
 # move unit u to cluster 2 (test inverse split operator)
 mergesupport = KSupport(m, n, 1, 1)
 
-initsupportsplitmerge!(ij, S, k, data, priorC, mergesupport)
+initsupportsplitmerge!(ij, S, k, data, priorC, settings, mergesupport)
 
 lcp = zeros(Float64, 2)
 for b in 1:m
@@ -145,7 +143,7 @@ cj = [log(sum(exp(mergesupport.wj.w[:, b])))::Float64 for b in 1:m]
 # move unit u to cluster 3 (test inverse split operator)
 mergesupport = KSupport(m, n, 1, 1)
 
-initsupportsplitmerge!(ij, S, k, data, priorC, mergesupport)
+initsupportsplitmerge!(ij, S, k, data, priorC, settings, mergesupport)
 
 lcp = zeros(Float64, 2)
 for b in 1:m
@@ -216,7 +214,7 @@ u = 4
 splitsupport = KSupport(m, n, 1, 1)
 splitlogω = [0.0; 0.0; log(k - 1.0) - log(k); -log(k)]
 
-initsupportsplitmerge!(ij, S, k, data, priorC, splitsupport)
+initsupportsplitmerge!(ij, S, k, data, priorC, settings, splitsupport)
 
 wi = zeros(Float64, 4, m)
 for col in 1:m
@@ -261,7 +259,7 @@ cj = [log(sum(exp(splitsupport.wj.w[:, b])))::Float64 for b in 1:m]
 # move unit u to cluster 1
 spitsupport = KSupport(m, n, 1, 1)
 
-initsupportsplitmerge!(ij, S, k, data, priorC, splitsupport)
+initsupportsplitmerge!(ij, S, k, data, priorC, settings, splitsupport)
 
 lcp = zeros(Float64, 2)
 for b in 1:m
@@ -320,7 +318,7 @@ cj = [log(sum(exp(splitsupport.wj.w[:, b])))::Float64 for b in 1:m]
 # move unit u to cluster 2
 splitsupport = KSupport(m, n, 1, 1)
 
-initsupportsplitmerge!(ij, S, k, data, priorC, splitsupport)
+initsupportsplitmerge!(ij, S, k, data, priorC, settings, splitsupport)
 
 lcp = zeros(Float64, 2)
 for b in 1:m
@@ -387,7 +385,7 @@ priorC = AminoAcidPriorCol(data, k, settings.γ, settings.r)
 brwsupport = KSupport(m, n, 1, 1)
 brwlogω = [0.0; 0.0; log(2.0 - 1.0) - log(2.0); -log(2.0)]
 
-initsupportbrw!(k - 1, 4, 1, data, brwsupport)
+initsupportbrw!(k - 1, 4, 1, data, settings, brwsupport)
 
 @test brwsupport.logω == brwlogω
 @test brwsupport.ni == float(data[:, 4])
@@ -397,7 +395,7 @@ initsupportbrw!(k - 1, 4, 1, data, brwsupport)
 brwsupport = KSupport(m, n, 1, 1)
 brwlogω = [0.0; 0.0; log(4.0 - 1.0) - log(4.0); -log(4.0)]
 
-initsupportbrw!(k + 1, 3, 3, data, brwsupport)
+initsupportbrw!(k + 1, 3, 3, data, settings, brwsupport)
 
 @test brwsupport.logω == brwlogω
 @test brwsupport.ni == float(data[:, 3])
@@ -407,7 +405,7 @@ initsupportbrw!(k + 1, 3, 3, data, brwsupport)
 brwsupport = KSupport(m, n, 1, 1)
 brwlogω = [0.0; 0.0; log(k - 1.0) - log(k); -log(k)]
 
-initsupportbrw!(k, 3, 3, data, brwsupport)
+initsupportbrw!(k, 3, 3, data, settings, brwsupport)
 
 @test brwsupport.logω == brwlogω
 @test brwsupport.ni == float(data[:, 3])
