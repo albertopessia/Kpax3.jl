@@ -20,10 +20,10 @@ Tamura and Kumar (2002) correction for heterogeneous patterns.
 
 Arguments:
 
-  rawdata::Array{UInt8, 2}
+  data::Matrix{UInt8}
     m-by-n data matrix, where m is the common sequence length and n is the
     sample size
-  ref::Array{UInt8, 1}
+  ref::Vector{UInt8}
     reference sequence, i.e. a vector of length m storing the values of
     homogeneous sites
 
@@ -38,7 +38,7 @@ evolutionary model are not satisfied.
 
 Value:
 
-  d::Array{Float64, 1}
+  d::Vector{Float64}
     evolutionary distances. Vector length is equal to n * (n - 1) / 2. It
     contains the values of the lower triangular matrix of the full distance
     matrix, ordered by column.
@@ -79,11 +79,11 @@ function distaamtn84(data::Matrix{UInt8},
     sc += gb[aa]^2
   end
 
-  b = 1 - sc
+  v = 1 - sc
 
   idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = aamtn84(i, j, data, gt, st, b)
+    d[idx += 1] = aamtn84(i, j, data, gt, st, v)
   end
 
   d
@@ -97,17 +97,20 @@ Tamura and Kumar (2002) correction for heterogeneous patterns.
 
 Arguments:
 
-  s1::Array{UInt8, 1}
-    protein sequence
-  s2::Array{UInt8, 1}
-    protein sequence
-  gt::Array{Float64, 1}
+  i::Int
+    index of first sequence
+  j::Int
+    index of second sequence
+  data::Matrix{UInt8}
+    m-by-n data matrix, where m is the common sequence length and n is the
+    sample size
+  gt::Vector{Float64}
     common absolute frequency for the 22 amino acids, i.e. the count of each
     amino acid at homogeneous sites
   h::Float64
-    h = sum(gt), i.e. the total number of homogeneous sites that are not missing
-  b::Float64
-    b = 1 - sum(pi^2), where pi is the proportion of amino acid i observed in
+    total number of homogeneous sites that are not missing
+  v::Float64
+    v = 1 - sum(pi^2), where pi is the proportion of amino acid i observed in
     the whole dataset
 
 Value:
@@ -120,7 +123,7 @@ function aamtn84(i::Int,
                  data::Matrix{UInt8},
                  gt::Vector{Float64},
                  h::Float64,
-                 b::Float64)
+                 v::Float64)
   d = -1.0
 
   # effective length, i.e. total number of sites at which both sequences have
@@ -176,7 +179,7 @@ function aamtn84(i::Int,
     x = 1 - (p / (1 - f))
 
     if x > 0
-      d = - b * log(x)
+      d = - v * log(x)
     end
   else
     # sequences are identical (or couldn't be compared because of missing

@@ -7,6 +7,9 @@ maxunit = 1
 
 support = KSupport(m, n, maxclust, maxunit)
 
+@test support.m == m
+@test support.n == n
+
 @test support.vi == 0
 @test support.ni == zeros(Float64, m)
 @test support.ui == zeros(Int, maxunit)
@@ -24,6 +27,9 @@ support = KSupport(m, n, maxclust, maxunit)
 @test support.wj.z == zeros(Float64, 4, m)
 
 @test support.tmp == zeros(Float64, 4)
+
+@test support.cl == zeros(Int, n)
+@test support.k == 0
 
 @test support.C == zeros(UInt8, maxclust, m)
 

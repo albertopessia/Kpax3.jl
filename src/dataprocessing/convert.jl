@@ -68,7 +68,7 @@ function categorical2binary{T <: Integer}(data::Matrix{T},
   for row in 1:size(data, 1)
     fill!(tmp, false)
 
-    for col in 1:size(data, 2)
+    for col in 1:n
       c = data[row, col]
 
       if (c < 0) || (c > maxval)
@@ -100,7 +100,7 @@ function categorical2binary{T <: Integer}(data::Matrix{T},
     fill!(tmp1, false)
     fill!(tmp2, false)
 
-    for col in 1:size(data, 2)
+    for col in 1:n
       c = data[row, col]
 
       if c > 0

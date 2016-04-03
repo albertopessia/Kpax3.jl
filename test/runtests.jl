@@ -4,6 +4,8 @@ using Base.Test
 
 include("../src/boot.jl")
 
+ε = 1.0e-13
+
 tests = ["dataprocessing";
          "typessettings";
          "typessupport";
@@ -16,8 +18,9 @@ tests = ["dataprocessing";
          "partitionrows";
          "mcmcfunctions";
          "mcmcpartitionratio";
-         "mcmcloglik"
-         "mcmcbrw"]
+         "mcmcloglik";
+         "mcmcbrw";
+         "posterior"]
 
 for t in tests
   include(string(t, ".jl"))

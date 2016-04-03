@@ -20,10 +20,10 @@ Compute Tamura Nei (1993) pairwise distances of dna sequences.
 
 Arguments:
 
-  rawdata::Array{Uint8, 2}
+  data::Matrix{UInt8}
     m-by-n data matrix, where m is the common sequence length and n is the
     sample size
-  ref::Array{Uint8, 1}
+  ref::Vector{UInt8}
     reference sequence, i.e. a vector of length m storing the values of
     homogeneous sites
 
@@ -38,32 +38,57 @@ evolutionary model are not satisfied.
 
 Value:
 
-  d::Array{Float64, 1}
+  d::Vector{Float64}
     evolutionary distances. Vector length is equal to n * (n - 1) / 2. It
     contains the values of the lower triangular matrix of the full distance
     matrix, ordered by column.
     To access the distance between units i and j (i < j), use
     d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
 =#
-function distnttn93(rawdata::Matrix{UInt8},
+function distnttn93(data::Matrix{UInt8},
                     ref::Vector{UInt8})
-  n = size(rawdata, 2)
+  n = size(data, 2)
+
   d = zeros(Float64, div(n * (n - 1), 2))
 
   gt = zeros(Float64, 4)
   gb = zeros(Float64, 4)
 
-  gt[1] = sum(ref .== 1)
-  gt[2] = sum(ref .== 2)
-  gt[3] = sum(ref .== 3)
-  gt[4] = sum(ref .== 4)
+  for b in 1:m
+    if ref[b] == 1
+      gt[1] += 1
+    elseif ref[b] == 2
+      gt[2] += 1
+    elseif ref[b] == 3
+      gt[3] += 1
+    elseif ref[b] == 4
+      gt[4] += 1
+    end
+  end
 
-  gb[1] = sum(rawdata .== 1) + n * gt[1]
-  gb[2] = sum(rawdata .== 2) + n * gt[2]
-  gb[3] = sum(rawdata .== 3) + n * gt[3]
-  gb[4] = sum(rawdata .== 4) + n * gt[4]
+  for a in 1:n, b in 1:m
+    if data[b, a] == 1
+      gb[1] += 1
+    elseif data[b, a] == 2
+      gb[2] += 1
+    elseif data[b, a] == 3
+      gb[3] += 1
+    elseif data[b, a] == 4
+      gb[4] += 1
+    end
+  end
 
-  gb /= (gb[1] + gb[2] + gb[3] + gb[4])
+  gb[1] += n * gt[1]
+  gb[2] += n * gt[2]
+  gb[3] += n * gt[3]
+  gb[4] += n * gt[4]
+
+  tot = gb[1] + gb[2] + gb[3] + gb[4]
+
+  gb[1] /= tot
+  gb[2] /= tot
+  gb[3] /= tot
+  gb[4] /= tot
 
   h = gt[1] + gt[2] + gt[3] + gt[4]
 
@@ -76,7 +101,7 @@ function distnttn93(rawdata::Matrix{UInt8},
 
   idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = nttn93(rawdata, i, j, h, gr, gy, k1, k2, k3)
+    d[idx += 1] = nttn93(i, j, data, gr, gy, h, k1, k2, k3)
   end
 
   d
@@ -90,10 +115,10 @@ and Kumar (2002) correction for heterogeneous patterns.
 
 Arguments:
 
-  rawdata::Array{Uint8, 2}
+  data::Matrix{UInt8}
     m-by-n data matrix, where m is the common sequence length and n is the
     sample size
-  ref::Array{Uint8, 1}
+  ref::Vector{UInt8}
     reference sequence, i.e. a vector of length m storing the values of
     homogeneous sites
 
@@ -108,32 +133,57 @@ evolutionary model are not satisfied.
 
 Value:
 
-  d::Array{Float64, 1}
+  d::Vector{Float64}
     evolutionary distances. Vector length is equal to n * (n - 1) / 2. It
     contains the values of the lower triangular matrix of the full distance
     matrix, ordered by column.
     To access the distance between units i and j (i < j), use
     d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
 =#
-function distntmtn93(rawdata::Matrix{UInt8},
+function distntmtn93(data::Matrix{UInt8},
                      ref::Vector{UInt8})
-  n = size(rawdata, 2)
+  n = size(data, 2)
+
   d = zeros(Float64, div(n * (n - 1), 2))
 
   gt = zeros(Float64, 4)
   gb = zeros(Float64, 4)
 
-  gt[1] = sum(ref .== 1)
-  gt[2] = sum(ref .== 2)
-  gt[3] = sum(ref .== 3)
-  gt[4] = sum(ref .== 4)
+  for b in 1:m
+    if ref[b] == 1
+      gt[1] += 1
+    elseif ref[b] == 2
+      gt[2] += 1
+    elseif ref[b] == 3
+      gt[3] += 1
+    elseif ref[b] == 4
+      gt[4] += 1
+    end
+  end
 
-  gb[1] = sum(rawdata .== 1) + n * gt[1]
-  gb[2] = sum(rawdata .== 2) + n * gt[2]
-  gb[3] = sum(rawdata .== 3) + n * gt[3]
-  gb[4] = sum(rawdata .== 4) + n * gt[4]
+  for a in 1:n, b in 1:m
+    if data[b, a] == 1
+      gb[1] += 1
+    elseif data[b, a] == 2
+      gb[2] += 1
+    elseif data[b, a] == 3
+      gb[3] += 1
+    elseif data[b, a] == 4
+      gb[4] += 1
+    end
+  end
 
-  gb /= (gb[1] + gb[2] + gb[3] + gb[4])
+  gb[1] += n * gt[1]
+  gb[2] += n * gt[2]
+  gb[3] += n * gt[3]
+  gb[4] += n * gt[4]
+
+  tot = gb[1] + gb[2] + gb[3] + gb[4]
+
+  gb[1] /= tot
+  gb[2] /= tot
+  gb[3] /= tot
+  gb[4] /= tot
 
   h = gt[1] + gt[2] + gt[3] + gt[4]
 
@@ -146,7 +196,7 @@ function distntmtn93(rawdata::Matrix{UInt8},
 
   idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = ntmtn93(rawdata, i, j, gt, h, gr, gy, k1, k2, k3)
+    d[idx += 1] = ntmtn93(i, j, data, gt, gr, gy, h, k1, k2, k3)
   end
 
   d
@@ -160,16 +210,19 @@ sequences.
 
 Arguments:
 
-  s1::Array{Uint8, 1}
-    dna sequence
-  s2::Array{Uint8, 1}
-    dna sequence
-  n::Float64
-    total number of non-missing homogeneous sites
+  i::Int
+    index of first sequence
+  j::Int
+    index of second sequence
+  data::Matrix{UInt8}
+    m-by-n data matrix, where m is the common sequence length and n is the
+    sample size
   gr::Float64
     gr = pA + pG. Observed proportion (in the whole dataset) of purines
   gy::Float64
     gy = pC + pT. Observed proportion (in the whole dataset) of pyrimidines
+  h::Float64
+    total number of homogeneous sites that are not missing
   k1::Float64
     k1 = (pA * pG) / gr. pA and pG are the proportions of nucleotide A and
     nucleotide G observed in the whole dataset, respectively
@@ -184,12 +237,12 @@ Value:
   d::Float64
     evolutionary distance between the two dna sequences
 =#
-function nttn93(x::Matrix{UInt8},
-                i::Int,
+function nttn93(i::Int,
                 j::Int,
-                n::Float64,
+                data::Matrix{UInt8},
                 gr::Float64,
                 gy::Float64,
+                h::Float64,
                 k1::Float64,
                 k2::Float64,
                 k3::Float64)
@@ -204,29 +257,33 @@ function nttn93(x::Matrix{UInt8},
   # proportions of transversional differences
   ry = 0.0
 
-  for b in 1:size(x, 1)
-    if (0 < x[b, i] < 5) && (0 < x[b, j] < 5)
-      if ((x[b, i] == 1) && (x[b, j] == 3)) ||
-         ((x[b, i] == 3) && (x[b, j] == 1))
+  x1 = 0x00
+  x2 = 0x00
+
+  for b in 1:size(data, 1)
+    x1 = data[b, i]
+    x2 = data[b, j]
+
+    if (0x00 < x1 < 0x05) && (0x00 < x2 < 0x05)
+      if ((x1 == 0x01) && (x2 == 0x03)) || ((x1 == 0x03) && (x2 == 0x01))
         ag += 1
-      elseif ((x[b, i] == 2) && (x[b, j] == 4)) ||
-             ((x[b, i] == 4) && (x[b, j] == 2))
+      elseif ((x1 == 0x02) && (x2 == 0x04)) || ((x1 == 0x04) && (x2 == 0x02))
         ct += 1
-      elseif (((x[b, i] == 1) || (x[b, i] == 3)) &&
-              ((x[b, j] == 2) || (x[b, j] == 4))) ||
-             (((x[b, i] == 2) || (x[b, i] == 4)) &&
-              ((x[b, j] == 1) || (x[b, j] == 3)))
+      elseif (((x1 == 0x01) || (x1 == 0x03)) &&
+              ((x2 == 0x02) || (x2 == 0x04))) ||
+             (((x1 == 0x02) || (x1 == 0x04)) &&
+              ((x2 == 0x01) || (x2 == 0x03)))
         ry += 1
       end
 
-      n += 1
+      h += 1
     end
   end
 
   if (ag + ct + ry) > 0
-    ag /= n
-    ct /= n
-    ry /= n
+    ag /= h
+    ct /= h
+    ry /= h
 
     w1 = 1 - (ag / k1 + ry / gr) / 2
     w2 = 1 - (ct / k2 + ry / gy) / 2
@@ -253,20 +310,22 @@ patterns.
 
 Arguments:
 
-  s1::Array{Uint8, 1}
-    dna sequence
-  s2::Array{Uint8, 1}
-    dna sequence
-  gt::Array{Float64, 1}
+  i::Int
+    index of first sequence
+  j::Int
+    index of second sequence
+  data::Matrix{UInt8}
+    m-by-n data matrix, where m is the common sequence length and n is the
+    sample size
+  gt::Vector{Float64}
     common absolute frequency for the 4 nucleotides, i.e. the count of each
     nucleotide at homogeneous sites
-  h::Float64
-    h = gt[1] + gt[2] + gt[3] + gt[4], i.e. the total number of homogeneous
-    sites that are not missing
   gr::Float64
     gr = pA + pG. Observed proportion (in the whole dataset) of purines
   gy::Float64
     gy = pC + pT. Observed proportion (in the whole dataset) of pyrimidines
+  h::Float64
+    total number of homogeneous sites that are not missing
   k1::Float64
     k1 = (pA * pG) / gr. pA and pG are the proportions of nucleotide A and
     nucleotide G observed in the whole dataset, respectively
@@ -281,13 +340,13 @@ Value:
   d::Float64
     evolutionary distance between the two dna sequences
 =#
-function ntmtn93(x::Matrix{UInt8},
-                 i::Int,
+function ntmtn93(i::Int,
                  j::Int,
+                 data::Matrix{UInt8},
                  gt::Vector{Float64},
-                 h::Float64,
                  gr::Float64,
                  gy::Float64,
+                 h::Float64,
                  k1::Float64,
                  k2::Float64,
                  k3::Float64)
@@ -316,28 +375,32 @@ function ntmtn93(x::Matrix{UInt8},
   r2 = 0.0
   y2 = 0.0
 
-  for b in 1:size(x, 1)
-    if 0 < x[b, i] < 5
-      g1[x[b, i]] += 1
+  x1 = 0x00
+  x2 = 0x00
+
+  for b in 1:size(data, 1)
+    x1 = data[b, i]
+    x2 = data[b, j]
+
+    if 0x00 < x1 < 0x05
+      g1[x1] += 1
       n[1] += 1
     end
 
-    if 0 < x[b, j] < 5
-      g2[x[b, j]] += 1
+    if 0x00 < x2 < 0x05
+      g2[x2] += 1
       n[2] += 1
     end
 
-    if (0 < x[b, i] < 5) && (0 < x[b, j] < 5)
-      if ((x[b, i] == 1) && (x[b, j] == 3)) ||
-         ((x[b, i] == 3) && (x[b, j] == 1))
+    if (0x00 < x1 < 0x05) && (0x00 < x2 < 0x05)
+      if ((x1 == 0x01) && (x2 == 0x03)) || ((x1 == 0x03) && (x2 == 0x01))
         ag += 1
-      elseif ((x[b, i] == 2) && (x[b, j] == 4)) ||
-             ((x[b, i] == 4) && (x[b, j] == 2))
+      elseif ((x1 == 0x02) && (x2 == 0x04)) || ((x1 == 0x04) && (x2 == 0x02))
         ct += 1
-      elseif (((x[b, i] == 1) || (x[b, i] == 3)) &&
-              ((x[b, j] == 2) || (x[b, j] == 4))) ||
-             (((x[b, i] == 2) || (x[b, i] == 4)) &&
-              ((x[b, j] == 1) || (x[b, j] == 3)))
+      elseif (((x1 == 0x01) || (x1 == 0x03)) &&
+              ((x2 == 0x02) || (x2 == 0x04))) ||
+             (((x1 == 0x02) || (x1 == 0x04)) &&
+              ((x2 == 0x01) || (x2 == 0x03)))
         ry += 1
       end
 

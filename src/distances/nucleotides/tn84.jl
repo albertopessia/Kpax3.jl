@@ -19,10 +19,10 @@ Compute Tajima Nei (1984) pairwise distances of dna sequences.
 
 Arguments:
 
-  rawdata::Array{Uint8, 2}
+  data::Matrix{UInt8}
     m-by-n data matrix, where m is the common sequence length and n is the
     sample size
-  ref::Array{Uint8, 1}
+  ref::Vector{UInt8}
     reference sequence, i.e. a vector of length m storing the values of
     homogeneous sites
 
@@ -37,16 +37,17 @@ evolutionary model are not satisfied.
 
 Value:
 
-  d::Array{Float64, 1}
+  d::Vector{Float64}
     evolutionary distances. Vector length is equal to n * (n - 1) / 2. It
     contains the values of the lower triangular matrix of the full distance
     matrix, ordered by column.
     To access the distance between units i and j (i < j), use
     d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
 =#
-function distnttn84(data::Matrix{Uint8},
-                    ref::Vector{Uint8})
+function distnttn84(data::Matrix{UInt8},
+                    ref::Vector{UInt8})
   m, n = size(data, 2)
+
   d = zeros(Float64, div(n * (n - 1), 2))
 
   gt = zeros(Float64, 4)
@@ -65,17 +66,15 @@ function distnttn84(data::Matrix{Uint8},
     end
   end
 
-  for a in 1:n
-    for b in 1:m
-      if data[b, a] == 1
-        gb[1] += 1
-      elseif data[b, a] == 2
-        gb[2] += 1
-      elseif data[b, a] == 3
-        gb[3] += 1
-      elseif data[b, a] == 4
-        gb[4] += 1
-      end
+  for a in 1:n, b in 1:m
+    if data[b, a] == 1
+      gb[1] += 1
+    elseif data[b, a] == 2
+      gb[2] += 1
+    elseif data[b, a] == 3
+      gb[3] += 1
+    elseif data[b, a] == 4
+      gb[4] += 1
     end
   end
 
@@ -85,6 +84,7 @@ function distnttn84(data::Matrix{Uint8},
   gb[4] += n * gt[4]
 
   tot = gb[1] + gb[2] + gb[3] + gb[4]
+
   gb[1] /= tot
   gb[2] /= tot
   gb[3] /= tot
@@ -99,11 +99,11 @@ function distnttn84(data::Matrix{Uint8},
   gp[5] = 2 * gb[2] * gb[4]
   gp[6] = 2 * gb[3] * gb[4]
 
-  b1 = 1 - (gb[1]^2 + gb[2]^2 + gb[3]^2 + gb[4]^2)
+  v = 1 - (gb[1]^2 + gb[2]^2 + gb[3]^2 + gb[4]^2)
 
   idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = nttn84(i, j, data, h, gp, b1)
+    d[idx += 1] = nttn84(i, j, data, gp, h, v)
   end
 
   d
@@ -117,10 +117,10 @@ and Kumar (2002) correction for heterogeneous patterns.
 
 Arguments:
 
-  rawdata::Array{Uint8, 2}
+  data::Matrix{UInt8}
     m-by-n data matrix, where m is the common sequence length and n is the
     sample size
-  ref::Array{Uint8, 1}
+  ref::Vector{UInt8}
     reference sequence, i.e. a vector of length m storing the values of
     homogeneous sites
 
@@ -135,16 +135,17 @@ evolutionary model are not satisfied.
 
 Value:
 
-  d::Array{Float64, 1}
+  d::Vector{Float64}
     evolutionary distances. Vector length is equal to n * (n - 1) / 2. It
     contains the values of the lower triangular matrix of the full distance
     matrix, ordered by column.
     To access the distance between units i and j (i < j), use
     d[n * (i - 1) - div(i * (i - 1), 2) + j - i]
 =#
-function distntmtn84(data::Matrix{Uint8},
-                     ref::Vector{Uint8})
+function distntmtn84(data::Matrix{UInt8},
+                     ref::Vector{UInt8})
   m, n = size(data, 2)
+
   d = zeros(Float64, div(n * (n - 1), 2))
 
   gt = zeros(Float64, 4)
@@ -162,17 +163,15 @@ function distntmtn84(data::Matrix{Uint8},
     end
   end
 
-  for a in 1:n
-    for b in 1:m
-      if data[b, a] == 1
-        gb[1] += 1
-      elseif data[b, a] == 2
-        gb[2] += 1
-      elseif data[b, a] == 3
-        gb[3] += 1
-      elseif data[b, a] == 4
-        gb[4] += 1
-      end
+  for a in 1:n, b in 1:m
+    if data[b, a] == 1
+      gb[1] += 1
+    elseif data[b, a] == 2
+      gb[2] += 1
+    elseif data[b, a] == 3
+      gb[3] += 1
+    elseif data[b, a] == 4
+      gb[4] += 1
     end
   end
 
@@ -182,6 +181,7 @@ function distntmtn84(data::Matrix{Uint8},
   gb[4] += n * gt[4]
 
   tot = gb[1] + gb[2] + gb[3] + gb[4]
+
   gb[1] /= tot
   gb[2] /= tot
   gb[3] /= tot
@@ -189,11 +189,11 @@ function distntmtn84(data::Matrix{Uint8},
 
   h = gt[1] + gt[2] + gt[3] + gt[4]
 
-  b = 1 - (gb[1]^2 + gb[2]^2 + gb[3]^2 + gb[4]^2)
+  v = 1 - (gb[1]^2 + gb[2]^2 + gb[3]^2 + gb[4]^2)
 
   idx = 0
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = ntmtn84(i, j, data, gt, h, b)
+    d[idx += 1] = ntmtn84(i, j, data, gt, h, v)
   end
 
   d
@@ -206,18 +206,21 @@ Compute the Tajima Nei (1984) distance between two dna sequences.
 
 Arguments:
 
-  s1::Array{Uint8, 1}
-    dna sequence
-  s2::Array{Uint8, 1}
-    dna sequence
-  n::Float64
-    total number of non-missing homogeneous sites
-  gp::Array{Float64, 1}
-    gp_ij = 2 * pi * pj, where pi and pj are the proportions of nucleotides i
-    and j, respectively, observed in the whole dataset
-  b::Float64
-    b = 1 - (pA^2 + pC^2 + pG^2 + pT^2), where pi is the proportion of
-    nucleotide i observed in the whole dataset
+  i::Int
+    index of first sequence
+  j::Int
+    index of second sequence
+  data::Matrix{UInt8}
+    m-by-n data matrix, where m is the common sequence length and n is the
+    sample size
+  h::Float64
+    total number of homogeneous sites that are not missing
+  gp::Vector{Float64}
+    proportions (probabilities) of nucleotide pairs computed on the whole
+    dataset
+  v::Float64
+    v = 1 - sum(pi^2), where pi is the proportion of nucleotide i observed in
+    the whole dataset
 
 Value:
 
@@ -226,10 +229,10 @@ Value:
 =#
 function nttn84(i::Int,
                 j::Int,
-                data::Matrix{Uint8},
-                n::Float64,
+                data::Matrix{UInt8},
                 gp::Vector{Float64},
-                b1::Float64)
+                h::Float64,
+                v::Float64)
   d = -1.0
 
   # proportion of different elements
@@ -267,23 +270,23 @@ function nttn84(i::Int,
         end
       end
 
-      n += 1
+      h += 1
     end
   end
 
   if p > 0
-    p /= n
-    pn /= n
+    p /= h
+    pn /= h
 
     c = pn[1]^2 / gp[1] + pn[2]^2 / gp[2] + pn[3]^2 / gp[3] +
         pn[4]^2 / gp[4] + pn[5]^2 / gp[5] + pn[6]^2 / gp[6]
 
-    b = (b1 + p^2 / c) / 2
+    x = (v + p^2 / c) / 2
 
-    w = 1 - p / b
+    w = 1 - p / x
 
     if w > 0
-      d = - b * log(w)
+      d = - x * log(w)
     end
   else
     # sequences are identical (or couldn't be compared because of missing
@@ -302,19 +305,21 @@ Tamura and Kumar (2002) correction for heterogeneous patterns.
 
 Arguments:
 
-  s1::Array{Uint8, 1}
-    dna sequence
-  s2::Array{Uint8, 1}
-    dna sequence
-  gt::Array{Float64, 1}
+  i::Int
+    index of first sequence
+  j::Int
+    index of second sequence
+  data::Matrix{UInt8}
+    m-by-n data matrix, where m is the common sequence length and n is the
+    sample size
+  gt::Vector{Float64}
     common absolute frequency for the 4 nucleotides, i.e. the count of each
     nucleotide at homogeneous sites
   h::Float64
-    h = gt[1] + gt[2] + gt[3] + gt[4], i.e. the total number of homogeneous
-    sites that are not missing
-  b::Float64
-    b = 1 - (pA^2 + pC^2 + pG^2 + pT^2), where pi is the proportion of
-    nucleotide i observed in the whole dataset
+    total number of homogeneous sites that are not missing
+  v::Float64
+    v = 1 - sum(pi^2), where pi is the proportion of nucleotide i observed in
+    the whole dataset
 
 Value:
 
@@ -323,10 +328,10 @@ Value:
 =#
 function ntmtn84(i::Int,
                  j::Int,
-                 data::Matrix{Uint8},
+                 data::Matrix{UInt8},
                  gt::Vector{Float64},
                  h::Float64,
-                 b::Float64)
+                 v::Float64)
   d = -1.0
 
   # effective length, i.e. total number of sites at which both sequences have
@@ -379,7 +384,7 @@ function ntmtn84(i::Int,
     w = 1 - p / f
 
     if w > 0
-      d = - b * log(w)
+      d = - v * log(w)
     end
   else
     # sequences are identical (or couldn't be compared because of missing

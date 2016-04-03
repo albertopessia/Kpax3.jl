@@ -5,13 +5,14 @@ logp(C | R)
 """
 function logpriorC(C::Matrix{UInt8},
                    cl::Vector{Int},
+                   k::Int,
                    logγ::Vector{Float64},
                    logω::Vector{Float64})
   logp = 0.0
 
   for b in 1:size(C, 2)
     logp += logγ[C[cl[1], b]] + logω[C[cl[1], b]]
-    for l in 2:length(cl)
+    for l in 2:k
       logp += logω[C[cl[l], b]]
     end
   end
@@ -40,6 +41,7 @@ logp(S | R, X)
 """
 function logcondpostS(S::Vector{UInt8},
                       cl::Vector{Int},
+                      k::Int,
                       v::Vector{Int},
                       n1s::Matrix{Float64},
                       logω::Vector{Float64},
@@ -48,6 +50,7 @@ function logcondpostS(S::Vector{UInt8},
 
   lγ = zeros(Float64, 3)
 
+  g = 0
   tmp1 = zeros(Float64, 2)
   tmp2 = 0.0
 
@@ -56,7 +59,9 @@ function logcondpostS(S::Vector{UInt8},
     lγ[2] = priorC.logγ[2]
     lγ[3] = priorC.logγ[3]
 
-    for g in cl
+    for l in 1:k
+      g = cl[l]
+
       lγ[1] += logmarglik(n1s[g, b], v[g], priorC.A[1, b], priorC.B[1, b])
       lγ[2] += logmarglik(n1s[g, b], v[g], priorC.A[2, b], priorC.B[2, b])
 
@@ -92,6 +97,7 @@ Logp(C | R, X)
 """
 function logcondpostC(C::Matrix{UInt8},
                       cl::Vector{Int},
+                      k::Int,
                       v::Vector{Int},
                       n1s::Matrix{Float64},
                       logω::Vector{Float64},
@@ -110,7 +116,7 @@ function logcondpostC(C::Matrix{UInt8},
     lγ[2] = priorC.logγ[2]
     lγ[3] = priorC.logγ[3]
 
-    for l in 1:length(cl)
+    for l in 1:k
       g = cl[l]
 
       logq[1, l] = logmarglik(n1s[g, b], v[g], priorC.A[1, b], priorC.B[1, b])

@@ -6,9 +6,9 @@ function biased_random_walk!(data::Matrix{UInt8},
                              settings::KSettings,
                              support::KSupport,
                              mcmcobj::AminoAcidMCMC)
-  k = length(mcmcobj.cl)
+  k = mcmcobj.k
 
-  i = StatsBase.sample(1:size(data, 2))
+  i = StatsBase.sample(1:support.n)
   hi = mcmcobj.R[i]
 
   if mcmcobj.v[hi] > 1
@@ -18,7 +18,7 @@ function biased_random_walk!(data::Matrix{UInt8},
       if v == k
         # move i to a new cluster
         k += 1
-        hj = findfirst(!mcmcobj.filledcluster)
+        hj = findfirst(mcmcobj.emptycluster)
         support.lograR = logratiopriorrowbrwsplit(k, mcmcobj.v[hi], priorR)
       else
         hj = mcmcobj.cl[v] < hi ? mcmcobj.cl[v] : mcmcobj.cl[v + 1]
@@ -28,7 +28,7 @@ function biased_random_walk!(data::Matrix{UInt8},
     else
       # move i to a new cluster
       k = 2
-      hj = findfirst(!mcmcobj.filledcluster)
+      hj = findfirst(mcmcobj.emptycluster)
       support.lograR = logratiopriorrowbrwsplit(k, mcmcobj.v[hi], priorR)
     end
   else
@@ -39,7 +39,7 @@ function biased_random_walk!(data::Matrix{UInt8},
     support.lograR = logratiopriorrowbrwmerge(k, mcmcobj.v[hj], priorR)
   end
 
-  initsupportbrw!(k, i, mcmcobj.v[hi], data, support)
+  initsupportbrw!(k, i, mcmcobj.v[hi], data, settings, support)
 
   simcbrw!(k, hi, hj, priorC, support, mcmcobj)
 
@@ -75,13 +75,13 @@ function performbrw!(i::Int,
 
   if hj > 0
     if mcmcobj.v[hi] > 1
-      if mcmcobj.filledcluster[hj]
-        performbrwmove!(i, hi, hj, support, mcmcobj)
+      if mcmcobj.emptycluster[hj]
+        performbrwsplit!(i, hi, hj, priorC, settings, support, mcmcobj)
       else
-        performbrwsplit!(i, hi, hj, priorC, support, mcmcobj)
+        performbrwmove!(i, hi, hj, settings, support, mcmcobj)
       end
     else
-      performbrwmerge!(i, hi, hj, priorC, support, mcmcobj)
+      performbrwmerge!(i, hi, hj, priorC, settings, support, mcmcobj)
     end
   else
     performbrwsplitallocate!(i, hi, k, priorC, settings, support, mcmcobj)
@@ -98,22 +98,36 @@ function performbrwmerge!(i::Int,
                           hi::Int,
                           hj::Int,
                           priorC::PriorColPartition,
+                          settings::KSettings,
                           support::KSupport,
                           mcmcobj::AminoAcidMCMC)
   mcmcobj.R[i] = hj
 
-  mcmcobj.filledcluster[hi] = false
-  mcmcobj.cl = find(mcmcobj.filledcluster)
+  mcmcobj.emptycluster[hi] = true
+
+  k = 0
+  for a in 1:length(mcmcobj.emptycluster)
+    if !mcmcobj.emptycluster[a]
+      mcmcobj.cl[k += 1] = a
+    end
+  end
+
+  mcmcobj.k = k
 
   mcmcobj.v[hj] += 1
 
-  push!(mcmcobj.unit[hj], i)
+  if length(mcmcobj.unit[hj]) < mcmcobj.v[hj]
+    tmp = zeros(Int, min(support.n, mcmcobj.v[hj] + settings.maxunit - 1))
+    mcmcobj.unit[hj] = copy!(tmp, mcmcobj.unit[hj])
+  end
 
-  for b in 1:size(mcmcobj.C, 2)
-    idx = 0
-    for g in mcmcobj.cl
-      mcmcobj.C[g, b] = support.C[idx += 1, b]
+  mcmcobj.unit[hj][mcmcobj.v[hj]] = i
+
+  for b in 1:support.m
+    for l in 1:(support.k - 1)
+      mcmcobj.C[support.cl[l], b] = support.C[l, b]
     end
+    mcmcobj.C[hj, b] = support.C[support.k, b]
 
     mcmcobj.n1s[hj, b] += support.ni[b]
   end
@@ -126,6 +140,7 @@ end
 function performbrwmove!(i::Int,
                          hi::Int,
                          hj::Int,
+                         settings::KSettings,
                          support::KSupport,
                          mcmcobj::AminoAcidMCMC)
   mcmcobj.R[i] = hj
@@ -133,14 +148,21 @@ function performbrwmove!(i::Int,
   mcmcobj.v[hi] -= 1
   mcmcobj.v[hj] += 1
 
-  mcmcobj.unit[hi] = copy(support.ui[1:(support.vi - 1)])
-  mcmcobj.unit[hj] = vcat(mcmcobj.unit[hj], i)
+  copy!(mcmcobj.unit[hi], 1, support.ui, 1, support.vi - 1)
 
-  for b in 1:size(mcmcobj.C, 2)
-    idx = 0
-    for g in mcmcobj.cl
-      mcmcobj.C[g, b] = support.C[idx += 1, b]
+  if length(mcmcobj.unit[hj]) < mcmcobj.v[hj]
+    tmp = zeros(Int, min(support.n, mcmcobj.v[hj] + settings.maxunit - 1))
+    mcmcobj.unit[hj] = copy!(tmp, mcmcobj.unit[hj])
+  end
+
+  mcmcobj.unit[hj][mcmcobj.v[hj]] = i
+
+  for b in 1:support.m
+    for l in 1:(support.k - 2)
+      mcmcobj.C[support.cl[l], b] = support.C[l, b]
     end
+    mcmcobj.C[hi, b] = support.C[support.k - 1, b]
+    mcmcobj.C[hj, b] = support.C[support.k, b]
 
     mcmcobj.n1s[hi, b] -= support.ni[b]
     mcmcobj.n1s[hj, b] += support.ni[b]
@@ -153,29 +175,44 @@ function performbrwsplit!(i::Int,
                           hi::Int,
                           hj::Int,
                           priorC::PriorColPartition,
+                          settings::KSettings,
                           support::KSupport,
                           mcmcobj::AminoAcidMCMC)
   mcmcobj.R[i] = hj
 
-  for b in 1:size(mcmcobj.C, 2)
-    idx = 0
-    for g in mcmcobj.cl
-      mcmcobj.C[g, b] = support.C[idx += 1, b]
+  for b in 1:support.m
+    for l in 1:(support.k - 2)
+      mcmcobj.C[support.cl[l], b] = support.C[l, b]
     end
-    mcmcobj.C[hj, b] = support.C[idx += 1, b]
+    mcmcobj.C[hi, b] = support.C[support.k - 1, b]
+    mcmcobj.C[hj, b] = support.C[support.k, b]
 
     mcmcobj.n1s[hi, b] -= support.ni[b]
     mcmcobj.n1s[hj, b] = support.ni[b]
   end
 
-  mcmcobj.filledcluster[hj] = true
-  mcmcobj.cl = find(mcmcobj.filledcluster)
+  mcmcobj.emptycluster[hj] = false
+
+  k = 0
+  for a in 1:length(mcmcobj.emptycluster)
+    if !mcmcobj.emptycluster[a]
+      mcmcobj.cl[k += 1] = a
+    end
+  end
+
+  mcmcobj.k = k
 
   mcmcobj.v[hi] -= 1
   mcmcobj.v[hj] = 1
 
-  mcmcobj.unit[hi] = copy(support.ui[1:(support.vi - 1)])
-  mcmcobj.unit[hj] = [i]
+  copy!(mcmcobj.unit[hi], 1, support.ui, 1, support.vi - 1)
+
+  if length(mcmcobj.unit[hj]) < mcmcobj.v[hj]
+    tmp = zeros(Int, min(support.n, mcmcobj.v[hj] + settings.maxunit - 1))
+    mcmcobj.unit[hj] = copy!(tmp, mcmcobj.unit[hj])
+  end
+
+  mcmcobj.unit[hj][mcmcobj.v[hj]] = i
 
   copy!(priorC.logω, support.logω)
 
@@ -189,47 +226,47 @@ function performbrwsplitallocate!(i::Int,
                                   settings::KSettings,
                                   support::KSupport,
                                   mcmcobj::AminoAcidMCMC)
-  len = min(length(mcmcobj.R), k + settings.maxclust - 1)
+  len = min(support.n, k + settings.maxclust - 1)
 
-  C = zeros(UInt8, len, size(mcmcobj.C, 2))
-
-  filledcluster = falses(len)
+  C = zeros(UInt8, len, support.m)
+  emptycluster = trues(len)
+  cl = zeros(Int, len)
   v = zeros(Int, len)
-  n1s = zeros(Float64, len, size(mcmcobj.C, 2))
+  n1s = zeros(Float64, len, support.m)
   unit = Vector{Int}[zeros(Int, 0) for g in 1:len]
 
-  idx = 0
-  for g in mcmcobj.cl
-    C[g, 1] = support.C[idx += 1, 1]
-
+  g = 0
+  for l in 1:(support.k - 2)
+    g = support.cl[l]
+    C[g, 1] = support.C[l, 1]
     v[g] = mcmcobj.v[g]
     n1s[g, 1] = mcmcobj.n1s[g, 1]
-    unit[g] = copy(mcmcobj.unit[g])
-
-    filledcluster[g] = true
+    unit[g] = mcmcobj.unit[g]
+    emptycluster[g] = false
   end
 
-  C[k, 1] = support.C[idx += 1, 1]
+  C[hi, 1] = support.C[support.k - 1, 1]
+  v[hi] = mcmcobj.v[hi] - 1
+  n1s[hi, 1] = mcmcobj.n1s[hi, 1] - support.ni[1]
+  unit[hi] = copy!(mcmcobj.unit[hi], 1, support.ui, 1, support.vi - 1)
+  emptycluster[hi] = false
 
-  filledcluster[k] = true
-
-  v[hi] -= 1
-  n1s[hi, 1] -= support.ni[1]
-  unit[hi] = copy(support.ui[1:(support.vi - 1)])
-
+  C[k, 1] = support.C[support.k, 1]
   v[k] = 1
   n1s[k, 1] = support.ni[1]
-  unit[k] = [i]
+  unit[k] = zeros(Int, settings.maxunit)
+  unit[k][1] = i
+  emptycluster[k] = false
 
-  for b in 2:size(mcmcobj.C, 2)
-    idx = 0
-    for g in mcmcobj.cl
-      C[g, b] = support.C[idx += 1, b]
+  for b in 2:support.m
+    for l in 1:(support.k - 2)
+      g = support.cl[l]
+      C[g, b] = support.C[l, b]
       n1s[g, b] = mcmcobj.n1s[g, b]
     end
-    C[k, b] = support.C[idx += 1, b]
-
-    n1s[hi, b] -= support.ni[b]
+    C[hi, b] = support.C[support.k - 1, b]
+    n1s[hi, b] = mcmcobj.n1s[hi, b] - support.ni[b]
+    C[k, b] = support.C[support.k, b]
     n1s[k, b] = support.ni[b]
   end
 
@@ -237,8 +274,17 @@ function performbrwsplitallocate!(i::Int,
 
   mcmcobj.C = C
 
-  mcmcobj.filledcluster = filledcluster
-  mcmcobj.cl = find(mcmcobj.filledcluster)
+  mcmcobj.emptycluster = emptycluster
+
+  h = 0
+  for a in 1:length(mcmcobj.emptycluster)
+    if !mcmcobj.emptycluster[a]
+      cl[h += 1] = a
+    end
+  end
+
+  mcmcobj.cl = cl
+  mcmcobj.k = h
 
   mcmcobj.v = v
   mcmcobj.n1s = n1s

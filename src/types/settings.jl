@@ -14,8 +14,8 @@ immutable KSettings
   burnin::Int
   tstep::Int
   op::StatsBase.WeightVec
-  α::Float64
-  θ::Float64
+  α::Real
+  θ::Real
   γ::Vector{Float64}
   r::Float64
   distws::Distributions.Beta
@@ -31,8 +31,8 @@ function KSettings(outfile::AbstractString,
                    burnin::Int,
                    tstep::Int,
                    op::Vector{Float64},
-                   α::Float64,
-                   θ::Float64,
+                   α::Real,
+                   θ::Real,
                    γ::Vector{Float64},
                    r::Float64,
                    λs1::Float64,
@@ -42,6 +42,71 @@ function KSettings(outfile::AbstractString,
                    maxunit::Int,
                    verbose::Bool,
                    verbosestep::Int)
+  # open oufile for writing and immediately close it. We do this to throw a
+  # proper Julia standard exception if something is wrong
+  f = open(outfile, "w")
+  close(f)
+
+  if T < 1
+    throw(KDomainError("Argument 'T' is lesser than 1."))
+  end
+
+  if burnin < 0
+    throw(KDomainError("Argument 'burnin' is negative."))
+  end
+
+  if tstep < 0
+    throw(KDomainError("Argument 'tstep' is negative."))
+  end
+
+  if length(op) != 3
+    throw(KInputError("Argument 'op' does not have length 3."))
+  elseif op[1] < 0
+    throw(KDomainError("Argument 'op[1]' is negative."))
+  elseif op[2] < 0
+    throw(KDomainError("Argument 'op[2]' is negative."))
+  elseif op[3] < 0
+    throw(KDomainError("Argument 'op[3]' is negative."))
+  end
+
+  if length(γ) != 3
+    throw(KInputError("Argument 'γ' does not have length 3."))
+  elseif γ[1] < 0
+    throw(KDomainError("Argument 'γ[1]' is negative."))
+  elseif γ[2] < 0
+    throw(KDomainError("Argument 'γ[2]' is negative."))
+  elseif γ[3] < 0
+    throw(KDomainError("Argument 'γ[3]' is negative."))
+  end
+
+  if r <= 0.0
+    throw(KDomainError("Argument 'r' is not positive."))
+  end
+
+  if λs1 <= 0.0
+    throw(KDomainError("Argument 'λs1' is not positive."))
+  end
+
+  if λs2 <= 0.0
+    throw(KDomainError("Argument 'λs2' is not positive."))
+  end
+
+  if parawm <= 0.0
+    throw(KDomainError("Argument 'parawm' is not positive."))
+  end
+
+  if maxclust < 1
+    throw(KDomainError("Argument maxclust is lesser than 1."))
+  end
+
+  if maxunit < 1
+    throw(KDomainError("Argument maxunit is lesser than 1."))
+  end
+
+  if verbosestep < 0
+    throw(KDomainError("Argument 'verbosestep' is negative."))
+  end
+
   KSettings(outfile, T, burnin, tstep, StatsBase.WeightVec(op), α, θ, γ, r,
             Distributions.Beta(λs1, λs2), parawm, maxclust, maxunit, verbose,
             verbosestep)

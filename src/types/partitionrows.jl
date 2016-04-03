@@ -134,8 +134,10 @@ EwensPitman(α, θ)
 * `α` Real number
 * `θ` Real number
 =#
-function EwensPitman(α::Float64,
+function EwensPitman(α::Real,
                      θ::Float64)
+  α = float(α)
+
   if α == 0
     if θ > 0
       EwensPitmanZAPT(θ)
@@ -160,8 +162,10 @@ function EwensPitman(α::Float64,
   end
 end
 
-function EwensPitman(α::Float64,
+function EwensPitman(α::Real,
                      L::Int)
+  α = float(α)
+
   if α < 0
     if L > 0
       EwensPitmanNAPT(α, L)

@@ -1,49 +1,46 @@
 # This file is part of Kpax3. License is MIT.
 
-ε = 2.0e-14
-
-data = UInt8[0x00 0x00 0x00 0x00 0x00 0x01;
-             0x01 0x01 0x01 0x01 0x01 0x00;
-             0x00 0x00 0x01 0x00 0x01 0x01;
-             0x01 0x01 0x00 0x01 0x00 0x00;
-             0x01 0x01 0x00 0x00 0x00 0x00;
-             0x00 0x00 0x00 0x01 0x01 0x00;
-             0x01 0x01 0x01 0x00 0x00 0x00;
-             0x00 0x00 0x00 0x01 0x01 0x01;
-             0x00 0x00 0x01 0x00 0x00 0x00;
-             0x01 0x00 0x00 0x01 0x00 0x01;
-             0x00 0x01 0x00 0x00 0x01 0x00;
-             0x00 0x00 0x00 0x00 0x00 0x01;
-             0x01 0x01 0x01 0x00 0x00 0x00;
-             0x00 0x00 0x00 0x01 0x01 0x00;
-             0x01 0x01 0x00 0x00 0x01 0x01;
-             0x00 0x00 0x01 0x01 0x00 0x00;
-             0x01 0x01 0x00 0x01 0x00 0x00;
-             0x00 0x00 0x01 0x00 0x01 0x01]
+data = UInt8[0 0 0 0 0 1;
+             1 1 1 1 1 0;
+             0 0 1 0 1 1;
+             1 1 0 1 0 0;
+             1 1 0 0 0 0;
+             0 0 0 1 1 0;
+             1 1 1 0 0 0;
+             0 0 0 1 1 1;
+             0 0 1 0 0 0;
+             1 0 0 1 0 1;
+             0 1 0 0 1 0;
+             0 0 0 0 0 1;
+             1 1 1 0 0 0;
+             0 0 0 1 1 0;
+             1 1 0 0 1 1;
+             0 0 1 1 0 0;
+             1 1 0 1 0 0;
+             0 0 1 0 1 1]
 
 m, n = size(data)
 
-settings = KSettings("typesmcmc.bin", 1, 0, 1, [1.0; 0.0; 0.0], 0.0, 1.0,
+settings = KSettings("../build/test.bin", 1, 0, 1, [1.0; 0.0; 0.0], 0.0, 1.0,
                      [0.6; 0.35; 0.05], 135.0, 1.0, 1.0, 5.0, 100, 1, true, 1)
 
 R = [13; 13; 13; 13; 42; 42]
 
 k = length(unique(R))
 
-filledcluster = falses(settings.maxclust)
-filledcluster[unique(R)] = true
+emptycluster = trues(settings.maxclust)
+emptycluster[unique(R)] = false
 
-cl = find(filledcluster)
+cl = zeros(Int, settings.maxclust)
+cl[1:k] = find(!emptycluster)
 
 v = zeros(Int, settings.maxclust)
 v[cl[1]] = 4
 v[cl[2]] = 2
 
 n1s = zeros(Float64, settings.maxclust, m)
-n1s[cl[1], :] = [0.0; 4.0; 1.0; 3.0; 2.0; 1.0; 3.0; 1.0; 1.0; 2.0; 1.0; 0.0;
-                 3.0; 1.0; 2.0; 2.0; 3.0; 1.0]
-n1s[cl[2], :] = [1.0; 1.0; 2.0; 0.0; 0.0; 1.0; 0.0; 2.0; 0.0; 1.0; 1.0; 1.0;
-                 0.0; 1.0; 2.0; 0.0; 0.0; 2.0]
+n1s[cl[1], :] = Float64[0; 4; 1; 3; 2; 1; 3; 1; 1; 2; 1; 0; 3; 1; 2; 2; 3; 1]
+n1s[cl[2], :] = Float64[1; 1; 2; 0; 0; 1; 0; 2; 0; 1; 1; 1; 0; 1; 2; 0; 0; 2]
 
 α = 0.0
 θ = 1.0
@@ -61,8 +58,9 @@ mcmcobj = AminoAcidMCMC(data, R, priorR, priorC, settings)
 @test size(mcmcobj.C, 1) == settings.maxclust
 @test size(mcmcobj.C, 2) == m
 
-@test mcmcobj.filledcluster == filledcluster
+@test mcmcobj.emptycluster == emptycluster
 @test mcmcobj.cl == cl
+@test mcmcobj.k == k
 
 @test mcmcobj.v == v
 @test mcmcobj.n1s == n1s
@@ -70,11 +68,12 @@ mcmcobj = AminoAcidMCMC(data, R, priorR, priorC, settings)
                                   for g in 1:settings.maxclust]
 
 @test mcmcobj.logpR == logdPriorRow(n, k, v, priorR)
-@test_approx_eq_eps mcmcobj.logpC[1] logpriorC(mcmcobj.C, mcmcobj.cl,
+@test_approx_eq_eps mcmcobj.logpC[1] logpriorC(mcmcobj.C, mcmcobj.cl, mcmcobj.k,
                                                priorC.logγ, priorC.logω) eps()
 @test_approx_eq_eps mcmcobj.logpC[2] logcondpostC(mcmcobj.C, mcmcobj.cl,
-                                                  mcmcobj.v, mcmcobj.n1s,
-                                                  priorC.logω, priorC) eps()
+                                                  mcmcobj.k, mcmcobj.v,
+                                                  mcmcobj.n1s, priorC.logω,
+                                                  priorC) eps()
 
 # is linearidx approach correct?
 C = UInt8[1 1 1 4 2 1 4 3 1 1 1 1 1 1 1 1 1 2;

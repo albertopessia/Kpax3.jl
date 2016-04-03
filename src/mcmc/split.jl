@@ -10,9 +10,9 @@ function split!(ij::Vector{Int},
                 support::KSupport,
                 mcmcobj::AminoAcidMCMC)
   # number of clusters after the split
-  k = length(mcmcobj.cl) + 1
+  k = mcmcobj.k + 1
 
-  initsupportsplitmerge!(ij, S, k, data, priorC, support)
+  initsupportsplitmerge!(ij, S, k, data, priorC, settings, support)
 
   # sample a new proportion for cluster 'hi'
   w = Distributions.rand(settings.distws)
@@ -32,7 +32,7 @@ function split!(ij::Vector{Int},
     lcp[1] = lcp[2] = 0.0
 
     # compute p(x_{u} | x_{hi,1:(u-1)}) and p(x_{u} | x_{hj,1:(u-1)})
-    for b in 1:size(data, 1)
+    for b in 1:support.m
       lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, support)
       lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, support)
     end
@@ -83,80 +83,103 @@ function performsplit!(hi::Int,
                        settings::KSettings,
                        support::KSupport,
                        mcmcobj::AminoAcidMCMC)
-  hj = findfirst(!mcmcobj.filledcluster)
+  hj = findfirst(mcmcobj.emptycluster)
 
   if hj > 0
-    for b in 1:size(mcmcobj.C, 2)
-      idx = 0
-      for g in mcmcobj.cl
-        mcmcobj.C[g, b] = support.C[idx += 1, b]
+    for b in 1:support.m
+      for l in 1:(support.k - 2)
+        mcmcobj.C[support.cl[l], b] = support.C[l, b]
       end
-
-      mcmcobj.C[hj, b] = support.C[idx += 1, b]
+      mcmcobj.C[hi, b] = support.C[support.k - 1, b]
+      mcmcobj.C[hj, b] = support.C[support.k, b]
 
       mcmcobj.n1s[hi, b] = support.ni[b]
       mcmcobj.n1s[hj, b] = support.nj[b]
     end
 
-    mcmcobj.filledcluster[hj] = true
+    mcmcobj.emptycluster[hj] = false
+
+    h = 0
+    for a in 1:length(mcmcobj.emptycluster)
+      if !mcmcobj.emptycluster[a]
+        mcmcobj.cl[h += 1] = a
+      end
+    end
+
+    mcmcobj.k = h
 
     mcmcobj.v[hi] = support.vi
-    mcmcobj.unit[hi] = copy(support.ui[1:support.vi])
+    mcmcobj.unit[hi] = copy!(mcmcobj.unit[hi], 1, support.ui, 1, support.vi)
 
     mcmcobj.v[hj] = support.vj
-    mcmcobj.unit[hj] = copy(support.uj[1:support.vj])
+
+    if length(mcmcobj.unit[hj]) < mcmcobj.v[hj]
+      tmp = zeros(Int, min(support.n, mcmcobj.v[hj] + settings.maxunit - 1))
+      mcmcobj.unit[hj] = copy!(tmp, 1, support.uj, 1, support.vj)
+    else
+      mcmcobj.unit[hj] = copy!(mcmcobj.unit[hj], 1, support.uj, 1, support.vj)
+    end
   else
     hj = k
 
     # reallocate memory
-    len = min(length(mcmcobj.R), k + settings.maxclust - 1)
+    len = min(support.n, k + settings.maxclust - 1)
 
-    C = zeros(UInt8, len, size(mcmcobj.C, 2))
-
-    filledcluster = falses(len)
+    C = zeros(UInt8, len, support.m)
+    emptycluster = trues(len)
+    cl = zeros(Int, len)
     v = zeros(Int, len)
-    n1s = zeros(Float64, len, size(mcmcobj.C, 2))
+    n1s = zeros(Float64, len, support.m)
     unit = Vector{Int}[zeros(Int, 0) for g in 1:len]
 
-    idx = 0
-    for g in mcmcobj.cl
-      C[g, 1] = support.C[idx += 1, 1]
-
+    g = 0
+    for l in 1:(support.k - 2)
+      g = support.cl[l]
+      C[g, 1] = support.C[l, 1]
       v[g] = mcmcobj.v[g]
       n1s[g, 1] = mcmcobj.n1s[g, 1]
-      unit[g] = copy(mcmcobj.unit[g])
-
-      filledcluster[g] = true
+      unit[g] = mcmcobj.unit[g]
+      emptycluster[g] = false
     end
 
-    C[k, 1] = support.C[idx += 1, 1]
-
-    filledcluster[k] = true
-
+    C[hi, 1] = support.C[support.k - 1, 1]
     v[hi] = support.vi
     n1s[hi, 1] = support.ni[1]
-    unit[hi] = copy(support.ui[1:support.vi])
+    unit[hi] = copy!(mcmcobj.unit[hi], 1, support.ui, 1, support.vi)
+    emptycluster[hi] = false
 
+    C[k, 1] = support.C[support.k, 1]
     v[k] = support.vj
     n1s[k, 1] = support.nj[1]
-    unit[k] = copy(support.uj[1:support.vj])
+    unit[k] = zeros(Int, min(support.n, v[k] + settings.maxunit - 1))
+    copy!(unit[k], 1, support.uj, 1, support.vj)
+    emptycluster[k] = false
 
-    for b in 2:size(mcmcobj.C, 2)
-      idx = 0
-      for g in mcmcobj.cl
-        C[g, b] = support.C[idx += 1, b]
+    for b in 2:support.m
+      for l in 1:(support.k - 2)
+        g = support.cl[l]
+        C[g, b] = support.C[l, b]
         n1s[g, b] = mcmcobj.n1s[g, b]
       end
-
-      C[k, b] = support.C[idx += 1, b]
-
+      C[hi, b] = support.C[support.k - 1, b]
       n1s[hi, b] = support.ni[b]
+      C[k, b] = support.C[support.k, b]
       n1s[k, b] = support.nj[b]
     end
 
     mcmcobj.C = C
 
-    mcmcobj.filledcluster = filledcluster
+    mcmcobj.emptycluster = emptycluster
+
+    h = 0
+    for a in 1:length(mcmcobj.emptycluster)
+      if !mcmcobj.emptycluster[a]
+        cl[h += 1] = a
+      end
+    end
+
+    mcmcobj.cl = cl
+    mcmcobj.k = h
 
     mcmcobj.v = v
     mcmcobj.n1s = n1s
@@ -167,8 +190,6 @@ function performsplit!(hi::Int,
   for j in 1:support.vj
     mcmcobj.R[support.uj[j]] = hj
   end
-
-  mcmcobj.cl = find(mcmcobj.filledcluster)
 
   mcmcobj.logpR += support.lograR
   copy!(mcmcobj.logpC, support.logpC)
