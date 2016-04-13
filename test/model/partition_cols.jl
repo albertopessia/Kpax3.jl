@@ -76,8 +76,10 @@ for k in 1:n
   end
 end
 
-settings = KSettings("../build/test.bin", 1, 0, 1, [1.0; 0.0; 0.0], 0.0, 1.0,
-                     [0.6; 0.35; 0.05], 135.0, 1.0, 1.0, 5.0, 100, 1, true, 1)
+settings = KSettings("../build/test.bin", T=1, burnin=0, tstep=1,
+                     op=[0.6; 0.3; 0.1], α=0.0, θ=1.0, γ=[0.6; 0.35; 0.05],
+                     r=135.0, λs1=1.0, λs2=1.0, parawm=5.0, maxclust=100,
+                     maxunit=1, verbose=true, verbosestep=1)
 
 data = UInt8[1 1 0 0 1 1;
              0 0 1 1 0 0;
@@ -86,13 +88,13 @@ data = UInt8[1 1 0 0 1 1;
 
 m, n = size(data)
 
-R = [13; 13; 42; 42; 76; 13]
+R = [1; 1; 2; 2; 3; 1]
 k = length(unique(R))
 
 priorR = EwensPitman(settings.α, settings.θ)
 priorC = AminoAcidPriorCol(data, k, settings.γ, settings.r)
 
-no = AminoAcidMCMC(data, R, priorR, priorC, settings)
+no = AminoAcidState(data, R, priorR, priorC, settings)
 
 C = zeros(UInt8, settings.maxclust, m)
 
@@ -149,7 +151,7 @@ p4 = exp(M + log(sum(exp(logp4 - M))))
 @test_approx_eq_eps p4 1.0 ε
 
 # suppose we merge cluster 1 and cluster 3
-me = AminoAcidMCMC(data, R, priorR, priorC, settings)
+me = AminoAcidState(data, R, priorR, priorC, settings)
 
 mergesupport = KSupport(size(data, 1), size(data, 2), settings.maxclust,
                         size(data, 2))
@@ -158,7 +160,7 @@ mergeni = vec(no.n1s[no.cl[3], :] + no.n1s[no.cl[1], :])
 mergesupport.logω = [0.0; 0.0; log(k - 2.0) - log(k - 1.0); - log(k - 1.0)]
 
 # suppose we split cluster 1
-sp = AminoAcidMCMC(data, R, priorR, priorC, settings)
+sp = AminoAcidState(data, R, priorR, priorC, settings)
 
 splitsupport = KSupport(size(data, 1), size(data, 2), settings.maxclust,
                         size(data, 2))
@@ -169,7 +171,7 @@ splitsupport.nj = float(data[:, 2])
 splitsupport.logω = [0.0; 0.0; log(k) - log(k + 1.0); - log(k + 1.0)]
 
 # suppose we move unit 5 into cluster 1 (merge)
-brw_1 = AminoAcidMCMC(data, R, priorR, priorC, settings)
+brw_1 = AminoAcidState(data, R, priorR, priorC, settings)
 brwsupport_1 = KSupport(size(data, 1), size(data, 2), settings.maxclust,
                         size(data, 2))
 
@@ -177,7 +179,7 @@ brwsupport_1.ni = float(data[:, 5])
 brwsupport_1.logω = [0.0; 0.0; log(k - 2.0) - log(k - 1.0); - log(k - 1.0)]
 
 # suppose we move unit 2 into cluster 3
-brw_2 = AminoAcidMCMC(data, R, priorR, priorC, settings)
+brw_2 = AminoAcidState(data, R, priorR, priorC, settings)
 brwsupport_2 = KSupport(size(data, 1), size(data, 2), settings.maxclust,
                         size(data, 2))
 
@@ -185,7 +187,7 @@ brwsupport_2.ni = float(data[:, 6])
 brwsupport_2.logω = [0.0; 0.0; log(k - 1.0) - log(k); - log(k)]
 
 # suppose we move unit 2 into its own cluster (split)
-brw_3 = AminoAcidMCMC(data, R, priorR, priorC, settings)
+brw_3 = AminoAcidState(data, R, priorR, priorC, settings)
 brwsupport_3 = KSupport(size(data, 1), size(data, 2), settings.maxclust,
                         size(data, 2))
 
@@ -216,14 +218,14 @@ Ctest5 = UInt8[1 4 1 2; 1 3 1 2; 1 3 1 2]
 Ctest6 = UInt8[1 4 2 1; 1 3 2 1; 1 3 2 1; 1 3 2 1]
 
 #=
-R = [13; 13; 42; 42; 76; 13]
+R = [1; 1; 2; 2; 3; 1]
 k = length(unique(R))
 
 priorR = EwensPitman(settings.α, settings.θ)
 priorC = AminoAcidPriorCol(data, k, settings.γ, settings.r)
 
 ss = UInt8[1; 2; 3]
-obj = AminoAcidMCMC(data, R, priorR, priorC, settings)
+obj = AminoAcidState(data, R, priorR, priorC, settings)
 
 M = -Inf
 for s1 in ss, s2 in ss, s3 in ss, s4 in ss
@@ -354,9 +356,9 @@ for t in 1:N
 
   simcsplit!(k + 1, sp.cl[1], priorC, splitsupport, sp)
 
-  simcbrw!(k - 1, 76, 13, priorC, brwsupport_1, brw_1)
-  simcbrw!(k, 13, 76, priorC, brwsupport_2, brw_2)
-  simcbrw!(k + 1, 13, 80, priorC, brwsupport_3, brw_3)
+  simcbrw!(k - 1, 3, 1, priorC, brwsupport_1, brw_1)
+  simcbrw!(k, 1, 3, priorC, brwsupport_2, brw_2)
+  simcbrw!(k + 1, 1, 4, priorC, brwsupport_3, brw_3)
 
   for b in 1:m
     if no.C[no.cl[1], b] == 0x01
@@ -541,7 +543,7 @@ v = [2; 4]
 n1s = Float64[0 2 0 0; 4 0 3 3]
 logω = copy(brwsupport_1.logω)
 
-simcbrw!(k, 76, 13, priorC, brwsupport_1, brw_1)
+simcbrw!(k, 3, 1, priorC, brwsupport_1, brw_1)
 
 @test_approx_eq_eps brwsupport_1.logpC[1] logpriorC(brwsupport_1.C, cl, k,
                                                     priorC.logγ, logω) ε
@@ -554,7 +556,7 @@ v = [2; 2; 2]
 n1s = Float64[0 2 0 0; 2 0 2 2; 2 0 1 1]
 logω = copy(brwsupport_2.logω)
 
-simcbrw!(k, 13, 76, priorC, brwsupport_2, brw_2)
+simcbrw!(k, 1, 3, priorC, brwsupport_2, brw_2)
 
 @test_approx_eq_eps brwsupport_2.logpC[1] logpriorC(brwsupport_2.C, cl, k,
                                                     priorC.logγ, logω) ε
@@ -567,7 +569,7 @@ v = [2; 1; 2; 1]
 n1s = Float64[0 2 0 0; 1 0 0 1; 2 0 2 2; 1 0 1 0]
 logω = copy(brwsupport_3.logω)
 
-simcbrw!(k, 13, 80, priorC, brwsupport_3, brw_3)
+simcbrw!(k, 1, 4, priorC, brwsupport_3, brw_3)
 
 @test_approx_eq_eps brwsupport_3.logpC[1] logpriorC(brwsupport_3.C, cl, k,
                                                     priorC.logγ, logω) ε

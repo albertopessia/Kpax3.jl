@@ -1,7 +1,9 @@
 # This file is part of Kpax3. License is MIT.
 
-settings = KSettings("../build/test.bin", 1, 0, 1, [1.0; 0.0; 0.0], 0.0, 1.0,
-                     [0.6; 0.35; 0.05], 135.0, 1.0, 1.0, 5.0, 3, 1, true, 1)
+settings = KSettings("../build/test.bin", T=1, burnin=0, tstep=1,
+                     op=[0.6; 0.3; 0.1], α=0.0, θ=1.0, γ=[0.6; 0.35; 0.05],
+                     r=135.0, λs1=1.0, λs2=1.0, parawm=5.0, maxclust=3,
+                     maxunit=1, verbose=true, verbosestep=1)
 
 data = UInt8[0 0 0 0 0 1;
              1 1 1 1 1 0;

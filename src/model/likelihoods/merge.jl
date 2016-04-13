@@ -6,7 +6,7 @@ function loglikmerge!(hi::Int,
                       vi::Int,
                       priorC::AminoAcidPriorCol,
                       support::KSupport,
-                      mcmcobj::AminoAcidMCMC)
+                      state::AminoAcidState)
   support.loglik = 0.0
   lidx = 0
   g = 0
@@ -15,7 +15,7 @@ function loglikmerge!(hi::Int,
     for l in 1:(support.k - 1)
       g = support.cl[l]
       lidx = support.C[l, b] + 4 * (b - 1)
-      support.loglik += logmarglik(mcmcobj.n1s[g, b], mcmcobj.v[g],
+      support.loglik += logmarglik(state.n1s[g, b], state.v[g],
                                    priorC.A[lidx], priorC.B[lidx])
     end
 

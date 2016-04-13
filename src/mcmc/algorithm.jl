@@ -17,13 +17,13 @@ function splitmerge!(ij::Vector{Int},
                      priorC::PriorColPartition,
                      settings::KSettings,
                      support::KSupport,
-                     mcmcobj::AminoAcidMCMC)
+                     state::AminoAcidState)
   # cluster founders (units i and j)
   StatsBase.sample!(1:support.n, ij, replace=false, ordered=false)
 
   # clusters of i and j respectively
-  gi = mcmcobj.R[ij[1]]
-  gj = mcmcobj.R[ij[2]]
+  gi = state.R[ij[1]]
+  gj = state.R[ij[2]]
 
   # total number of neighbours
   S = 0
@@ -32,8 +32,8 @@ function splitmerge!(ij::Vector{Int},
   u = 0
 
   if gi == gj
-    for l in 1:mcmcobj.v[gi]
-      u = mcmcobj.unit[gi][l]
+    for l in 1:state.v[gi]
+      u = state.unit[gi][l]
       if (u != ij[1]) && (u != ij[2])
         neighbours[S += 1] = u
       end
@@ -41,17 +41,17 @@ function splitmerge!(ij::Vector{Int},
 
     randompermute!(neighbours, S)
 
-    split!(ij, neighbours, S, data, priorR, priorC, settings, support, mcmcobj)
+    split!(ij, neighbours, S, data, priorR, priorC, settings, support, state)
   else
-    for l in 1:mcmcobj.v[gi]
-      u = mcmcobj.unit[gi][l]
+    for l in 1:state.v[gi]
+      u = state.unit[gi][l]
       if u != ij[1]
         neighbours[S += 1] = u
       end
     end
 
-    for l in 1:mcmcobj.v[gj]
-      u = mcmcobj.unit[gj][l]
+    for l in 1:state.v[gj]
+      u = state.unit[gj][l]
       if u != ij[2]
         neighbours[S += 1] = u
       end
@@ -59,7 +59,7 @@ function splitmerge!(ij::Vector{Int},
 
     randompermute!(neighbours, S)
 
-    merge!(ij, neighbours, S, data, priorR, priorC, settings, support, mcmcobj)
+    merge!(ij, neighbours, S, data, priorR, priorC, settings, support, state)
   end
 
   nothing
@@ -70,8 +70,8 @@ function kpax3mcmc!(data::Matrix{UInt8},
                     priorC::PriorColPartition,
                     settings::KSettings,
                     support::KSupport,
-                    mcmcobj::AminoAcidMCMC)
-  fp = open(settings.outfile, "w")
+                    state::AminoAcidState)
+  fp = open(settings.fpath, "w")
 
   # indices of units i and j
   ij = zeros(Int, 2)
@@ -80,6 +80,13 @@ function kpax3mcmc!(data::Matrix{UInt8},
   neighbours = zeros(Int, support.n)
 
   try
+    write(fp, settings.α)
+    write(fp, settings.θ)
+    write(fp, settings.γ[1])
+    write(fp, settings.γ[2])
+    write(fp, settings.γ[3])
+    write(fp, settings.r)
+
     write(fp, support.n)
     write(fp, support.m)
 
@@ -95,11 +102,11 @@ function kpax3mcmc!(data::Matrix{UInt8},
       for t in 1:settings.burnin
         if operator[t] == 0x01
           splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
-                      mcmcobj)
+                      state)
         elseif operator[t] == 0x02
-          biased_random_walk!(data, priorR, priorC, settings, support, mcmcobj)
+          biased_random_walk!(data, priorR, priorC, settings, support, state)
         elseif operator[t] == 0x03
-          updateC!(priorC, mcmcobj)
+          updateC!(priorC, state)
         end
 
         if settings.verbose && (t % settings.verbosestep == 0)
@@ -121,15 +128,15 @@ function kpax3mcmc!(data::Matrix{UInt8},
     for t in 1:settings.T
       if operator[t] == 0x01
         splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
-                    mcmcobj)
+                    state)
       elseif operator[t] == 0x02
-        biased_random_walk!(data, priorR, priorC, settings, support, mcmcobj)
+        biased_random_walk!(data, priorR, priorC, settings, support, state)
       elseif operator[t] == 0x03
-        updateC!(priorC, mcmcobj)
+        updateC!(priorC, state)
       end
 
       if t % settings.tstep == 0
-        saveresults!(fp, mcmcobj)
+        saveresults!(fp, state)
       end
 
       if settings.verbose && (t % settings.verbosestep == 0)

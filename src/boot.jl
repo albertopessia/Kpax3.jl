@@ -3,9 +3,9 @@
 #################
 # Load packages #
 #################
-using StatsBase
-using Distributions
-
+import StatsBase: sample, sample!, WeightVec
+import Distributions: Beta
+import Clustering: kmedoids
 import FileIO: File, @format_str
 import JLD: load, save
 
@@ -17,13 +17,15 @@ include("types/types.jl")
 ########################
 # Load basic functions #
 ########################
-include("initpartition.jl")
+include("init_partition.jl")
 
 #################
 # Load the rest #
 #################
-include("dataprocessing/dataprocessing.jl")
+include("data_processing/data_processing.jl")
 include("distances/distances.jl")
 include("model/model.jl")
+include("optimizer/optimizer.jl")
 include("mcmc/mcmc.jl")
+include("estimate/estimate.jl")
 include("kpax3.jl")

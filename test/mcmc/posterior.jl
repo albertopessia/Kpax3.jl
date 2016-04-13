@@ -17,6 +17,8 @@ maxunit = 1
 verbose = false
 verbosestep = 100000
 
+x = AminoAcidData(fastafile)
+
 # parameters to test are
 # R = [1; 1; 2; 2; 3; 2]
 # S = [2; 3; 1; 2]
@@ -254,9 +256,10 @@ function computeProbs(cs,
 end
 
 x = AminoAcidData(fastafile)
-
-settings = KSettings(outfile, T, burnin, tstep, op, α, θ, γ, r, λs1, λs2,
-                     parawm, maxclust, maxunit, verbose, verbosestep)
+settings = KSettings(outfile, T=T, burnin=burnin, tstep=tstep, op=op, α=α,
+                     θ=θ, γ=γ, r=r, λs1=λs1, λs2=λs2, parawm=parawm,
+                     maxclust=maxclust, maxunit=maxunit, verbose=verbose,
+                     verbosestep=verbosestep)
 
 priorR = EwensPitman(settings.α, settings.θ)
 po = TestPartition(size(x.data, 2))
@@ -364,6 +367,11 @@ end
 α = 0.0
 θ = 1.0
 
+settings = KSettings(outfile, T=T, burnin=burnin, tstep=tstep, op=op, α=α,
+                     θ=θ, γ=γ, r=r, λs1=λs1, λs2=λs2, parawm=parawm,
+                     maxclust=maxclust, maxunit=maxunit, verbose=verbose,
+                     verbosestep=verbosestep)
+
 trueProbK = [0.0572011678382854799052026351091626565903425216674804687500000;
              0.3147244396041969372035396190767642110586166381835937500000000;
              0.3980266432259659814540952993411337956786155700683593750000000;
@@ -401,12 +409,9 @@ trueProbS = reshape([0.6466162109955354564405638484458904713392257690429687500;
                      0.0326157471566144094299311007034702925011515617370605469],
                     (4, 3))'
 
-kpax3aa(AminoAcidData(fastafile), partition, outfile, T, burnin=burnin,
-        tstep=tstep, op=op, α=α, θ=θ, γ=γ, r=r, λs1=λs1, λs2=λs2, parawm=parawm,
-        maxclust=maxclust, maxunit=maxunit, verbose=verbose,
-        verbosestep=verbosestep)
+kpax3(x, partition, settings)
 
-(estimK, estimP, estimS) = readresults(outfile)
+(estimK, estimP, estimS) = readresults(settings.fpath)
 
 @test maximum(abs(estimK - trueProbK)) < 0.005
 @test maximum(abs(estimP - trueProbP)) < 0.005
@@ -415,6 +420,11 @@ kpax3aa(AminoAcidData(fastafile), partition, outfile, T, burnin=burnin,
 # EwensPitmanPAUT
 α = 0.5
 θ = -0.25
+
+settings = KSettings(outfile, T=T, burnin=burnin, tstep=tstep, op=op, α=α,
+                     θ=θ, γ=γ, r=r, λs1=λs1, λs2=λs2, parawm=parawm,
+                     maxclust=maxclust, maxunit=maxunit, verbose=verbose,
+                     verbosestep=verbosestep)
 
 trueProbK = [0.20304357310850917883726651780307292938232421875000000000;
              0.21850248716493331224697271863988135010004043579101562500;
@@ -453,12 +463,9 @@ trueProbS = reshape([0.6628554623025003644798403001914266496896743774414062500;
                      0.0257256929731574761344159441023293766193091869354248047],
                     (4, 3))'
 
-kpax3aa(AminoAcidData(fastafile), partition, outfile, T, burnin=burnin,
-        tstep=tstep, op=op, α=α, θ=θ, γ=γ, r=r, λs1=λs1, λs2=λs2, parawm=parawm,
-        maxclust=maxclust, maxunit=maxunit, verbose=verbose,
-        verbosestep=verbosestep)
+kpax3(x, partition, settings)
 
-(estimK, estimP, estimS) = readresults(outfile)
+(estimK, estimP, estimS) = readresults(settings.fpath)
 
 @test maximum(abs(estimK - trueProbK)) < 0.005
 @test maximum(abs(estimP - trueProbP)) < 0.005
@@ -467,6 +474,11 @@ kpax3aa(AminoAcidData(fastafile), partition, outfile, T, burnin=burnin,
 # EwensPitmanPAZT
 α = 0.5
 θ = 0.0
+
+settings = KSettings(outfile, T=T, burnin=burnin, tstep=tstep, op=op, α=α,
+                     θ=θ, γ=γ, r=r, λs1=λs1, λs2=λs2, parawm=parawm,
+                     maxclust=maxclust, maxunit=maxunit, verbose=verbose,
+                     verbosestep=verbosestep)
 
 trueProbK = [0.08297365650265563219445397180606960318982601165771484375;
              0.17858186829001693185503540917125064879655838012695312500;
@@ -505,12 +517,9 @@ trueProbS = reshape([0.6487705348032424268467366346158087253570556640625000000;
                      0.0303205997137780264294448784312407951802015304565429688],
                     (4, 3))'
 
-kpax3aa(AminoAcidData(fastafile), partition, outfile, T, burnin=burnin,
-        tstep=tstep, op=op, α=α, θ=θ, γ=γ, r=r, λs1=λs1, λs2=λs2, parawm=parawm,
-        maxclust=maxclust, maxunit=maxunit, verbose=verbose,
-        verbosestep=verbosestep)
+kpax3(x, partition, settings)
 
-(estimK, estimP, estimS) = readresults(outfile)
+(estimK, estimP, estimS) = readresults(settings.fpath)
 
 @test maximum(abs(estimK - trueProbK)) < 0.005
 @test maximum(abs(estimP - trueProbP)) < 0.005
@@ -519,6 +528,11 @@ kpax3aa(AminoAcidData(fastafile), partition, outfile, T, burnin=burnin,
 # EwensPitmanNAPT
 α = -1
 θ = 4
+
+settings = KSettings(outfile, T=T, burnin=burnin, tstep=tstep, op=op, α=α,
+                     θ=θ, γ=γ, r=r, λs1=λs1, λs2=λs2, parawm=parawm,
+                     maxclust=maxclust, maxunit=maxunit, verbose=verbose,
+                     verbosestep=verbosestep)
 
 trueProbK = [0.013987232861628222380101504995764116756618022918701171875;
              0.277957780373217555602849415663513354957103729248046875000;
@@ -557,12 +571,9 @@ trueProbS = reshape([0.6350275618390684995162587256345432251691818237304687500;
                      0.0366354411681910074882750905089778825640678405761718750],
                     (4, 3))'
 
-kpax3aa(AminoAcidData(fastafile), partition, outfile, T, burnin=burnin,
-        tstep=tstep, op=op, α=α, θ=θ, γ=γ, r=r, λs1=λs1, λs2=λs2, parawm=parawm,
-        maxclust=maxclust, maxunit=maxunit, verbose=verbose,
-        verbosestep=verbosestep)
+kpax3(x, partition, settings)
 
-(estimK, estimP, estimS) = readresults(outfile)
+(estimK, estimP, estimS) = readresults(settings.fpath)
 
 @test maximum(abs(estimK - trueProbK)) < 0.005
 @test maximum(abs(estimP - trueProbP)) < 0.005

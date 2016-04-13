@@ -3,6 +3,10 @@
 function readresults(infile::AbstractString)
   fp = open(infile, "r")
 
+  # discard prior hyperparameters
+  tmp = zeros(Float64, 6)
+  read!(fp, tmp)
+
   n = zeros(Int, 1)
   m = zeros(Int, 1)
 
@@ -47,9 +51,11 @@ function readresults(infile::AbstractString)
 end
 
 function saveresults!(fp::IOStream,
-                      mcmcobj::AminoAcidMCMC)
-  write(fp, mcmcobj.k)
-  write(fp, mcmcobj.R)
-  write(fp, mcmcobj.C[mcmcobj.cl[1:mcmcobj.k], :])
+                      state::AminoAcidState)
+  write(fp, state.k)
+  write(fp, state.R)
+  for b in 1:size(state.C, 2), l in 1:state.k
+    write(fp, state.C[state.cl[l], b])
+  end
   nothing
 end

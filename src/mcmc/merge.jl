@@ -8,17 +8,17 @@ function merge!(ij::Vector{Int},
                 priorC::PriorColPartition,
                 settings::KSettings,
                 support::KSupport,
-                mcmcobj::AminoAcidMCMC)
+                state::AminoAcidState)
   # number of clusters after the merge
-  k = mcmcobj.k - 1
+  k = state.k - 1
 
   initsupportsplitmerge!(ij, S, k, data, priorC, settings, support)
 
-  hi = mcmcobj.R[ij[1]]
-  hj = mcmcobj.R[ij[2]]
+  hi = state.R[ij[1]]
+  hj = state.R[ij[2]]
 
-  distwm = Distributions.Beta(settings.parawm + mcmcobj.v[hi],
-                              settings.parawm + mcmcobj.v[hj])
+  distwm = Distributions.Beta(settings.parawm + state.v[hi],
+                              settings.parawm + state.v[hj])
 
   # sample a new proportion for cluster 'hi'
   w = Distributions.rand(distwm)
@@ -32,10 +32,10 @@ function merge!(ij::Vector{Int},
   z = 0.0
   p = 0.0
 
-  vi = mcmcobj.v[hi] + mcmcobj.v[hj]
+  vi = state.v[hi] + state.v[hj]
   ni = zeros(Float64, support.m)
   for b in 1:support.m
-    ni[b] = mcmcobj.n1s[hi, b] + mcmcobj.n1s[hj, b]
+    ni[b] = state.n1s[hi, b] + state.n1s[hj, b]
   end
 
   # allocate the neighbours of i and j
@@ -54,7 +54,7 @@ function merge!(ij::Vector{Int},
     z = -log1p(exp(log(1 - w) - log(w) + lcp[2] - lcp[1]))
     p = exp(z)
 
-    if mcmcobj.R[u] == hi
+    if state.R[u] == hi
       updateclusteri!(u, data, support)
       lq += z
     else
@@ -63,22 +63,22 @@ function merge!(ij::Vector{Int},
     end
   end
 
-  simcmerge!(k, hi, hj, vi, ni, priorC, support, mcmcobj)
+  simcmerge!(k, hi, hj, vi, ni, priorC, support, state)
 
   support.lograR = logratiopriorrowmerge(k, support.vi, support.vj, priorR)
 
-  loglikmerge!(hi, hj, ni, vi, priorC, support, mcmcobj)
+  loglikmerge!(hi, hj, ni, vi, priorC, support, state)
 
   ratio = exp(support.lograR +
-              support.logpC[1] - mcmcobj.logpC[1] +
-              support.loglik - mcmcobj.loglik +
-              mcmcobj.logpC[2] - support.logpC[2] +
+              support.logpC[1] - state.logpC[1] +
+              support.loglik - state.loglik +
+              state.logpC[2] - support.logpC[2] +
               Distributions.logpdf(settings.distws, w) -
               Distributions.logpdf(distwm, w) +
               lq)
 
   if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
-    performmerge!(hi, hj, ni, vi, priorC, settings, support, mcmcobj)
+    performmerge!(hi, hj, ni, vi, priorC, settings, support, state)
   end
 
   nothing
@@ -91,46 +91,46 @@ function performmerge!(hi::Int,
                        priorC::PriorColPartition,
                        settings::KSettings,
                        support::KSupport,
-                       mcmcobj::AminoAcidMCMC)
-  for j in 1:mcmcobj.v[hj]
-    mcmcobj.R[mcmcobj.unit[hj][j]] = hi
+                       state::AminoAcidState)
+  for j in 1:state.v[hj]
+    state.R[state.unit[hj][j]] = hi
   end
 
-  mcmcobj.emptycluster[hj] = true
+  state.emptycluster[hj] = true
 
   k = 0
-  for a in 1:length(mcmcobj.emptycluster)
-    if !mcmcobj.emptycluster[a]
-      mcmcobj.cl[k += 1] = a
+  for a in 1:length(state.emptycluster)
+    if !state.emptycluster[a]
+      state.cl[k += 1] = a
     end
   end
 
-  mcmcobj.k = k
+  state.k = k
 
   for b in 1:support.m
     for l in 1:(support.k - 1)
-      mcmcobj.C[support.cl[l], b] = support.C[l, b]
+      state.C[support.cl[l], b] = support.C[l, b]
     end
-    mcmcobj.C[hi, b] = support.C[support.k, b]
+    state.C[hi, b] = support.C[support.k, b]
 
-    mcmcobj.n1s[hi, b] = ni[b]
+    state.n1s[hi, b] = ni[b]
   end
 
-  if length(mcmcobj.unit[hi]) < vi
+  if length(state.unit[hi]) < vi
     tmp = zeros(Int, min(support.n, vi + settings.maxunit - 1))
-    copy!(tmp, 1, mcmcobj.unit[hi], 1, mcmcobj.v[hi])
-    copy!(tmp, mcmcobj.v[hi] + 1, mcmcobj.unit[hj], 1, mcmcobj.v[hj])
-    mcmcobj.unit[hi] = tmp
+    copy!(tmp, 1, state.unit[hi], 1, state.v[hi])
+    copy!(tmp, state.v[hi] + 1, state.unit[hj], 1, state.v[hj])
+    state.unit[hi] = tmp
   else
-    copy!(mcmcobj.unit[hi], mcmcobj.v[hi] + 1, mcmcobj.unit[hj], 1,
-          mcmcobj.v[hj])
+    copy!(state.unit[hi], state.v[hi] + 1, state.unit[hj], 1,
+          state.v[hj])
   end
 
-  mcmcobj.v[hi] = vi
+  state.v[hi] = vi
 
-  mcmcobj.logpR += support.lograR
-  copy!(mcmcobj.logpC, support.logpC)
-  mcmcobj.loglik = support.loglik
+  state.logpR += support.lograR
+  copy!(state.logpC, support.logpC)
+  state.loglik = support.loglik
 
   copy!(priorC.logω, support.logω)
 
