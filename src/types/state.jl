@@ -1,16 +1,8 @@
 # This file is part of Kpax3. License is MIT.
 
-abstract KMCMC
+abstract State
 
-"""
-# Control MCMC run
-
-## Description
-
-## Fields
-
-"""
-type AminoAcidMCMC <: KMCMC
+type AminoAcidState <: State
   R::Vector{Int}
   C::Matrix{UInt8}
 
@@ -27,21 +19,25 @@ type AminoAcidMCMC <: KMCMC
   loglik::Float64
 end
 
-function AminoAcidMCMC(data::Matrix{UInt8},
-                       R::Vector{Int},
-                       priorR::PriorRowPartition,
-                       priorC::AminoAcidPriorCol,
-                       settings::KSettings)
+function AminoAcidState(data::Matrix{UInt8},
+                        R::Vector{Int},
+                        priorR::PriorRowPartition,
+                        priorC::AminoAcidPriorCol,
+                        settings::KSettings)
   m, n = size(data)
 
-  C = zeros(UInt8, settings.maxclust, m)
+  R = initpartition(R, n)
 
-  emptycluster = trues(settings.maxclust)
-  cl = zeros(Int, settings.maxclust)
+  maxclust = max(maximum(R), min(n, settings.maxclust))
 
-  v = zeros(Int, settings.maxclust)
-  n1s = zeros(Float64, settings.maxclust, m)
-  unit = Vector{Int}[zeros(Int, settings.maxunit) for g in 1:settings.maxclust]
+  C = zeros(UInt8, maxclust, m)
+
+  emptycluster = trues(maxclust)
+  cl = zeros(Int, maxclust)
+
+  v = zeros(Int, maxclust)
+  n1s = zeros(Float64, maxclust, m)
+  unit = Vector{Int}[zeros(Int, settings.maxunit) for g in 1:maxclust]
 
   g = 0
   for a in 1:n
@@ -75,7 +71,10 @@ function AminoAcidMCMC(data::Matrix{UInt8},
   end
 
   logpR = logdPriorRow(n, k, v, priorR)
-  logpC = rpostpartitioncols!(C, cl, k, v, n1s, priorC)
+
+  logpC = zeros(Float64, 2)
+  computelocalmode!(v, n1s, C, cl, k, logpC, priorC)
+
   loglik = 0.0
 
   # If array A has dimension (d_{1}, ..., d_{l}, ..., d_{L}), to access
@@ -95,5 +94,5 @@ function AminoAcidMCMC(data::Matrix{UInt8},
     end
   end
 
-  AminoAcidMCMC(R, C, emptycluster, cl, k, v, n1s, unit, logpR, logpC, loglik)
+  AminoAcidState(R, C, emptycluster, cl, k, v, n1s, unit, logpR, logpC, loglik)
 end

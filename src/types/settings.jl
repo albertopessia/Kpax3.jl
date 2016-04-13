@@ -9,7 +9,7 @@
 
 """
 immutable KSettings
-  outfile::AbstractString
+  fpath::AbstractString
   T::Int
   burnin::Int
   tstep::Int
@@ -26,25 +26,25 @@ immutable KSettings
   verbosestep::Int
 end
 
-function KSettings(outfile::AbstractString,
-                   T::Int,
-                   burnin::Int,
-                   tstep::Int,
-                   op::Vector{Float64},
-                   α::Real,
-                   θ::Real,
-                   γ::Vector{Float64},
-                   r::Float64,
-                   λs1::Float64,
-                   λs2::Float64,
-                   parawm::Float64,
-                   maxclust::Int,
-                   maxunit::Int,
-                   verbose::Bool,
-                   verbosestep::Int)
+function KSettings(fpath::AbstractString;
+                   T::Int=1000000,
+                   burnin::Int=500000,
+                   tstep::Int=1,
+                   op::Vector{Float64}=[0.6; 0.3; 0.1],
+                   α::Real=0.5,
+                   θ::Real=-0.1,
+                   γ::Vector{Float64}=[0.6; 0.35; 0.05],
+                   r::Float64=log(0.001) / log(0.95),
+                   λs1::Float64=1.0,
+                   λs2::Float64=1.0,
+                   parawm::Float64=5.0,
+                   maxclust::Int=500,
+                   maxunit::Int=500,
+                   verbose::Bool=true,
+                   verbosestep::Int=100000)
   # open oufile for writing and immediately close it. We do this to throw a
   # proper Julia standard exception if something is wrong
-  f = open(outfile, "w")
+  f = open(fpath, "a")
   close(f)
 
   if T < 1
@@ -107,7 +107,7 @@ function KSettings(outfile::AbstractString,
     throw(KDomainError("Argument 'verbosestep' is negative."))
   end
 
-  KSettings(outfile, T, burnin, tstep, StatsBase.WeightVec(op), α, θ, γ, r,
+  KSettings(fpath, T, burnin, tstep, StatsBase.WeightVec(op), α, θ, γ, r,
             Distributions.Beta(λs1, λs2), parawm, maxclust, maxunit, verbose,
             verbosestep)
 end

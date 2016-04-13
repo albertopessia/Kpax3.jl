@@ -8,9 +8,9 @@ function split!(ij::Vector{Int},
                 priorC::PriorColPartition,
                 settings::KSettings,
                 support::KSupport,
-                mcmcobj::AminoAcidMCMC)
+                state::AminoAcidState)
   # number of clusters after the split
-  k = mcmcobj.k + 1
+  k = state.k + 1
 
   initsupportsplitmerge!(ij, S, k, data, priorC, settings, support)
 
@@ -51,27 +51,27 @@ function split!(ij::Vector{Int},
     end
   end
 
-  hi = mcmcobj.R[ij[1]]
+  hi = state.R[ij[1]]
 
-  simcsplit!(k, hi, priorC, support, mcmcobj)
+  simcsplit!(k, hi, priorC, support, state)
 
   support.lograR = logratiopriorrowsplit(k, support.vi, support.vj, priorR)
 
-  logliksplit!(hi, priorC, support, mcmcobj)
+  logliksplit!(hi, priorC, support, state)
 
   distwm = Distributions.Beta(settings.parawm + support.vi,
                               settings.parawm + support.vj)
 
   ratio = exp(support.lograR +
-              support.logpC[1] - mcmcobj.logpC[1] +
-              support.loglik - mcmcobj.loglik +
-              mcmcobj.logpC[2] - support.logpC[2] +
+              support.logpC[1] - state.logpC[1] +
+              support.loglik - state.loglik +
+              state.logpC[2] - support.logpC[2] +
               Distributions.logpdf(distwm, w) -
               Distributions.logpdf(settings.distws, w) -
               lq)
 
   if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
-    performsplit!(hi, k, priorC, settings, support, mcmcobj)
+    performsplit!(hi, k, priorC, settings, support, state)
   end
 
   nothing
@@ -82,42 +82,42 @@ function performsplit!(hi::Int,
                        priorC::PriorColPartition,
                        settings::KSettings,
                        support::KSupport,
-                       mcmcobj::AminoAcidMCMC)
-  hj = findfirst(mcmcobj.emptycluster)
+                       state::AminoAcidState)
+  hj = findfirst(state.emptycluster)
 
   if hj > 0
     for b in 1:support.m
       for l in 1:(support.k - 2)
-        mcmcobj.C[support.cl[l], b] = support.C[l, b]
+        state.C[support.cl[l], b] = support.C[l, b]
       end
-      mcmcobj.C[hi, b] = support.C[support.k - 1, b]
-      mcmcobj.C[hj, b] = support.C[support.k, b]
+      state.C[hi, b] = support.C[support.k - 1, b]
+      state.C[hj, b] = support.C[support.k, b]
 
-      mcmcobj.n1s[hi, b] = support.ni[b]
-      mcmcobj.n1s[hj, b] = support.nj[b]
+      state.n1s[hi, b] = support.ni[b]
+      state.n1s[hj, b] = support.nj[b]
     end
 
-    mcmcobj.emptycluster[hj] = false
+    state.emptycluster[hj] = false
 
     h = 0
-    for a in 1:length(mcmcobj.emptycluster)
-      if !mcmcobj.emptycluster[a]
-        mcmcobj.cl[h += 1] = a
+    for a in 1:length(state.emptycluster)
+      if !state.emptycluster[a]
+        state.cl[h += 1] = a
       end
     end
 
-    mcmcobj.k = h
+    state.k = h
 
-    mcmcobj.v[hi] = support.vi
-    mcmcobj.unit[hi] = copy!(mcmcobj.unit[hi], 1, support.ui, 1, support.vi)
+    state.v[hi] = support.vi
+    state.unit[hi] = copy!(state.unit[hi], 1, support.ui, 1, support.vi)
 
-    mcmcobj.v[hj] = support.vj
+    state.v[hj] = support.vj
 
-    if length(mcmcobj.unit[hj]) < mcmcobj.v[hj]
-      tmp = zeros(Int, min(support.n, mcmcobj.v[hj] + settings.maxunit - 1))
-      mcmcobj.unit[hj] = copy!(tmp, 1, support.uj, 1, support.vj)
+    if length(state.unit[hj]) < state.v[hj]
+      tmp = zeros(Int, min(support.n, state.v[hj] + settings.maxunit - 1))
+      state.unit[hj] = copy!(tmp, 1, support.uj, 1, support.vj)
     else
-      mcmcobj.unit[hj] = copy!(mcmcobj.unit[hj], 1, support.uj, 1, support.vj)
+      state.unit[hj] = copy!(state.unit[hj], 1, support.uj, 1, support.vj)
     end
   else
     hj = k
@@ -136,16 +136,16 @@ function performsplit!(hi::Int,
     for l in 1:(support.k - 2)
       g = support.cl[l]
       C[g, 1] = support.C[l, 1]
-      v[g] = mcmcobj.v[g]
-      n1s[g, 1] = mcmcobj.n1s[g, 1]
-      unit[g] = mcmcobj.unit[g]
+      v[g] = state.v[g]
+      n1s[g, 1] = state.n1s[g, 1]
+      unit[g] = state.unit[g]
       emptycluster[g] = false
     end
 
     C[hi, 1] = support.C[support.k - 1, 1]
     v[hi] = support.vi
     n1s[hi, 1] = support.ni[1]
-    unit[hi] = copy!(mcmcobj.unit[hi], 1, support.ui, 1, support.vi)
+    unit[hi] = copy!(state.unit[hi], 1, support.ui, 1, support.vi)
     emptycluster[hi] = false
 
     C[k, 1] = support.C[support.k, 1]
@@ -159,7 +159,7 @@ function performsplit!(hi::Int,
       for l in 1:(support.k - 2)
         g = support.cl[l]
         C[g, b] = support.C[l, b]
-        n1s[g, b] = mcmcobj.n1s[g, b]
+        n1s[g, b] = state.n1s[g, b]
       end
       C[hi, b] = support.C[support.k - 1, b]
       n1s[hi, b] = support.ni[b]
@@ -167,33 +167,33 @@ function performsplit!(hi::Int,
       n1s[k, b] = support.nj[b]
     end
 
-    mcmcobj.C = C
+    state.C = C
 
-    mcmcobj.emptycluster = emptycluster
+    state.emptycluster = emptycluster
 
     h = 0
-    for a in 1:length(mcmcobj.emptycluster)
-      if !mcmcobj.emptycluster[a]
+    for a in 1:length(state.emptycluster)
+      if !state.emptycluster[a]
         cl[h += 1] = a
       end
     end
 
-    mcmcobj.cl = cl
-    mcmcobj.k = h
+    state.cl = cl
+    state.k = h
 
-    mcmcobj.v = v
-    mcmcobj.n1s = n1s
-    mcmcobj.unit = unit
+    state.v = v
+    state.n1s = n1s
+    state.unit = unit
   end
 
   # move units to their new cluster
   for j in 1:support.vj
-    mcmcobj.R[support.uj[j]] = hj
+    state.R[support.uj[j]] = hj
   end
 
-  mcmcobj.logpR += support.lograR
-  copy!(mcmcobj.logpC, support.logpC)
-  mcmcobj.loglik = support.loglik
+  state.logpR += support.lograR
+  copy!(state.logpC, support.logpC)
+  state.loglik = support.loglik
 
   copy!(priorC.logω, support.logω)
 

@@ -157,7 +157,7 @@ function simcbrw!(k::Int,
                   hj::Int,
                   priorC::PriorColPartition,
                   support::KSupport,
-                  mcmcobj::AminoAcidMCMC)
+                  state::AminoAcidState)
   fill!(support.logpC, 0.0)
 
   logq = zeros(Float64, 4, k)
@@ -169,14 +169,14 @@ function simcbrw!(k::Int,
   tmp = 0.0
 
   h = 0
-  for l in 1:mcmcobj.k
-    if (mcmcobj.cl[l] != hi) && (mcmcobj.cl[l] != hj)
+  for l in 1:state.k
+    if (state.cl[l] != hi) && (state.cl[l] != hj)
       # this cluster is not affected by the move
-      support.cl[h += 1] = mcmcobj.cl[l]
+      support.cl[h += 1] = state.cl[l]
     end
   end
 
-  if k >= mcmcobj.k
+  if k >= state.k
     support.k = h + 2
   else
     support.k = h + 1
@@ -188,25 +188,25 @@ function simcbrw!(k::Int,
     lγ[3] = priorC.logγ[3]
 
     for l in 1:h
-      computeclusterlogprobs!(logq, lγ, lω, b, l, mcmcobj.n1s[support.cl[l], b],
-                              mcmcobj.v[support.cl[l]], support.logω, priorC)
+      computeclusterlogprobs!(logq, lγ, lω, b, l, state.n1s[support.cl[l], b],
+                              state.v[support.cl[l]], support.logω, priorC)
     end
 
-    if k == mcmcobj.k
+    if k == state.k
       # remove i from its cluster
       computeclusterlogprobs!(logq, lγ, lω, b, support.k - 1,
-                              mcmcobj.n1s[hi, b] - support.ni[b],
-                              mcmcobj.v[hi] - 1, support.logω, priorC)
+                              state.n1s[hi, b] - support.ni[b],
+                              state.v[hi] - 1, support.logω, priorC)
 
       # move i into an existing cluster
       computeclusterlogprobs!(logq, lγ, lω, b, support.k,
-                              mcmcobj.n1s[hj, b] + support.ni[b],
-                              mcmcobj.v[hj] + 1, support.logω, priorC)
-    elseif k > mcmcobj.k
+                              state.n1s[hj, b] + support.ni[b],
+                              state.v[hj] + 1, support.logω, priorC)
+    elseif k > state.k
       # remove i from its cluster
       computeclusterlogprobs!(logq, lγ, lω, b, support.k - 1,
-                              mcmcobj.n1s[hi, b] - support.ni[b],
-                              mcmcobj.v[hi] - 1, support.logω, priorC)
+                              state.n1s[hi, b] - support.ni[b],
+                              state.v[hi] - 1, support.logω, priorC)
 
       # move singleton i into its own cluster
       computeclusterlogprobs!(logq, lγ, lω, b, support.k, support.ni[b], 1,
@@ -214,8 +214,8 @@ function simcbrw!(k::Int,
     else
       # move i into an existing cluster
       computeclusterlogprobs!(logq, lγ, lω, b, support.k,
-                              mcmcobj.n1s[hj, b] + support.ni[b],
-                              mcmcobj.v[hj] + 1, support.logω, priorC)
+                              state.n1s[hj, b] + support.ni[b],
+                              state.v[hj] + 1, support.logω, priorC)
     end
 
     if (lγ[1] >= lγ[2]) && (lγ[1] >= lγ[3])
@@ -252,7 +252,7 @@ function simcmerge!(k::Int,
                     ni::Vector{Float64},
                     priorC::PriorColPartition,
                     support::KSupport,
-                    mcmcobj::AminoAcidMCMC)
+                    state::AminoAcidState)
   fill!(support.logpC, 0.0)
 
   logq = zeros(Float64, 4, k)
@@ -264,10 +264,10 @@ function simcmerge!(k::Int,
   tmp = 0.0
 
   support.k = 0
-  for l in 1:mcmcobj.k
-    if (mcmcobj.cl[l] != hi) && (mcmcobj.cl[l] != hj)
+  for l in 1:state.k
+    if (state.cl[l] != hi) && (state.cl[l] != hj)
       # this cluster is not affected by the merge
-      support.cl[support.k += 1] = mcmcobj.cl[l]
+      support.cl[support.k += 1] = state.cl[l]
     end
   end
   support.k += 1
@@ -278,8 +278,8 @@ function simcmerge!(k::Int,
     lγ[3] = priorC.logγ[3]
 
     for l in 1:(support.k - 1)
-      computeclusterlogprobs!(logq, lγ, lω, b, l, mcmcobj.n1s[support.cl[l], b],
-                              mcmcobj.v[support.cl[l]], support.logω, priorC)
+      computeclusterlogprobs!(logq, lγ, lω, b, l, state.n1s[support.cl[l], b],
+                              state.v[support.cl[l]], support.logω, priorC)
     end
 
     computeclusterlogprobs!(logq, lγ, lω, b, support.k, ni[b], vi, support.logω,
@@ -316,7 +316,7 @@ function simcsplit!(k::Int,
                     hi::Int,
                     priorC::PriorColPartition,
                     support::KSupport,
-                    mcmcobj::AminoAcidMCMC)
+                    state::AminoAcidState)
   fill!(support.logpC, 0.0)
 
   logq = zeros(Float64, 4, k)
@@ -328,10 +328,10 @@ function simcsplit!(k::Int,
   tmp = 0.0
 
   support.k = 0
-  for l in 1:mcmcobj.k
-    if mcmcobj.cl[l] != hi
+  for l in 1:state.k
+    if state.cl[l] != hi
       # this cluster is not affected by the split
-      support.cl[support.k += 1] = mcmcobj.cl[l]
+      support.cl[support.k += 1] = state.cl[l]
     end
   end
   support.k += 2
@@ -342,8 +342,8 @@ function simcsplit!(k::Int,
     lγ[3] = priorC.logγ[3]
 
     for l in 1:(support.k - 2)
-      computeclusterlogprobs!(logq, lγ, lω, b, l, mcmcobj.n1s[support.cl[l], b],
-                              mcmcobj.v[support.cl[l]], support.logω, priorC)
+      computeclusterlogprobs!(logq, lγ, lω, b, l, state.n1s[support.cl[l], b],
+                              state.v[support.cl[l]], support.logω, priorC)
     end
 
     computeclusterlogprobs!(logq, lγ, lω, b, support.k - 1, support.ni[b],

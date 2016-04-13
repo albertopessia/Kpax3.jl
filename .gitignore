@@ -24,6 +24,7 @@ tmp/
 #################
 # Compiled code #
 #################
+*.bin
 *.class
 *.com
 *.dll

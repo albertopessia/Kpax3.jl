@@ -5,12 +5,12 @@ function loglikbrw!(k::Int,
                     hj::Int,
                     priorC::AminoAcidPriorCol,
                     support::KSupport,
-                    mcmcobj::AminoAcidMCMC)
+                    state::AminoAcidState)
   support.loglik = 0.0
   lidx = 0
   g = 0
 
-  if k >= mcmcobj.k
+  if k >= state.k
     h = support.k - 2
   else
     h = support.k - 1
@@ -20,31 +20,31 @@ function loglikbrw!(k::Int,
     for l in 1:h
       g = support.cl[l]
       lidx = support.C[l, b] + 4 * (b - 1)
-      support.loglik += logmarglik(mcmcobj.n1s[g, b], mcmcobj.v[g],
+      support.loglik += logmarglik(state.n1s[g, b], state.v[g],
                                    priorC.A[lidx], priorC.B[lidx])
     end
 
-    if k == mcmcobj.k
+    if k == state.k
       lidx = support.C[support.k - 1, b] + 4 * (b - 1)
-      support.loglik += logmarglik(mcmcobj.n1s[hi, b] - support.ni[b],
-                                   mcmcobj.v[hi] - 1, priorC.A[lidx],
+      support.loglik += logmarglik(state.n1s[hi, b] - support.ni[b],
+                                   state.v[hi] - 1, priorC.A[lidx],
                                    priorC.B[lidx])
       lidx = support.C[support.k, b] + 4 * (b - 1)
-      support.loglik += logmarglik(mcmcobj.n1s[hj, b] + support.ni[b],
-                                   mcmcobj.v[hj] + 1, priorC.A[lidx],
+      support.loglik += logmarglik(state.n1s[hj, b] + support.ni[b],
+                                   state.v[hj] + 1, priorC.A[lidx],
                                    priorC.B[lidx])
-    elseif k > mcmcobj.k
+    elseif k > state.k
       lidx = support.C[support.k - 1, b] + 4 * (b - 1)
-      support.loglik += logmarglik(mcmcobj.n1s[hi, b] - support.ni[b],
-                                   mcmcobj.v[hi] - 1, priorC.A[lidx],
+      support.loglik += logmarglik(state.n1s[hi, b] - support.ni[b],
+                                   state.v[hi] - 1, priorC.A[lidx],
                                    priorC.B[lidx])
      lidx = support.C[support.k, b] + 4 * (b - 1)
      support.loglik += logmarglik(support.ni[b], 1, priorC.A[lidx],
                                   priorC.B[lidx])
     else
       lidx = support.C[support.k, b] + 4 * (b - 1)
-      support.loglik += logmarglik(mcmcobj.n1s[hj, b] + support.ni[b],
-                                   mcmcobj.v[hj] + 1, priorC.A[lidx],
+      support.loglik += logmarglik(state.n1s[hj, b] + support.ni[b],
+                                   state.v[hj] + 1, priorC.A[lidx],
                                    priorC.B[lidx])
     end
   end
