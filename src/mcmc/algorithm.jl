@@ -110,7 +110,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
         end
 
         if settings.verbose && (t % settings.verbosestep == 0)
-          println("Burnin: iteration ", t, " done.")
+          println("Burnin: step ", t, " done.")
         end
       end
 
@@ -136,11 +136,11 @@ function kpax3mcmc!(data::Matrix{UInt8},
       end
 
       if t % settings.tstep == 0
-        saveresults!(fp, state)
+        savestate!(fp, state)
       end
 
       if settings.verbose && (t % settings.verbosestep == 0)
-        println("Iteration ", t, " done.")
+        println("Step ", t, " done.")
       end
     end
 

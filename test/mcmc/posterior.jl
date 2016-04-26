@@ -411,7 +411,7 @@ trueProbS = reshape([0.6466162109955354564405638484458904713392257690429687500;
 
 kpax3(x, partition, settings)
 
-(estimK, estimP, estimS) = readresults(settings.fpath)
+(estimK, estimP, estimS) = processchain(settings.fpath)
 
 @test maximum(abs(estimK - trueProbK)) < 0.005
 @test maximum(abs(estimP - trueProbP)) < 0.005
@@ -465,7 +465,7 @@ trueProbS = reshape([0.6628554623025003644798403001914266496896743774414062500;
 
 kpax3(x, partition, settings)
 
-(estimK, estimP, estimS) = readresults(settings.fpath)
+(estimK, estimP, estimS) = processchain(settings.fpath)
 
 @test maximum(abs(estimK - trueProbK)) < 0.005
 @test maximum(abs(estimP - trueProbP)) < 0.005
@@ -519,7 +519,7 @@ trueProbS = reshape([0.6487705348032424268467366346158087253570556640625000000;
 
 kpax3(x, partition, settings)
 
-(estimK, estimP, estimS) = readresults(settings.fpath)
+(estimK, estimP, estimS) = processchain(settings.fpath)
 
 @test maximum(abs(estimK - trueProbK)) < 0.005
 @test maximum(abs(estimP - trueProbP)) < 0.005
@@ -573,7 +573,7 @@ trueProbS = reshape([0.6350275618390684995162587256345432251691818237304687500;
 
 kpax3(x, partition, settings)
 
-(estimK, estimP, estimS) = readresults(settings.fpath)
+(estimK, estimP, estimS) = processchain(settings.fpath)
 
 @test maximum(abs(estimK - trueProbK)) < 0.005
 @test maximum(abs(estimP - trueProbP)) < 0.005

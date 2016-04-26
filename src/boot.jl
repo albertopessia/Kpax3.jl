@@ -17,7 +17,7 @@ include("types/types.jl")
 ########################
 # Load basic functions #
 ########################
-include("init_partition.jl")
+include("support_functions.jl")
 
 #################
 # Load the rest #

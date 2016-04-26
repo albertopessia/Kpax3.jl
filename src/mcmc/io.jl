@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-function readresults(infile::AbstractString)
+function processchain(infile::AbstractString)
   fp = open(infile, "r")
 
   # discard prior hyperparameters
@@ -50,8 +50,8 @@ function readresults(infile::AbstractString)
   (absfreqk / T, absfreqR / T, absfreqS[1:3, :] / T)
 end
 
-function saveresults!(fp::IOStream,
-                      state::AminoAcidState)
+function savestate!(fp::IOStream,
+                    state::AminoAcidState)
   write(fp, state.k)
   write(fp, state.R)
   for b in 1:size(state.C, 2), l in 1:state.k

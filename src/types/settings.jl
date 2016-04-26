@@ -27,8 +27,8 @@ immutable KSettings
 end
 
 function KSettings(fpath::AbstractString;
-                   T::Int=1000000,
-                   burnin::Int=500000,
+                   T::Int=10000,
+                   burnin::Int=1000,
                    tstep::Int=1,
                    op::Vector{Float64}=[0.6; 0.3; 0.1],
                    α::Real=0.5,
@@ -41,7 +41,7 @@ function KSettings(fpath::AbstractString;
                    maxclust::Int=500,
                    maxunit::Int=500,
                    verbose::Bool=true,
-                   verbosestep::Int=100000)
+                   verbosestep::Int=500)
   # open oufile for writing and immediately close it. We do this to throw a
   # proper Julia standard exception if something is wrong
   f = open(fpath, "a")

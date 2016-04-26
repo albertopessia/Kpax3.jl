@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function kpax3Restimate(infile::AbstractString)
-  (pk, pR, pS) = readresults(infile)
+  (pk, pR, pS) = processchain(infile)
 
   n = length(pk)
 
@@ -55,8 +55,8 @@ function kpax3estimate(x::AminoAcidData,
   γ = [tmp[3]; tmp[4]; tmp[5]]
   r = tmp[6]
 
-  settings = KSettings(settings.fpath, settings.T, settings.burnin,
-                       settings.tstep, settings.op, α, θ, γ, r, settings.distws,
+  settings = KSettings(infile, settings.T, settings.burnin, settings.tstep,
+                       settings.op, α, θ, γ, r, settings.distws,
                        settings.parawm, settings.maxclust, settings.maxunit,
                        settings.verbose, settings.verbosestep)
 

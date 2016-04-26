@@ -4,8 +4,8 @@
 remove "gaps" and non-positive values from the partition
 Example: [1, 1, 0, 1, -2, 4, 0] -> [3, 3, 2, 3, 1, 4, 2]
 """
-function initpartition(partition::Vector{Int},
-                       n::Int)
+function normalizepartition(partition::Vector{Int},
+                            n::Int)
   if length(partition) != n
     throw(KInputError(string("Length of argument 'partition' is not equal to ",
                              "the sample size: ", length(partition),
@@ -15,8 +15,8 @@ function initpartition(partition::Vector{Int},
   indexin(partition, sort(unique(partition)))
 end
 
-function initpartition(infile::AbstractString,
-                       n::Int)
+function normalizepartition(infile::AbstractString,
+                            n::Int)
   d = readcsv(infile, Int)
 
   if size(d, 2) != 1
@@ -31,8 +31,8 @@ function initpartition(infile::AbstractString,
   indexin(d[:, 1], sort(unique(d[:, 1])))
 end
 
-function initpartition(infile::AbstractString,
-                       id::Vector{ASCIIString})
+function normalizepartition(infile::AbstractString,
+                            id::Vector{ASCIIString})
   d = readcsv(infile, ASCIIString)
 
   if size(d, 1) != length(id)
@@ -58,4 +58,47 @@ function initpartition(infile::AbstractString,
   else
     throw(KInputError("Too many columns found in file ", infile, "."))
   end
+end
+
+function initializestates(x::AminoAcidData,
+                          d::Vector{Float64},
+                          N::Int,
+                          settings::KSettings;
+                          kset::UnitRange{Int}=1:0)
+  m, n = size(x.data)
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(x.data, 1, settings.γ, settings.r)
+
+  R = ones(Int, n)
+
+  state = AminoAcidState(x.data, R, priorR, priorC, settings)
+  logpp = state.logpR + state.logpC[1] + state.loglik
+
+  if length(kset) == 0
+    kset = 2:max(ceil(Int, sqrt(n)), 100)
+  end
+
+  D = zeros(Float64, n, n)
+  idx = 1
+  for j in 1:(n - 1), i in (j + 1):n
+    D[i, j] = D[j, i] = d[idx]
+    idx += 1
+  end
+
+  tmpstate = copystate(state)
+  tmplogpp = logpp
+
+  for k in kset
+    updateprior!(priorC, k)
+
+    copy!(R, normalizepartition(kmedoids(D, k; maxiter=1000).assignments, n))
+
+    tmpstate = AminoAcidState(x.data, R, priorR, priorC, settings)
+    tmplogpp = tmpstate.logpR + tmpstate.logpC[1] + tmpstate.loglik
+  end
+
+    statelist = [copystate(state) for i in 1:N]
+
+
 end

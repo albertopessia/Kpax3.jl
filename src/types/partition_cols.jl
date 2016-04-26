@@ -94,3 +94,11 @@ function AminoAcidPriorCol(data::Matrix{UInt8},
 
   AminoAcidPriorCol(logγ, logω, A, B)
 end
+
+function updateprior!(priorC::AminoAcidPriorCol,
+                      k::Int)
+  priorC.logω[3] = log(k - 1.0) - log(k)
+  priorC.logω[4] = -log(k)
+
+  nothing
+end

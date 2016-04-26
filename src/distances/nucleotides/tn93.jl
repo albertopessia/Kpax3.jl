@@ -47,33 +47,38 @@ Value:
 =#
 function distnttn93(data::Matrix{UInt8},
                     ref::Vector{UInt8})
-  n = size(data, 2)
+  m, n = size(data)
 
   d = zeros(Float64, div(n * (n - 1), 2))
 
   gt = zeros(Float64, 4)
   gb = zeros(Float64, 4)
 
-  for b in 1:m
-    if ref[b] == 1
+  a = UInt8('a')
+  c = UInt8('c')
+  g = UInt8('g')
+  t = UInt8('t')
+
+  for j in 1:m
+    if ref[j] == a
       gt[1] += 1
-    elseif ref[b] == 2
+    elseif ref[j] == c
       gt[2] += 1
-    elseif ref[b] == 3
+    elseif ref[j] == g
       gt[3] += 1
-    elseif ref[b] == 4
+    elseif ref[j] == t
       gt[4] += 1
     end
   end
 
-  for a in 1:n, b in 1:m
-    if data[b, a] == 1
+  for i in 1:n, j in 1:m
+    if data[j, i] == a
       gb[1] += 1
-    elseif data[b, a] == 2
+    elseif data[j, i] == c
       gb[2] += 1
-    elseif data[b, a] == 3
+    elseif data[j, i] == g
       gb[3] += 1
-    elseif data[b, a] == 4
+    elseif data[j, i] == t
       gb[4] += 1
     end
   end
@@ -99,9 +104,10 @@ function distnttn93(data::Matrix{UInt8},
   k2 = (gb[2] * gb[4]) / gy
   k3 = gr * gy - k1 * gy - k2 * gr
 
-  idx = 0
+  idx = 1
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = nttn93(i, j, data, gr, gy, h, k1, k2, k3)
+    d[idx] = nttn93(i, j, data, gr, gy, h, k1, k2, k3)
+    idx += 1
   end
 
   d
@@ -142,33 +148,38 @@ Value:
 =#
 function distntmtn93(data::Matrix{UInt8},
                      ref::Vector{UInt8})
-  n = size(data, 2)
+  m, n = size(data)
 
   d = zeros(Float64, div(n * (n - 1), 2))
 
   gt = zeros(Float64, 4)
   gb = zeros(Float64, 4)
 
-  for b in 1:m
-    if ref[b] == 1
+  a = UInt8('a')
+  c = UInt8('c')
+  g = UInt8('g')
+  t = UInt8('t')
+
+  for j in 1:m
+    if ref[j] == a
       gt[1] += 1
-    elseif ref[b] == 2
+    elseif ref[j] == c
       gt[2] += 1
-    elseif ref[b] == 3
+    elseif ref[j] == g
       gt[3] += 1
-    elseif ref[b] == 4
+    elseif ref[j] == t
       gt[4] += 1
     end
   end
 
-  for a in 1:n, b in 1:m
-    if data[b, a] == 1
+  for i in 1:n, j in 1:m
+    if data[j, i] == a
       gb[1] += 1
-    elseif data[b, a] == 2
+    elseif data[j, i] == c
       gb[2] += 1
-    elseif data[b, a] == 3
+    elseif data[j, i] == g
       gb[3] += 1
-    elseif data[b, a] == 4
+    elseif data[j, i] == t
       gb[4] += 1
     end
   end
@@ -194,9 +205,10 @@ function distntmtn93(data::Matrix{UInt8},
   k2 = (gb[2] * gb[4]) / gy
   k3 = gr * gy - k1 * gy - k2 * gr
 
-  idx = 0
+  idx = 1
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = ntmtn93(i, j, data, gt, gr, gy, h, k1, k2, k3)
+    d[idx] = ntmtn93(i, j, data, gt, gr, gy, h, k1, k2, k3)
+    idx += 1
   end
 
   d
@@ -260,19 +272,23 @@ function nttn93(i::Int,
   x1 = 0x00
   x2 = 0x00
 
+  a = UInt8('a')
+  c = UInt8('c')
+  g = UInt8('g')
+  t = UInt8('t')
+
   for b in 1:size(data, 1)
     x1 = data[b, i]
     x2 = data[b, j]
 
-    if (0x00 < x1 < 0x05) && (0x00 < x2 < 0x05)
-      if ((x1 == 0x01) && (x2 == 0x03)) || ((x1 == 0x03) && (x2 == 0x01))
+    if (x1 == a || x1 == c || x1 == g || x1 == t) &&
+       (x2 == a || x2 == c || x2 == g || x2 == t)
+      if ((x1 == a) && (x2 == g)) || ((x1 == g) && (x2 == a))
         ag += 1
-      elseif ((x1 == 0x02) && (x2 == 0x04)) || ((x1 == 0x04) && (x2 == 0x02))
+      elseif ((x1 == c) && (x2 == t)) || ((x1 == t) && (x2 == c))
         ct += 1
-      elseif (((x1 == 0x01) || (x1 == 0x03)) &&
-              ((x2 == 0x02) || (x2 == 0x04))) ||
-             (((x1 == 0x02) || (x1 == 0x04)) &&
-              ((x2 == 0x01) || (x2 == 0x03)))
+      elseif (((x1 == a) || (x1 == g)) && ((x2 == c) || (x2 == t))) ||
+             (((x1 == c) || (x1 == t)) && ((x2 == a) || (x2 == g)))
         ry += 1
       end
 
@@ -378,29 +394,33 @@ function ntmtn93(i::Int,
   x1 = 0x00
   x2 = 0x00
 
+  a = UInt8('a')
+  c = UInt8('c')
+  g = UInt8('g')
+  t = UInt8('t')
+
   for b in 1:size(data, 1)
     x1 = data[b, i]
     x2 = data[b, j]
 
-    if 0x00 < x1 < 0x05
+    if (x1 == a || x1 == c || x1 == g || x1 == t)
       g1[x1] += 1
       n[1] += 1
     end
 
-    if 0x00 < x2 < 0x05
+    if (x2 == a || x2 == c || x2 == g || x2 == t)
       g2[x2] += 1
       n[2] += 1
     end
 
-    if (0x00 < x1 < 0x05) && (0x00 < x2 < 0x05)
-      if ((x1 == 0x01) && (x2 == 0x03)) || ((x1 == 0x03) && (x2 == 0x01))
+    if (x1 == a || x1 == c || x1 == g || x1 == t) &&
+       (x2 == a || x2 == c || x2 == g || x2 == t)
+      if ((x1 == a) && (x2 == g)) || ((x1 == g) && (x2 == a))
         ag += 1
-      elseif ((x1 == 0x02) && (x2 == 0x04)) || ((x1 == 0x04) && (x2 == 0x02))
+      elseif ((x1 == c) && (x2 == t)) || ((x1 == t) && (x2 == c))
         ct += 1
-      elseif (((x1 == 0x01) || (x1 == 0x03)) &&
-              ((x2 == 0x02) || (x2 == 0x04))) ||
-             (((x1 == 0x02) || (x1 == 0x04)) &&
-              ((x2 == 0x01) || (x2 == 0x03)))
+      elseif (((x1 == a) || (x1 == g)) && ((x2 == c) || (x2 == t))) ||
+             (((x1 == c) || (x1 == t)) && ((x2 == a) || (x2 == g)))
         ry += 1
       end
 

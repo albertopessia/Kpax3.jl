@@ -87,8 +87,10 @@ function NucleotideData(infile::ASCIIString;
     missuint[i += 1] = UInt8(c)
   end
 
+  missval = (length(miss) == 1) && (missuint[1] == 0x00) ? 0x00 : UInt8('?')
+
   (data, id, ref) = readfasta(infile, true, missuint, l, verbose, verbosestep)
-  (bindata, val, key) = categorical2binary(data, 0x1c)
+  (bindata, val, key) = categorical2binary(data, UInt8(127), missval)
 
   NucleotideData(bindata, id, ref, val, key)
 end
@@ -174,8 +176,10 @@ function AminoAcidData(infile::ASCIIString;
     missuint[i += 1] = UInt8(c)
   end
 
+  missval = (length(miss) == 1) && (missuint[1] == 0x00) ? 0x00 : UInt8('?')
+
   (data, id, ref) = readfasta(infile, false, missuint, l, verbose, verbosestep)
-  (bindata, val, key) = categorical2binary(data, 0x1c)
+  (bindata, val, key) = categorical2binary(data, UInt8(127), missval)
 
   AminoAcidData(bindata, id, ref, val, key)
 end

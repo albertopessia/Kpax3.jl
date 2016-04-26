@@ -40,17 +40,12 @@ v = zeros(Int, n)
 v[1:k] = [2; 2; 2]
 
 n1s = zeros(Float64, n, m)
-n1s[1, :] = vec(sum(float(data[:, R.== 13]), 2))
-n1s[2, :] = vec(sum(float(data[:, R.== 42]), 2))
-n1s[3, :] = vec(sum(float(data[:, R.== 76]), 2))
+n1s[1, :] = vec(sum(float(data[:, R .== 13]), 2))
+n1s[2, :] = vec(sum(float(data[:, R .== 42]), 2))
+n1s[3, :] = vec(sum(float(data[:, R .== 76]), 2))
 
-α = 0.0
-θ = 1.0
-priorR = EwensPitman(α, θ)
-
-g = [1.0; 1.0; 1.0]
-r = log(0.001) / log(0.95)
-priorC = AminoAcidPriorCol(data, k, g, r)
+priorR = EwensPitman(settings.α, settings.θ)
+priorC = AminoAcidPriorCol(data, k, settings.γ, settings.r)
 
 state = AminoAcidState(data, R, priorR, priorC, settings)
 
@@ -158,3 +153,235 @@ loglik[3] = sum(logmarglik(vec(state.n1s[cl[3], :]), state.v[cl[3]],
 
 ll = loglik[1] + loglik[2] + loglik[3]
 @test_approx_eq_eps state.loglik ll ε
+
+# test methods
+settings = KSettings("../build/test.bin", maxclust=6, maxunit=6)
+prR = EwensPitman(settings.α, settings.θ)
+
+prC1 = AminoAcidPriorCol(data, 1, settings.γ, settings.r)
+prC2 = AminoAcidPriorCol(data, 2, settings.γ, settings.r)
+prC3 = AminoAcidPriorCol(data, 3, settings.γ, settings.r)
+
+R = [3; 3; 1; 1; 5; 5]
+g = sort(unique(R))
+k = length(g)
+len = maximum(g)
+
+C = ones(UInt8, len, m)
+
+emptycluster = trues(len)
+emptycluster[g] = false
+
+cl = zeros(Int, len)
+cl[1:k] = g
+
+v = zeros(Int, len)
+v[g] = [2; 2; 2]
+
+n1s = zeros(Float64, len, m)
+n1s[1, :] = vec(sum(float(data[:, R .== 1]), 2))
+n1s[3, :] = vec(sum(float(data[:, R .== 3]), 2))
+n1s[5, :] = vec(sum(float(data[:, R .== 5]), 2))
+
+unit = Vector{Int}[sum(R .== g) > 0 ? find(R .== g) : [0] for g in 1:n]
+
+logpR = -6.5792512120101012129680384532548487186431884765625
+logpC = [-9.1948612277878307708078864379785954952239990234375;
+         -7.2468962917275181467857692041434347629547119140625]
+loglik = -66.7559125873377894322402426041662693023681640625
+
+state1 = AminoAcidState(copy(R), copy(C), copy(emptycluster), copy(cl), copy(k),
+                        copy(v), copy(n1s), deepcopy(unit), logpR, copy(logpC),
+                        loglik)
+
+state2 = copystate(state1)
+
+@test state2.R == R
+@test state2.C == C
+@test state2.emptycluster == emptycluster
+@test state2.cl == cl
+@test state2.k == k
+@test state2.v == v
+@test state2.n1s == n1s
+@test state2.unit == unit
+@test state2.logpR == logpR
+@test state2.logpC == logpC
+@test state2.loglik == loglik
+
+state1.R = [1; 1; 1; 1; 2; 3]
+fill!(state1.C, UInt8(2))
+state1.emptycluster = [false; false; false; true; true]
+state1.cl = [1; 2; 3; 0; 0]
+state1.k = 3
+state1.v = [4; 1; 1; 0; 2]
+state1.n1s[1, :] = vec(sum(float(data[:, state1.R .== 1]), 2))
+state1.n1s[2, :] = vec(sum(float(data[:, state1.R .== 2]), 2))
+state1.n1s[3, :] = vec(sum(float(data[:, state1.R .== 3]), 2))
+state1.unit[1] = [1; 2; 3; 4]
+state1.unit[2] = [5; 0]
+state1.unit[3] = [6]
+state1.logpR = logdPriorRow(n, state1.k, state1.v[1:state1.k], prR)
+state1.logpC[1] = logpriorC(state1.C, state1.cl, state1.k, prC3.logγ, prC3.logω)
+state1.logpC[2] = logcondpostC(state1.C, state1.cl, state1.k, state1.v,
+                               state1.n1s, prC3.logω, prC3)
+state1.loglik = loglikelihood(state1.C, state1.cl, state1.k, state1.v,
+                              state1.n1s, prC3)
+
+@test state2.R == R
+@test state2.C == C
+@test state2.emptycluster == emptycluster
+@test state2.cl == cl
+@test state2.k == k
+@test state2.v == v
+@test state2.n1s == n1s
+@test state2.unit == unit
+@test state2.logpR == logpR
+@test state2.logpC == logpC
+@test state2.loglik == loglik
+
+settings = KSettings("../build/test.bin", maxclust=1, maxunit=1)
+state2 = AminoAcidState(data, [1; 1; 1; 1; 1; 1], prR, prC1, settings)
+
+copystate!(state2, state1)
+
+@test state2.R == state1.R
+@test state2.C == state1.C
+@test state2.emptycluster == state1.emptycluster
+@test state2.cl == state1.cl
+@test state2.k == state1.k
+@test state2.v == state1.v
+@test state2.n1s == state1.n1s
+@test state2.unit == state1.unit
+@test state2.logpR == state1.logpR
+@test state2.logpC == state1.logpC
+@test state2.loglik == state1.loglik
+
+state1.R = [1; 1; 2; 1; 2; 2]
+fill!(state1.C, UInt8(1))
+state1.emptycluster = [false; false; true; true; true]
+state1.cl = [1; 2; 0; 0; 0]
+state1.k = 2
+state1.v = [3; 3; 0; 0; 0]
+state1.n1s[1, :] = vec(sum(float(data[:, state1.R .== 1]), 2))
+state1.n1s[2, :] = vec(sum(float(data[:, state1.R .== 2]), 2))
+state1.unit[1] = [1; 2; 4; 4]
+state1.unit[2] = [3; 5; 6]
+state1.logpR = logdPriorRow(n, state1.k, state1.v[1:state1.k], prR)
+state1.logpC[1] = logpriorC(state1.C, state1.cl, state1.k, prC2.logγ, prC2.logω)
+state1.logpC[2] = logcondpostC(state1.C, state1.cl, state1.k, state1.v,
+                               state1.n1s, prC2.logω, prC2)
+state1.loglik = loglikelihood(state1.C, state1.cl, state1.k, state1.v,
+                              state1.n1s, prC2)
+
+@test state2.R != state1.R
+@test state2.C != state1.C
+@test state2.emptycluster != state1.emptycluster
+@test state2.cl != state1.cl
+@test state2.k != state1.k
+@test state2.v != state1.v
+@test state2.n1s != state1.n1s
+@test state2.unit != state1.unit
+@test state2.logpR != state1.logpR
+@test state2.logpC != state1.logpC
+@test state2.loglik != state1.loglik
+
+settings = KSettings("../build/test.bin", maxclust=6, maxunit=6)
+state1 = AminoAcidState(copy(R), copy(C), copy(emptycluster), copy(cl), copy(k),
+                        copy(v), copy(n1s), deepcopy(unit), logpR, copy(logpC),
+                        loglik)
+state2 = AminoAcidState(data, [1; 1; 1; 1; 1; 1], prR, prC1, settings)
+
+copystate!(state2, state1)
+
+l = state1.cl[1:state1.k]
+
+@test state2.R == state1.R
+@test state2.C[l, :] == state1.C[l, :]
+@test state2.emptycluster[l] == state1.emptycluster[l]
+@test state2.cl[1:state1.k] == state1.cl[1:state1.k]
+@test state2.k == state1.k
+@test state2.v[l] == state1.v[l]
+@test state2.n1s[l, :] == state1.n1s[l, :]
+for g in l
+  @test state2.unit[g][1:state2.v[g]] == state1.unit[g][1:state1.v[g]]
+end
+@test state2.logpR == state1.logpR
+@test state2.logpC == state1.logpC
+@test state2.loglik == state1.loglik
+
+state1.R = [1; 1; 2; 1; 2; 2]
+fill!(state1.C, UInt8(2))
+state1.emptycluster = [false; false; true; true; true]
+state1.cl = [1; 2; 0; 0; 0]
+state1.k = 2
+state1.v = [3; 3; 0; 0; 0]
+state1.n1s[1, :] = vec(sum(float(data[:, state1.R .== 1]), 2))
+state1.n1s[2, :] = vec(sum(float(data[:, state1.R .== 2]), 2))
+state1.n1s[3, :] = 0.0
+state1.n1s[5, :] = 0.0
+state1.unit[1] = [1; 2; 4; 4]
+state1.unit[2] = [3; 5; 6]
+state1.unit[3] = [0]
+state1.unit[5] = [0]
+state1.logpR = logdPriorRow(n, state1.k, state1.v[1:state1.k], prR)
+state1.logpC[1] = logpriorC(state1.C, state1.cl, state1.k, prC2.logγ, prC2.logω)
+state1.logpC[2] = logcondpostC(state1.C, state1.cl, state1.k, state1.v,
+                               state1.n1s, prC2.logω, prC2)
+state1.loglik = loglikelihood(state1.C, state1.cl, state1.k, state1.v,
+                              state1.n1s, prC2)
+
+@test state2.R != state1.R
+@test state2.C[l, :] != state1.C[l, :]
+@test state2.emptycluster[l] != state1.emptycluster[l]
+@test state2.cl[1:state1.k] != state1.cl[1:state1.k]
+@test state2.k != state1.k
+@test state2.v[l] != state1.v[l]
+@test state2.n1s[l, :] != state1.n1s[l, :]
+for g in l
+  @test state2.unit[g][1:state2.v[g]] != state1.unit[g][1:state1.v[g]]
+end
+@test state2.logpR != state1.logpR
+@test state2.logpC != state1.logpC
+@test state2.loglik != state1.loglik
+
+settings = KSettings("../build/test.bin", maxclust=1, maxunit=1)
+state1 = AminoAcidState(data, [1; 1; 1; 1; 2; 3], prR, prC3, settings)
+state2 = AminoAcidState(data, [1; 1; 1; 1; 1; 1], prR, prC1, settings)
+
+updatestate!(state2, data, [1; 1; 1; 1; 2; 3], prR, prC3, settings)
+
+@test state2.R == state1.R
+@test state2.C == state1.C
+@test state2.emptycluster == state1.emptycluster
+@test state2.cl == state1.cl
+@test state2.k == state1.k
+@test state2.v == state1.v
+@test state2.n1s == state1.n1s
+@test state2.unit[1] == [1; 2; 3; 4; 5; 6]
+@test state2.unit[2] == [5]
+@test state2.unit[3] == [6]
+@test state2.logpR == state1.logpR
+@test state2.logpC == state1.logpC
+@test state2.loglik == state1.loglik
+
+settings = KSettings("../build/test.bin", maxclust=6, maxunit=6)
+state1 = AminoAcidState(data, [1; 1; 1; 2; 2; 2], prR, prC2, settings)
+state2 = AminoAcidState(data, [1; 1; 2; 2; 3; 3], prR, prC3, settings)
+
+updatestate!(state2, data, [1; 1; 1; 2; 2; 2], prR, prC2, settings)
+
+l = state1.cl[1:state1.k]
+
+@test state2.R == state1.R
+@test state2.C[l, :] == state1.C[l, :]
+@test state2.emptycluster == state1.emptycluster
+@test state2.cl[l] == state1.cl[l]
+@test state2.k == state1.k
+@test state2.v[l] == state1.v[l]
+@test state2.n1s[l, :] == state1.n1s[l, :]
+@test state2.unit[1] == [1; 2; 3; 0; 0; 0]
+@test state2.unit[2] == [4; 5; 6; 0; 0; 0]
+@test state2.unit[3] == [5; 6; 0; 0; 0; 0]
+@test state2.logpR == state1.logpR
+@test state2.logpC == state1.logpC
+@test state2.loglik == state1.loglik

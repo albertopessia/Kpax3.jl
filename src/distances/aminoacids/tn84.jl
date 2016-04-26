@@ -24,13 +24,13 @@ Arguments:
     m-by-n data matrix, where m is the common sequence length and n is the
     sample size
   ref::Vector{UInt8}
-    reference sequence, i.e. a vector of length m storing the values of
+    reference sequence, i.e. a vector of length M storing the values of
     homogeneous sites
 
 Details:
 
 Pyrrolysine (O) and Selenocysteine (U) are treated as valid amino acids if they
-have not been given a value of zero (missing).
+have not been given a missing value.
 
 If a pairwise distance is equal to -1.0, it means that is wasn't possible to
 compute it. This usually happens when the hypotheses of the underlying
@@ -51,39 +51,45 @@ function distaamtn84(data::Matrix{UInt8},
 
   d = zeros(Float64, div(n * (n - 1), 2))
 
-  tmpref = zeros(Float64, 30)
-  tmpraw = zeros(Float64, 29)
+  tmpref = zeros(Float64, 127)
+  tmpraw = zeros(Float64, 127)
 
   for i in 1:length(ref)
-    tmpref[ref[i] + 1] += 1
+    tmpref[ref[i]] += 1
   end
 
   for col in 1:n, row in 1:m
-    tmpraw[data[row, col] + 1] += 1
+    tmpraw[data[row, col]] += 1
   end
 
-  gt = tmpref[2:23]
-  gb = tmpraw[2:23] + n * gt
+  aaset = Int['a', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o',
+              'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'y']
 
+  gt = zeros(Float64, 127)
+  gb = zeros(Float64, 127)
   st = 0.0
   sb = 0.0
-  for aa in 1:22
+  sc = 0.0
+
+  for aa in aaset
+    gt[aa] = tmpref[aa]
+    gb[aa] = tmpraw[aa] + n * gt[aa]
+
     st += gt[aa]
     sb += gb[aa]
   end
 
-  gb /= sb
-
-  sc = 0.0
-  for aa in 1:22
+  for aa in aaset
+    gb[aa] /= sb
     sc += gb[aa]^2
   end
 
   v = 1 - sc
 
-  idx = 0
+  idx = 1
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = aamtn84(i, j, data, gt, st, v)
+    d[idx] = aamtn84(i, j, data, gt, st, v)
+    idx += 1
   end
 
   d
@@ -147,17 +153,17 @@ function aamtn84(i::Int,
     x1 = data[b, i]
     x2 = data[b, j]
 
-    if UInt8(0) < x1 < UInt8(23)
+    if UInt8(96) < x1 < UInt8(123)
       g1[x1] += 1
       n[1] += 1
     end
 
-    if UInt8(0) < x2 < UInt8(23)
+    if UInt8(96) < x2 < UInt8(123)
       g2[x2] += 1
       n[2] += 1
     end
 
-    if (UInt8(0) < x1 < UInt8(23)) && (UInt8(0) < x2 < UInt8(23))
+    if (UInt8(96) < x1 < UInt8(123)) && (UInt8(96) < x2 < UInt8(123))
       if x1 != x2
         p += 1
       end
@@ -172,7 +178,7 @@ function aamtn84(i::Int,
 
     p /= n[3]
 
-    for i in 1:22
+    for i in 1:length(g1)
       f += g1[i] * g2[i]
     end
 

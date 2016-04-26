@@ -27,3 +27,11 @@ priorC = AminoAcidPriorCol(data, 3, g, r)
 @test priorC.logω == [0.0; 0.0; log(2.0) - log(3.0); -log(3.0)]
 
 # TODO: Test A and B
+
+updateprior!(priorC, 2)
+@test priorC.logγ == [log(g[1]); log(g[2]); log(g[3]); log(g[3])]
+@test priorC.logω == [0.0; 0.0; -log(2.0); -log(2.0)]
+
+updateprior!(priorC, 4)
+@test priorC.logγ == [log(g[1]); log(g[2]); log(g[3]); log(g[3])]
+@test priorC.logω == [0.0; 0.0; log(3.0) - log(4.0); -log(4.0)]
