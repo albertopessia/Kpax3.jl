@@ -46,7 +46,7 @@ Value:
 =#
 function distnttn84(data::Matrix{UInt8},
                     ref::Vector{UInt8})
-  m, n = size(data, 2)
+  m, n = size(data)
 
   d = zeros(Float64, div(n * (n - 1), 2))
 
@@ -54,26 +54,31 @@ function distnttn84(data::Matrix{UInt8},
   gb = zeros(Float64, 4)
   gp = zeros(Float64, 6)
 
-  for b in 1:m
-    if ref[b] == 1
+  a = UInt8('a')
+  c = UInt8('c')
+  g = UInt8('g')
+  t = UInt8('t')
+
+  for j in 1:m
+    if ref[j] == a
       gt[1] += 1
-    elseif ref[b] == 2
+    elseif ref[j] == c
       gt[2] += 1
-    elseif ref[b] == 3
+    elseif ref[j] == g
       gt[3] += 1
-    elseif ref[b] == 4
+    elseif ref[j] == t
       gt[4] += 1
     end
   end
 
-  for a in 1:n, b in 1:m
-    if data[b, a] == 1
+  for i in 1:n, j in 1:m
+    if data[j, i] == a
       gb[1] += 1
-    elseif data[b, a] == 2
+    elseif data[j, i] == c
       gb[2] += 1
-    elseif data[b, a] == 3
+    elseif data[j, i] == g
       gb[3] += 1
-    elseif data[b, a] == 4
+    elseif data[j, i] == t
       gb[4] += 1
     end
   end
@@ -101,9 +106,10 @@ function distnttn84(data::Matrix{UInt8},
 
   v = 1 - (gb[1]^2 + gb[2]^2 + gb[3]^2 + gb[4]^2)
 
-  idx = 0
+  idx = 1
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = nttn84(i, j, data, gp, h, v)
+    d[idx] = nttn84(i, j, data, gp, h, v)
+    idx += 1
   end
 
   d
@@ -144,33 +150,38 @@ Value:
 =#
 function distntmtn84(data::Matrix{UInt8},
                      ref::Vector{UInt8})
-  m, n = size(data, 2)
+  m, n = size(data)
 
   d = zeros(Float64, div(n * (n - 1), 2))
 
   gt = zeros(Float64, 4)
   gb = zeros(Float64, 4)
 
-  for b in 1:m
-    if ref[b] == 1
+  a = UInt8('a')
+  c = UInt8('c')
+  g = UInt8('g')
+  t = UInt8('t')
+
+  for j in 1:m
+    if ref[j] == a
       gt[1] += 1
-    elseif ref[b] == 2
+    elseif ref[j] == c
       gt[2] += 1
-    elseif ref[b] == 3
+    elseif ref[j] == g
       gt[3] += 1
-    elseif ref[b] == 4
+    elseif ref[j] == t
       gt[4] += 1
     end
   end
 
-  for a in 1:n, b in 1:m
-    if data[b, a] == 1
+  for i in 1:n, j in 1:m
+    if data[j, i] == a
       gb[1] += 1
-    elseif data[b, a] == 2
+    elseif data[j, i] == c
       gb[2] += 1
-    elseif data[b, a] == 3
+    elseif data[j, i] == g
       gb[3] += 1
-    elseif data[b, a] == 4
+    elseif data[j, i] == t
       gb[4] += 1
     end
   end
@@ -191,9 +202,10 @@ function distntmtn84(data::Matrix{UInt8},
 
   v = 1 - (gb[1]^2 + gb[2]^2 + gb[3]^2 + gb[4]^2)
 
-  idx = 0
+  idx = 1
   for j in 1:(n - 1), i in (j + 1):n
-    d[idx += 1] = ntmtn84(i, j, data, gt, h, v)
+    d[idx] = ntmtn84(i, j, data, gt, h, v)
+    idx += 1
   end
 
   d
@@ -241,31 +253,38 @@ function nttn84(i::Int,
   # proportion of nucleotide pairs
   pn = zeros(Float64, 6)
 
-  c = 0.0
   w = 0.0
+  x = 0.0
+  z = 0.0
 
   x1 = 0x00
   x2 = 0x00
+
+  a = UInt8('a')
+  c = UInt8('c')
+  g = UInt8('g')
+  t = UInt8('t')
 
   for b in 1:size(data, 1)
     x1 = data[b, i]
     x2 = data[b, j]
 
-    if (0x00 < x1 < 0x05) && (0x00 < x2 < 0x05)
+    if (x1 == a || x1 == c || x1 == g || x1 == t) &&
+       (x2 == a || x2 == c || x2 == g || x2 == t)
       if x1 != x2
         p += 1
 
-        if     ((x1 == 0x01) && (x2 == 0x02)) || ((x1 == 0x02) && (x2 == 0x01))
+        if     ((x1 == a) && (x2 == c)) || ((x1 == c) && (x2 == a))
           pn[1] += 1
-        elseif ((x1 == 0x01) && (x2 == 0x03)) || ((x1 == 0x03) && (x2 == 0x01))
+        elseif ((x1 == a) && (x2 == g)) || ((x1 == g) && (x2 == a))
           pn[2] += 1
-        elseif ((x1 == 0x01) && (x2 == 0x04)) || ((x1 == 0x04) && (x2 == 0x01))
+        elseif ((x1 == a) && (x2 == t)) || ((x1 == t) && (x2 == a))
           pn[3] += 1
-        elseif ((x1 == 0x02) && (x2 == 0x03)) || ((x1 == 0x03) && (x2 == 0x02))
+        elseif ((x1 == c) && (x2 == g)) || ((x1 == g) && (x2 == c))
           pn[4] += 1
-        elseif ((x1 == 0x02) && (x2 == 0x04)) || ((x1 == 0x04) && (x2 == 0x02))
+        elseif ((x1 == c) && (x2 == t)) || ((x1 == t) && (x2 == c))
           pn[5] += 1
-        elseif ((x1 == 0x03) && (x2 == 0x04)) || ((x1 == 0x04) && (x2 == 0x03))
+        elseif ((x1 == g) && (x2 == t)) || ((x1 == t) && (x2 == g))
           pn[6] += 1
         end
       end
@@ -278,10 +297,10 @@ function nttn84(i::Int,
     p /= h
     pn /= h
 
-    c = pn[1]^2 / gp[1] + pn[2]^2 / gp[2] + pn[3]^2 / gp[3] +
+    z = pn[1]^2 / gp[1] + pn[2]^2 / gp[2] + pn[3]^2 / gp[3] +
         pn[4]^2 / gp[4] + pn[5]^2 / gp[5] + pn[6]^2 / gp[6]
 
-    x = (v + p^2 / c) / 2
+    x = (v + p^2 / z) / 2
 
     w = 1 - p / x
 
@@ -351,21 +370,27 @@ function ntmtn84(i::Int,
   x1 = 0x00
   x2 = 0x00
 
+  a = UInt8('a')
+  c = UInt8('c')
+  g = UInt8('g')
+  t = UInt8('t')
+
   for b in 1:size(data, 1)
     x1 = data[b, i]
     x2 = data[b, j]
 
-    if 0x00 < x1 < 0x05
+    if (x1 == a || x1 == c || x1 == g || x1 == t)
       g1[x1] += 1
       n[1] += 1
     end
 
-    if 0x00 < x2 < 0x05
+    if (x2 == a || x2 == c || x2 == g || x2 == t)
       g2[x2] += 1
       n[2] += 1
     end
 
-    if (0x00 < x1 < 0x05) && (0x00 < x2 < 0x05)
+    if (x1 == a || x1 == c || x1 == g || x1 == t) &&
+       (x2 == a || x2 == c || x2 == g || x2 == t)
       if x1 != x2
         p += 1
       end

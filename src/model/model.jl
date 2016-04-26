@@ -2,7 +2,8 @@
 
 include("joint/densities.jl")
 
-include("likelihoods/marginal_likelihoods.jl")
+include("likelihoods/log_likelihood.jl")
+include("likelihoods/marginal_likelihood.jl")
 include("likelihoods/merge.jl")
 include("likelihoods/split.jl")
 include("likelihoods/biased_random_walk.jl")

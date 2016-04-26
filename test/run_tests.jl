@@ -22,7 +22,8 @@ tests = ["data_processing/data_processing";
          "mcmc/partition_ratios";
          "mcmc/log_likelihoods";
          "mcmc/biased_random_walk";
-         "mcmc/posterior"]
+         "mcmc/posterior";
+         "estimate/write"]
 
 for t in tests
   begin

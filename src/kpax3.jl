@@ -3,7 +3,7 @@
 function kpax3(x::AminoAcidData,
                partition::AbstractString,
                settings::KSettings)
-  R = initpartition(partition, x.id)
+  R = normalizepartition(partition, x.id)
   k = maximum(R)
 
   priorR = EwensPitman(settings.α, settings.θ)

@@ -44,8 +44,10 @@ nt = NucleotideData("data/blanks.fasta")
                        0 1;
                        1 0]
 @test nt.id == ASCIIString["ID1", "ID5"]
-@test nt.ref == UInt8[1, 4, 3, 29, 29, 29, 3, 29, 29, 1, 29, 1]
-@test nt.val == UInt8[1, 3, 1, 3, 2, 3, 2, 3, 1, 3, 2, 3]
+@test nt.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
+                      'a']
+@test nt.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c',
+                      'g']
 @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
 nt = NucleotideData("data/blanks.fasta", l=1)
@@ -62,8 +64,10 @@ nt = NucleotideData("data/blanks.fasta", l=1)
                        0 1;
                        1 0]
 @test nt.id == ASCIIString["ID1", "ID5"]
-@test nt.ref == UInt8[1, 4, 3, 29, 29, 29, 3, 29, 29, 1, 29, 1]
-@test nt.val == UInt8[1, 3, 1, 3, 2, 3, 2, 3, 1, 3, 2, 3]
+@test nt.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
+                      'a']
+@test nt.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c',
+                      'g']
 @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
 aa = AminoAcidData("data/blanks.fasta")
@@ -80,8 +84,10 @@ aa = AminoAcidData("data/blanks.fasta")
                        0 1;
                        1 0]
 @test aa.id == ASCIIString["ID1", "ID5"]
-@test aa.ref == UInt8[1, 4, 3, 29, 29, 29, 3, 29, 29, 1, 29, 1]
-@test aa.val == UInt8[1, 3, 1, 3, 2, 3, 2, 3, 1, 3, 2, 3]
+@test aa.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
+                      'a']
+@test aa.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c',
+                      'g']
 @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
 aa = AminoAcidData("data/blanks.fasta", l=1)
@@ -98,8 +104,10 @@ aa = AminoAcidData("data/blanks.fasta", l=1)
                        0 1;
                        1 0]
 @test aa.id == ASCIIString["ID1", "ID5"]
-@test aa.ref == UInt8[1, 4, 3, 29, 29, 29, 3, 29, 29, 1, 29, 1]
-@test aa.val == UInt8[1, 3, 1, 3, 2, 3, 2, 3, 1, 3, 2, 3]
+@test aa.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
+                      'a']
+@test aa.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c',
+                      'g']
 @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
 #########################
@@ -125,8 +133,10 @@ nt = NucleotideData("data/proper_nt.fasta")
                        0 1 0 0 1 0;
                        1 0 1 1 0 1]
 @test nt.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test nt.ref == UInt8[1, 29, 3, 29, 29, 29, 3, 29, 29, 29, 29, 1]
-@test nt.val == UInt8[2, 4, 1, 3, 1, 3, 2, 3, 1, 2, 3, 1, 3, 4, 1, 4, 2, 3]
+@test nt.ref == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
+                      'a']
+@test nt.val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g',
+                      'a', 'g', 't', 'a', 't', 'c', 'g']
 @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
 nt = NucleotideData("data/proper_nt.fasta", l=1)
@@ -149,8 +159,10 @@ nt = NucleotideData("data/proper_nt.fasta", l=1)
                        0 1 0 0 1 0;
                        1 0 1 1 0 1]
 @test nt.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test nt.ref == UInt8[1, 29, 3, 29, 29, 29, 3, 29, 29, 29, 29, 1]
-@test nt.val == UInt8[2, 4, 1, 3, 1, 3, 2, 3, 1, 2, 3, 1, 3, 4, 1, 4, 2, 3]
+@test nt.ref == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
+                      'a']
+@test nt.val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g',
+                      'a', 'g', 't', 'a', 't', 'c', 'g']
 @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
 # consider all characters
@@ -177,9 +189,10 @@ nt = NucleotideData("data/proper_nt.fasta", miss=['\0'])
                        1 0 1 1 1 1;
                        0 1 0 0 0 0]
 @test nt.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test nt.ref == UInt8[1, 29, 3, 29, 29, 29, 3, 29, 29, 29, 29, 29]
-@test nt.val == UInt8[2, 4, 1, 3, 1, 3, 28, 2, 3, 1, 2, 3, 1, 3, 4, 1, 4, 2, 3,
-                      1, 28]
+@test nt.ref == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
+                      '.']
+@test nt.val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'x', 'c', 'g', 'a', 'c',
+                      'g', 'a', 'g', 't', 'a', 't', 'c', 'g', 'a', 'x']
 @test nt.key == [1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9, 9]
 
 #############################
@@ -195,8 +208,8 @@ aa = AminoAcidData("data/proper_aa.fasta")
                        1 1 1 0 0 0;
                        0 0 0 1 1 1;
                        0 0 1 0 0 0;
-                       1 0 0 1 0 1;
                        0 1 0 0 1 0;
+                       1 0 0 1 0 1;
                        0 0 0 0 0 1;
                        1 1 1 0 0 0;
                        0 0 0 1 1 0;
@@ -205,9 +218,10 @@ aa = AminoAcidData("data/proper_aa.fasta")
                        1 1 0 1 0 0;
                        0 0 1 0 1 1]
 @test aa.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test aa.ref == UInt8[14, 29, 1, 29, 29, 29, 20, 29, 29, 29, 29, 15]
-@test aa.val == UInt8[9, 13, 11, 13, 12, 20, 12, 20, 2, 4, 12, 9, 12, 14, 2, 19,
-                      1, 4]
+@test aa.ref == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
+                      'f']
+@test aa.val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'l', 'v', 'c', 'l', 't',
+                      'e', 'l', 'm', 'c', 'y', 'a', 't']
 @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
 aa = AminoAcidData("data/proper_aa.fasta", l=1)
@@ -220,8 +234,8 @@ aa = AminoAcidData("data/proper_aa.fasta", l=1)
                        1 1 1 0 0 0;
                        0 0 0 1 1 1;
                        0 0 1 0 0 0;
-                       1 0 0 1 0 1;
                        0 1 0 0 1 0;
+                       1 0 0 1 0 1;
                        0 0 0 0 0 1;
                        1 1 1 0 0 0;
                        0 0 0 1 1 0;
@@ -230,9 +244,10 @@ aa = AminoAcidData("data/proper_aa.fasta", l=1)
                        1 1 0 1 0 0;
                        0 0 1 0 1 1]
 @test aa.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test aa.ref == UInt8[14, 29, 1, 29, 29, 29, 20, 29, 29, 29, 29, 15]
-@test aa.val == UInt8[9, 13, 11, 13, 12, 20, 12, 20, 2, 4, 12, 9, 12, 14, 2, 19,
-                      1, 4]
+@test aa.ref == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
+                      'f']
+@test aa.val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'l', 'v', 'c', 'l', 't',
+                      'e', 'l', 'm', 'c', 'y', 'a', 't']
 @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
 # consider all characters
@@ -247,8 +262,8 @@ aa = AminoAcidData("data/proper_aa.fasta", miss=['\0'])
                        1 1 1 0 0 0;
                        0 0 0 1 1 1;
                        0 0 1 0 0 0;
-                       1 0 0 1 0 1;
                        0 1 0 0 1 0;
+                       1 0 0 1 0 1;
                        0 0 0 0 0 1;
                        1 1 1 0 0 0;
                        0 0 0 1 1 0;
@@ -259,9 +274,10 @@ aa = AminoAcidData("data/proper_aa.fasta", miss=['\0'])
                        1 0 1 1 1 1;
                        0 1 0 0 0 0]
 @test aa.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test aa.ref == UInt8[14, 29, 1, 29, 29, 29, 20, 29, 29, 29, 29, 29]
-@test aa.val == UInt8[9, 13, 11, 13, 12, 20, 28, 12, 20, 2, 4, 12, 9, 12, 14, 2,
-                      19, 1, 4, 15, 28]
+@test aa.ref == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
+                      '.']
+@test aa.val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'x', 'l', 'v', 'c', 'l',
+                      't', 'e', 'l', 'm', 'c', 'y', 'a', 't', 'f', 'x']
 @test aa.key == [1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9, 9]
 
 ####################
@@ -297,8 +313,10 @@ nt = loadnt("../build/nt.jld")
                        0 1 0 0 1 0;
                        1 0 1 1 0 1]
 @test nt.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test nt.ref == UInt8[1, 29, 3, 29, 29, 29, 3, 29, 29, 29, 29, 1]
-@test nt.val == UInt8[2, 4, 1, 3, 1, 3, 2, 3, 1, 2, 3, 1, 3, 4, 1, 4, 2, 3]
+@test nt.ref == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
+                      'a']
+@test nt.val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g',
+                      'a', 'g', 't', 'a', 't', 'c', 'g']
 @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
 aa = AminoAcidData("data/proper_aa.fasta")
@@ -320,8 +338,8 @@ aa = loadaa("../build/aa.jld")
                        1 1 1 0 0 0;
                        0 0 0 1 1 1;
                        0 0 1 0 0 0;
-                       1 0 0 1 0 1;
                        0 1 0 0 1 0;
+                       1 0 0 1 0 1;
                        0 0 0 0 0 1;
                        1 1 1 0 0 0;
                        0 0 0 1 1 0;
@@ -330,7 +348,8 @@ aa = loadaa("../build/aa.jld")
                        1 1 0 1 0 0;
                        0 0 1 0 1 1]
 @test aa.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test aa.ref == UInt8[14, 29, 1, 29, 29, 29, 20, 29, 29, 29, 29, 15]
-@test aa.val == UInt8[9, 13, 11, 13, 12, 20, 12, 20, 2, 4, 12, 9, 12, 14, 2, 19,
-                      1, 4]
+@test aa.ref == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
+                      'f']
+@test aa.val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'l', 'v', 'c', 'l', 't',
+                      'e', 'l', 'm', 'c', 'y', 'a', 't']
 @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]

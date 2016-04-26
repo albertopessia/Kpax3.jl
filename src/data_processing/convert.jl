@@ -53,7 +53,8 @@ while
 `0` values (missing data) are discarded.
 """
 function categorical2binary{T <: Integer}(data::Matrix{T},
-                                          maxval::T)
+                                          maxval::T,
+                                          missval::T)
   # TOOPTIMIZE: traversing the matrices by row instead of by column
   n = size(data, 2)
   m = 0
@@ -71,12 +72,12 @@ function categorical2binary{T <: Integer}(data::Matrix{T},
     for col in 1:n
       c = data[row, col]
 
-      if (c < 0) || (c > maxval)
+      if (c < zero(T)) || (c > maxval)
         throw(KDomainError(string("Value outside the allowed range  at (row, ",
                                   "col) = (", row, ", ", col, ").")))
       end
 
-      if (c > 0) && !tmp[c]
+      if (c != missval) && !tmp[c]
         tmp[c] = true
         v[row] += 1
 
@@ -94,8 +95,9 @@ function categorical2binary{T <: Integer}(data::Matrix{T},
   key = zeros(Int, m)
 
   i = 0
+  j = 0
   tmp1 = falses(Int(M))
-  tmp2 = zeros(UInt8, M, n)
+  tmp2 = zeros(UInt8, Int(M), n)
   for row in 1:size(data, 1)
     fill!(tmp1, false)
     fill!(tmp2, false)
@@ -103,15 +105,24 @@ function categorical2binary{T <: Integer}(data::Matrix{T},
     for col in 1:n
       c = data[row, col]
 
-      if c > 0
+      if c != missval
         tmp1[c] = true
-        tmp2[c, col] = 1
+        tmp2[c, col] = 0x01
       end
     end
 
-    bindata[(i + 1):(i + v[row]), :] = tmp2[tmp1, :]
-    val[(i + 1):(i + v[row])] = find(tmp1)
-    key[(i + 1):(i + v[row])] = row
+    j = i
+    for h in 1:Int(M)
+      if tmp1[h]
+        j += 1
+
+        val[j] = convert(T, h)
+        key[j] = row
+        for col in 1:n
+          bindata[j, col] = tmp2[h, col]
+        end
+      end
+    end
 
     i += v[row]
   end

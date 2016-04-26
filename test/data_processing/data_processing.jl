@@ -27,18 +27,19 @@
 #################################
 data, id, refseq = readfasta("data/blanks.fasta", true, zeros(UInt8, 0),
                              100000000, false, 0)
-@test data == UInt8[3 1;
-                    1 3;
-                    3 2;
-                    2 3;
-                    1 3;
-                    3 2]
+@test data == UInt8['g' 'a';
+                    'a' 'g';
+                    'g' 'c';
+                    'c' 'g';
+                    'a' 'g';
+                    'g' 'c']
 @test id == ASCIIString["ID1", "ID5"]
-@test refseq == UInt8[1, 4, 3, 29, 29, 29, 3, 29, 29, 1, 29, 1]
+@test refseq == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
+                      'a']
 
-@test_throws KDomainError categorical2binary(data, 0x01)
+@test_throws KDomainError categorical2binary(data, UInt8(1), UInt8('?'))
 
-bindata, val, key = categorical2binary(data, 0x1c)
+bindata, val, key = categorical2binary(data, UInt8(127), UInt8('?'))
 @test bindata == UInt8[0 1;
                        1 0;
                        1 0;
@@ -51,39 +52,41 @@ bindata, val, key = categorical2binary(data, 0x1c)
                        0 1;
                        0 1;
                        1 0]
-@test val == UInt8[1, 3, 1, 3, 2, 3, 2, 3, 1, 3, 2, 3]
+@test val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c', 'g']
 @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
 data, id, refseq = readfasta("data/blanks.fasta", true, zeros(UInt8, 0), 1,
                              false, 0)
-@test data == UInt8[3 1;
-                    1 3;
-                    3 2;
-                    2 3;
-                    1 3;
-                    3 2]
+@test data == UInt8['g' 'a';
+                    'a' 'g';
+                    'g' 'c';
+                    'c' 'g';
+                    'a' 'g';
+                    'g' 'c']
 @test id == ASCIIString["ID1", "ID5"]
-@test refseq == UInt8[1, 4, 3, 29, 29, 29, 3, 29, 29, 1, 29, 1]
+@test refseq == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
+                      'a']
 
 #########################
 # Proper DNA FASTA file #
 #########################
 data, id, refseq = readfasta("data/proper_nt.fasta", true, zeros(UInt8, 0),
                              100000000, false, 0)
-@test data == UInt8[4 4 4 4 4 2;
-                    3 3 1 3 1 1;
-                    1 1 0 3 3 0;
-                    3 3 3 2 2 2;
-                    2 3 1 2 3 2;
-                    1 1 1 3 3 4;
-                    1 1 4 4 1 1;
-                    3 2 3 3 2 3]
+@test data == UInt8['t' 't' 't' 't' 't' 'c';
+                    'g' 'g' 'a' 'g' 'a' 'a';
+                    'a' 'a' '?' 'g' 'g' '?';
+                    'g' 'g' 'g' 'c' 'c' 'c';
+                    'c' 'g' 'a' 'c' 'g' 'c';
+                    'a' 'a' 'a' 'g' 'g' 't';
+                    'a' 'a' 't' 't' 'a' 'a';
+                    'g' 'c' 'g' 'g' 'c' 'g']
 @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test refseq == UInt8[1, 29, 3, 29, 29, 29, 3, 29, 29, 29, 29, 1]
+@test refseq == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
+                      'a']
 
-@test_throws KDomainError categorical2binary(data, 0x01)
+@test_throws KDomainError categorical2binary(data, UInt8(1), UInt8('?'))
 
-bindata, val, key = categorical2binary(data, 0x1c)
+bindata, val, key = categorical2binary(data, UInt8(127), UInt8('?'))
 @test bindata == UInt8[0 0 0 0 0 1;
                        1 1 1 1 1 0;
                        0 0 1 0 1 1;
@@ -102,40 +105,43 @@ bindata, val, key = categorical2binary(data, 0x1c)
                        0 0 1 1 0 0;
                        0 1 0 0 1 0;
                        1 0 1 1 0 1]
-@test val == UInt8[2, 4, 1, 3, 1, 3, 2, 3, 1, 2, 3, 1, 3, 4, 1, 4, 2, 3]
+@test val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g', 'a',
+                   'g', 't', 'a', 't', 'c', 'g']
 @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
 data, id, refseq = readfasta("data/proper_nt.fasta", true, zeros(UInt8, 0), 1,
                              false, 0)
-@test data == UInt8[4 4 4 4 4 2;
-                    3 3 1 3 1 1;
-                    1 1 0 3 3 0;
-                    3 3 3 2 2 2;
-                    2 3 1 2 3 2;
-                    1 1 1 3 3 4;
-                    1 1 4 4 1 1;
-                    3 2 3 3 2 3]
+@test data == UInt8['t' 't' 't' 't' 't' 'c';
+                    'g' 'g' 'a' 'g' 'a' 'a';
+                    'a' 'a' '?' 'g' 'g' '?';
+                    'g' 'g' 'g' 'c' 'c' 'c';
+                    'c' 'g' 'a' 'c' 'g' 'c';
+                    'a' 'a' 'a' 'g' 'g' 't';
+                    'a' 'a' 't' 't' 'a' 'a';
+                    'g' 'c' 'g' 'g' 'c' 'g']
 @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test refseq == UInt8[1, 29, 3, 29, 29, 29, 3, 29, 29, 29, 29, 1]
+@test refseq == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
+                      'a']
 
 # consider all characters
 data, id, refseq = readfasta("data/proper_nt.fasta", true, zeros(UInt8, 1),
                              100000000, false, 0)
-@test data == UInt8[ 4  4  4  4  4  2;
-                     3  3  1  3  1  1;
-                     1  1 28  3  3 28;
-                     3  3  3  2  2  2;
-                     2  3  1  2  3  2;
-                     1  1  1  3  3  4;
-                     1  1  4  4  1  1;
-                     3  2  3  3  2  3;
-                     1 28  1  1  1  1]
+@test data == UInt8['t' 't' 't' 't' 't' 'c';
+                    'g' 'g' 'a' 'g' 'a' 'a';
+                    'a' 'a' 'x' 'g' 'g' 'x';
+                    'g' 'g' 'g' 'c' 'c' 'c';
+                    'c' 'g' 'a' 'c' 'g' 'c';
+                    'a' 'a' 'a' 'g' 'g' 't';
+                    'a' 'a' 't' 't' 'a' 'a';
+                    'g' 'c' 'g' 'g' 'c' 'g';
+                    'a' 'x' 'a' 'a' 'a' 'a']
 @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test refseq == UInt8[1, 29, 3, 29, 29, 29, 3, 29, 29, 29, 29, 29]
+@test refseq == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
+                      '.']
 
-@test_throws KDomainError categorical2binary(data, 0x01)
+@test_throws KDomainError categorical2binary(data, UInt8(1), UInt8('\0'))
 
-bindata, val, key = categorical2binary(data, 0x1c)
+bindata, val, key = categorical2binary(data, UInt8(127), UInt8('\0'))
 @test bindata == UInt8[0 0 0 0 0 1;
                        1 1 1 1 1 0;
                        0 0 1 0 1 1;
@@ -157,8 +163,8 @@ bindata, val, key = categorical2binary(data, 0x1c)
                        1 0 1 1 0 1;
                        1 0 1 1 1 1;
                        0 1 0 0 0 0]
-@test val == UInt8[2, 4, 1, 3, 1, 3, 28, 2, 3, 1, 2, 3, 1, 3, 4, 1, 4, 2, 3, 1,
-                   28]
+@test val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'x', 'c', 'g', 'a', 'c', 'g',
+                   'a', 'g', 't', 'a', 't', 'c', 'g', 'a', 'x']
 @test key == [1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9, 9]
 
 #############################
@@ -166,18 +172,19 @@ bindata, val, key = categorical2binary(data, 0x1c)
 #############################
 data, id, refseq = readfasta("data/proper_aa.fasta", false, zeros(UInt8, 0),
                              100000000, false, 0)
-@test data == UInt8[13 13 13 13 13  9;
-                    13 13 11 13 11 11;
-                    12 12  0 20 20  0;
-                    12 12 12 20 20 20;
-                     4 12  2  4 12  4;
-                    12 12 12 14 14  9;
-                     2  2 19 19  2  2;
-                     1  1  4  1  4  4]
+@test data == UInt8['k' 'k' 'k' 'k' 'k' 'e';
+                    'k' 'k' 'i' 'k' 'i' 'i';
+                    'l' 'l' '?' 'v' 'v' '?';
+                    'l' 'l' 'l' 'v' 'v' 'v';
+                    't' 'l' 'c' 't' 'l' 't';
+                    'l' 'l' 'l' 'm' 'm' 'e';
+                    'c' 'c' 'y' 'y' 'c' 'c';
+                    'a' 'a' 't' 'a' 't' 't']
 @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test refseq == UInt8[14, 29, 1, 29, 29, 29, 20, 29, 29, 29, 29, 15]
+@test refseq == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
+                      'f']
 
-bindata, val, key = categorical2binary(data, 0x1c)
+bindata, val, key = categorical2binary(data, UInt8(127), UInt8('?'))
 @test bindata == UInt8[0 0 0 0 0 1;
                        1 1 1 1 1 0;
                        0 0 1 0 1 1;
@@ -187,8 +194,8 @@ bindata, val, key = categorical2binary(data, 0x1c)
                        1 1 1 0 0 0;
                        0 0 0 1 1 1;
                        0 0 1 0 0 0;
-                       1 0 0 1 0 1;
                        0 1 0 0 1 0;
+                       1 0 0 1 0 1;
                        0 0 0 0 0 1;
                        1 1 1 0 0 0;
                        0 0 0 1 1 0;
@@ -196,39 +203,41 @@ bindata, val, key = categorical2binary(data, 0x1c)
                        0 0 1 1 0 0;
                        1 1 0 1 0 0;
                        0 0 1 0 1 1]
-@test val == UInt8[9, 13, 11, 13, 12, 20, 12, 20, 2, 4, 12, 9, 12, 14, 2, 19, 1,
-                   4]
+@test val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'l', 'v', 'c', 'l', 't', 'e',
+                   'l', 'm', 'c', 'y', 'a', 't']
 @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
 data, id, refseq = readfasta("data/proper_aa.fasta", false, zeros(UInt8, 0), 1,
                              false, 0)
-@test data == UInt8[13 13 13 13 13  9;
-                    13 13 11 13 11 11;
-                    12 12  0 20 20  0;
-                    12 12 12 20 20 20;
-                     4 12  2  4 12  4;
-                    12 12 12 14 14  9;
-                     2  2 19 19  2  2;
-                     1  1  4  1  4  4]
+@test data == UInt8['k' 'k' 'k' 'k' 'k' 'e';
+                    'k' 'k' 'i' 'k' 'i' 'i';
+                    'l' 'l' '?' 'v' 'v' '?';
+                    'l' 'l' 'l' 'v' 'v' 'v';
+                    't' 'l' 'c' 't' 'l' 't';
+                    'l' 'l' 'l' 'm' 'm' 'e';
+                    'c' 'c' 'y' 'y' 'c' 'c';
+                    'a' 'a' 't' 'a' 't' 't']
 @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test refseq == UInt8[14, 29, 1, 29, 29, 29, 20, 29, 29, 29, 29, 15]
+@test refseq == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
+                      'f']
 
 # consider all characters
 data, id, refseq = readfasta("data/proper_aa.fasta", true, zeros(UInt8, 1),
                              100000000, false, 0)
-@test data == UInt8[13 13 13 13 13  9;
-                    13 13 11 13 11 11;
-                    12 12 28 20 20 28;
-                    12 12 12 20 20 20;
-                     4 12  2  4 12  4;
-                    12 12 12 14 14  9;
-                     2  2 19 19  2  2;
-                     1  1  4  1  4  4;
-                    15 28 15 15 15 15]
+@test data == UInt8['k' 'k' 'k' 'k' 'k' 'e';
+                    'k' 'k' 'i' 'k' 'i' 'i';
+                    'l' 'l' 'x' 'v' 'v' 'x';
+                    'l' 'l' 'l' 'v' 'v' 'v';
+                    't' 'l' 'c' 't' 'l' 't';
+                    'l' 'l' 'l' 'm' 'm' 'e';
+                    'c' 'c' 'y' 'y' 'c' 'c';
+                    'a' 'a' 't' 'a' 't' 't';
+                    'f' 'x' 'f' 'f' 'f' 'f']
 @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
-@test refseq == UInt8[14, 29, 1, 29, 29, 29, 20, 29, 29, 29, 29, 29]
+@test refseq == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
+                      '.']
 
-bindata, val, key = categorical2binary(data, 0x1c)
+bindata, val, key = categorical2binary(data, UInt8(127), UInt8('\0'))
 @test bindata == UInt8[0 0 0 0 0 1;
                        1 1 1 1 1 0;
                        0 0 1 0 1 1;
@@ -239,8 +248,8 @@ bindata, val, key = categorical2binary(data, 0x1c)
                        1 1 1 0 0 0;
                        0 0 0 1 1 1;
                        0 0 1 0 0 0;
-                       1 0 0 1 0 1;
                        0 1 0 0 1 0;
+                       1 0 0 1 0 1;
                        0 0 0 0 0 1;
                        1 1 1 0 0 0;
                        0 0 0 1 1 0;
@@ -250,6 +259,6 @@ bindata, val, key = categorical2binary(data, 0x1c)
                        0 0 1 0 1 1;
                        1 0 1 1 1 1;
                        0 1 0 0 0 0]
-@test val == UInt8[9, 13, 11, 13, 12, 20, 28, 12, 20, 2, 4, 12, 9, 12, 14, 2,
-                   19, 1, 4, 15, 28]
+@test val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'x', 'l', 'v', 'c', 'l', 't',
+                   'e', 'l', 'm', 'c', 'y', 'a', 't', 'f', 'x']
 @test key == [1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9, 9]

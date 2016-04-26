@@ -233,7 +233,16 @@ function performbrwsplitallocate!(i::Int,
   cl = zeros(Int, len)
   v = zeros(Int, len)
   n1s = zeros(Float64, len, support.m)
-  unit = Vector{Int}[zeros(Int, 0) for g in 1:len]
+  unit = Array{Vector{Int}}(len)
+
+  # prevent losing pre-allocated vectors
+  for l in 1:length(state.unit)
+    unit[l] = state.unit[l]
+  end
+
+  for l in (length(state.unit) + 1):len
+    unit[l] = zeros(Int, settings.maxunit)
+  end
 
   g = 0
   for l in 1:(support.k - 2)
@@ -241,20 +250,18 @@ function performbrwsplitallocate!(i::Int,
     C[g, 1] = support.C[l, 1]
     v[g] = state.v[g]
     n1s[g, 1] = state.n1s[g, 1]
-    unit[g] = state.unit[g]
     emptycluster[g] = false
   end
 
   C[hi, 1] = support.C[support.k - 1, 1]
   v[hi] = state.v[hi] - 1
   n1s[hi, 1] = state.n1s[hi, 1] - support.ni[1]
-  unit[hi] = copy!(state.unit[hi], 1, support.ui, 1, support.vi - 1)
+  copy!(state.unit[hi], 1, support.ui, 1, support.vi - 1)
   emptycluster[hi] = false
 
   C[k, 1] = support.C[support.k, 1]
   v[k] = 1
   n1s[k, 1] = support.ni[1]
-  unit[k] = zeros(Int, settings.maxunit)
   unit[k][1] = i
   emptycluster[k] = false
 

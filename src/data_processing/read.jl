@@ -20,7 +20,7 @@ readfasta(infile, dna, miss, l, verbose, verbosestep)
 `miss = zeros(UInt8, 1)` if all characters are to be considered valid. Default
 characters for `miss` are:
 
-  - DNA data: _?, \*, #, -, b, d, h, k, m, n, r, s, v, w, x, y_
+  - DNA data: _?, \*, #, -, b, d, h, k, m, n, r, s, v, w, x, y, j, z_
   - Protein data: _?, \*, #, -, b, j, x, z_
 
 * `l` Sequence length. If unknown, it is better to choose a value which is
@@ -37,31 +37,33 @@ When computing evolutionary distances, don't put the gap symbol `-` among the
 missing values. Indeed, indels are an important piece of information for genetic
 distances.
 
-Standard conversion tables for FASTA data:
+FASTA data is encoded as standard 7-bit ASCII codes. The only exception is
+Uracil which is given the same value 84 of Thymidine, i.e. each 'u' is silently
+converted to 't' when reading DNA data. Conversion tables are the following:
 
 +----------------------------------------+
 |         Conversion table (DNA)         |
 +----------------------------------------+
 |          Nucleotide |  Code |  Integer |
 +---------------------+-------+----------+
-|           Adenosine |   A   |     1    |
-|            Cytosine |   C   |     2    |
-|             Guanine |   G   |     3    |
-|           Thymidine |   T   |     4    |
-|              Uracil |   U   |     4    |
-|     Purine (A or G) |   R   |     5    |
-| Pyrimidine (C or T) |   Y   |    19    |
-|                Keto |   K   |    13    |
-|               Amino |   M   |    14    |
-|  Strong Interaction |   S   |    17    |
-|    Weak Interaction |   W   |    18    |
-|               Not A |   B   |    23    |
-|               Not C |   D   |     7    |
-|               Not G |   H   |    10    |
-|          Not T or U |   V   |    20    |
-|                 Any |   N   |     6    |
-|                 Gap |   -   |    26    |
-|              Masked |   X   |    28    |
+|           Adenosine |   A   |    97    |
+|            Cytosine |   C   |    99    |
+|             Guanine |   G   |   103    |
+|           Thymidine |   T   |   116    |
+|              Uracil |   U   |   116    |
+|     Purine (A or G) |   R   |   114    |
+| Pyrimidine (C or T) |   Y   |   121    |
+|                Keto |   K   |   107    |
+|               Amino |   M   |   109    |
+|  Strong Interaction |   S   |   115    |
+|    Weak Interaction |   W   |   119    |
+|               Not A |   B   |    98    |
+|               Not C |   D   |   100    |
+|               Not G |   H   |   104    |
+|          Not T or U |   V   |   118    |
+|                 Any |   N   |   110    |
+|                 Gap |   -   |    45    |
+|              Masked |   X   |   120    |
 +----------------------------------------+
 
 +------------------------------------------------+
@@ -69,34 +71,34 @@ Standard conversion tables for FASTA data:
 +------------------------------------------------+
 |                  Amino Acid |  Code |  Integer |
 +-----------------------------+-------+----------+
-|                     Alanine |   A   |     1    |
-|                    Arginine |   R   |     5    |
-|                  Asparagine |   N   |     6    |
-|               Aspartic acid |   D   |     7    |
-|                    Cysteine |   C   |     2    |
-|                   Glutamine |   Q   |     8    |
-|               Glutamic acid |   E   |     9    |
-|                     Glycine |   G   |     3    |
-|                   Histidine |   H   |    10    |
-|                  Isoleucine |   I   |    11    |
-|                     Leucine |   L   |    12    |
-|                      Lysine |   K   |    13    |
-|                  Methionine |   M   |    14    |
-|               Phenylalanine |   F   |    15    |
-|                     Proline |   P   |    16    |
-|                 Pyrrolysine |   O   |    21    |
-|              Selenocysteine |   U   |    22    |
-|                      Serine |   S   |    17    |
-|                   Threonine |   T   |     4    |
-|                  Tryptophan |   W   |    18    |
-|                    Tyrosine |   Y   |    19    |
-|                      Valine |   V   |    20    |
-| Asparagine or Aspartic acid |   B   |    23    |
-|  Glutamine or Glutamic acid |   Z   |    24    |
-|       Leucine or Isoleucine |   J   |    25    |
-|                         Gap |   -   |    26    |
-|            Translation stop |   *   |    27    |
-|                         Any |   X   |    28    |
+|                     Alanine |   A   |    97    |
+|                    Arginine |   R   |   114    |
+|                  Asparagine |   N   |   110    |
+|               Aspartic acid |   D   |   100    |
+|                    Cysteine |   C   |    99    |
+|                   Glutamine |   Q   |   113    |
+|               Glutamic acid |   E   |   101    |
+|                     Glycine |   G   |   103    |
+|                   Histidine |   H   |   104    |
+|                  Isoleucine |   I   |   105    |
+|                     Leucine |   L   |   108    |
+|                      Lysine |   K   |   107    |
+|                  Methionine |   M   |   109    |
+|               Phenylalanine |   F   |   102    |
+|                     Proline |   P   |   112    |
+|                 Pyrrolysine |   O   |   111    |
+|              Selenocysteine |   U   |   117    |
+|                      Serine |   S   |   115    |
+|                   Threonine |   T   |   116    |
+|                  Tryptophan |   W   |   119    |
+|                    Tyrosine |   Y   |   121    |
+|                      Valine |   V   |   118    |
+| Asparagine or Aspartic acid |   B   |    98    |
+|  Glutamine or Glutamic acid |   Z   |   122    |
+|       Leucine or Isoleucine |   J   |   106    |
+|                         Gap |   -   |    45    |
+|            Translation stop |   *   |    42    |
+|                         Any |   X   |   120    |
 +------------------------------------------------+
 
 ## Value
@@ -107,7 +109,7 @@ A tuple containing the following variables:
 * `id` Units' ids
 * `ref` Reference sequence, i.e. a vector of the same length of the original
 sequences storing the values of homogeneous sites. SNPs are instead represented
-by a value of 29
+by a value of 46 ('.')
 """
 function readfasta(infile::AbstractString,
                    dna::Bool,
@@ -125,25 +127,17 @@ function readfasta(infile::AbstractString,
   # disable status reports if verbosestep is not positive
   verbose = verbose && (verbosestep > 0)
 
-  #    ?    *    #    -    b    d    h    k    m    n    r    s    v    w    x
-  # 0x3f 0x2a 0x23 0x2d 0x62 0x64 0x68 0x6b 0x6d 0x6e 0x72 0x73 0x76 0x77 0x78
-  #    y    j    z
-  # 0x79 0x6a 0x7a
   if length(miss) == 0
     if dna
-      miss = [0x3f, 0x2a, 0x23, 0x62, 0x64, 0x68, 0x6b, 0x6d, 0x6e, 0x72, 0x73,
-              0x76, 0x77, 0x78, 0x79]
+      miss = UInt8['?', '*', '#', '-', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's',
+                   'v', 'w', 'x', 'y', 'j', 'z']
     else
-      miss = [0x3f, 0x2a, 0x23, 0x62, 0x6a, 0x78, 0x7a]
+      miss = UInt8['?', '*', '#', '-', 'b', 'j', 'x', 'z']
     end
   else
     if length(miss) == 1
-      if miss[1] == 0x00
-        # we can't use 0x00 as an index in enc[miss]. Use instead 0x01: it is
-        # not an ASCII character allowed in a sequence in a proper FASTA file
-        miss[1] = 0x01
-      else
-        if zero(UInt8) < miss[1] < UInt8(128)
+      if miss[1] != UInt8(0)
+        if UInt8(0) < miss[1] < UInt8(128)
           if UInt8(64) < miss[1] < UInt8(91)
             # convert to lowercase
             miss[1] += UInt8(32)
@@ -155,7 +149,7 @@ function readfasta(infile::AbstractString,
       end
     else
       for i in 1:length(miss)
-        if zero(UInt8) < miss[i] < UInt8(128)
+        if UInt8(0) < miss[i] < UInt8(128)
           if UInt8(64) < miss[i] < UInt8(91)
             # convert to lowercase
             miss[i] += UInt8(32)
@@ -192,8 +186,8 @@ function readfasta(infile::AbstractString,
   end
 
   seqlen = 0
-  seqref = zeros(UInt8, l)
-  missseqref = falses(length(seqref))
+  tmpseqref = zeros(UInt8, l)
+  tmpmissseqref = falses(length(tmpseqref))
 
   # support variables
   c = '\0'
@@ -210,26 +204,23 @@ function readfasta(infile::AbstractString,
         w = seqlen + length(s)
 
         # do we have enough space to store the first sequence?
-        if w > length(seqref)
-          tmp = zeros(UInt8, w + l)
-          seqref = copy!(tmp, seqref)
-
-          tmp = falses(length(seqref))
-          missseqref = copy!(tmp, missseqref)
+        if w > length(tmpseqref)
+          tmpseqref = copy!(zeros(UInt8, w + l), tmpseqref)
+          tmpmissseqref = copy!(falses(w + l), tmpmissseqref)
         end
 
-        for c in lowercase(s)
-          u = UInt8(c)
+        for c in s
+          u = UInt8(lowercase(c))
 
           if !((u == UInt8(32)) || (UInt8(9) <= u <= UInt8(13))) # skip blanks
             seqlen += 1
 
             if !in(u, miss)
-              seqref[seqlen] = u
-              missseqref[seqlen] = false
+              tmpseqref[seqlen] = u
+              tmpmissseqref[seqlen] = false
             else
-              seqref[seqlen] = UInt8('?')
-              missseqref[seqlen] = true
+              tmpseqref[seqlen] = 0x00
+              tmpmissseqref[seqlen] = true
             end
           end
         end
@@ -249,8 +240,8 @@ function readfasta(infile::AbstractString,
   # at least a sequence has been found
   n = 1
 
-  seqref = seqref[1:seqlen]
-  missseqref = missseqref[1:seqlen]
+  seqref = copy!(zeros(UInt8, seqlen), 1, tmpseqref, 1, seqlen)
+  missseqref = copy!(falses(seqlen), 1, tmpmissseqref, 1, seqlen)
 
   if s[1] == '>'
     if length(s) > 1
@@ -273,8 +264,8 @@ function readfasta(infile::AbstractString,
 
     if length(s) > 0
       if s[1] != '>'
-        for c in lowercase(s)
-          u = UInt8(c)
+        for c in s
+          u = UInt8(lowercase(c))
 
           if !((u == UInt8(32)) || (UInt8(9) <= u <= UInt8(13))) # skip blanks
             curlen += 1
@@ -290,7 +281,7 @@ function readfasta(infile::AbstractString,
               seq[curlen] = u
               missseq[curlen] = false
             else
-              seq[curlen] = UInt8('?')
+              seq[curlen] = 0x00
               missseq[curlen] = true
             end
           end
@@ -360,34 +351,41 @@ function readfasta(infile::AbstractString,
     end
   end
 
-  m = sum(snp)
+  m = 0
+  for b in 1:seqlen
+    if snp[b]
+      m += 1
+    end
+  end
 
   if verbose
     println("Found ", n, " sequences: ", m, " SNPs out of ", seqlen,
             " total sites.\nProcessing data...")
   end
 
-  # sequences are now guaranteed to be encoded in ASCII. We can safely use the
-  # ASCII table to convert characters into integers. The null character '\0' is
-  # not allowed and we won't have problems with BoundsErrors
-
-  #   ?  a  c   g   t   r   n   d   q   e   h   i   l   k   m   f   p   s   w
-  #  63 97 99 103 116 114 110 100 113 101 104 105 108 107 109 102 112 115 119
-  #
-  #   y   v   o   u  b   z   j  -  *   x
-  # 121 118 111 117 98 122 106 45 42 120
-  enc = zeros(UInt8, 127)
-  enc[[ 63,  97,  99, 103, 116, 114, 110, 100, 113, 101, 104, 105, 108, 107,
-       109, 102, 112, 115, 119, 121, 118, 111, 117,  98, 122, 106,  45,  42,
-       120]] = round(UInt8, 0:28)
-  enc[miss] = zero(UInt8)
-
-  if dna
-    enc[117] = UInt8(4) # 'u'
-  end
-
   data = zeros(UInt8, m, n)
   id = Array(ASCIIString, n)
+  enc = zeros(UInt8, 127)
+
+  h1 = 0
+  h2 = 0
+  missing = false
+
+  for h1 in 1:127
+    missing = false
+    h2 = 1
+
+    while !missing && (h2 <= length(miss))
+      missing = (UInt8(h1) == miss[h2])
+      h2 += 1
+    end
+
+    enc[h1] = !missing ? UInt8(h1) : UInt8('?')
+  end
+
+  if dna
+    enc[Int('u')] = UInt8('t')
+  end
 
   # go back at the beginning of the file and start again
   seekstart(f)
@@ -405,8 +403,8 @@ function readfasta(infile::AbstractString,
 
     if length(s) > 0
       if s[1] != '>'
-        for c in lowercase(s)
-          u = UInt8(c)
+        for c in s
+          u = UInt8(lowercase(c))
 
           if !((u == UInt8(32)) || (UInt8(9) <= u <= UInt8(13))) # skip blanks
             i1 += 1
@@ -439,8 +437,12 @@ function readfasta(infile::AbstractString,
 
   close(f)
 
-  ref = fill(UInt8(29), seqlen)
-  ref[!snp] = enc[seqref[!snp]]
+  ref = fill(UInt8('.'), seqlen)
+  for b in 1:seqlen
+    if !snp[b]
+      ref[b] = seqref[b]
+    end
+  end
 
   (data, id, ref)
 end
