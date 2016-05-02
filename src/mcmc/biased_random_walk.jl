@@ -39,7 +39,7 @@ function biased_random_walk!(data::Matrix{UInt8},
     support.lograR = logratiopriorrowbrwmerge(k, state.v[hj], priorR)
   end
 
-  initsupportbrw!(k, i, state.v[hi], data, settings, support)
+  initsupportbrw!(k, i, state.v[hi], data, priorC, settings, support)
 
   simcbrw!(k, hi, hj, priorC, support, state)
 
@@ -132,8 +132,6 @@ function performbrwmerge!(i::Int,
     state.n1s[hj, b] += support.ni[b]
   end
 
-  copy!(priorC.logω, support.logω)
-
   nothing
 end
 
@@ -213,8 +211,6 @@ function performbrwsplit!(i::Int,
   end
 
   state.unit[hj][state.v[hj]] = i
-
-  copy!(priorC.logω, support.logω)
 
   nothing
 end
@@ -296,8 +292,6 @@ function performbrwsplitallocate!(i::Int,
   state.v = v
   state.n1s = n1s
   state.unit = unit
-
-  copy!(priorC.logω, support.logω)
 
   nothing
 end

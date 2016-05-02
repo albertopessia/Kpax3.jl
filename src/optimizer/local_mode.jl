@@ -26,8 +26,8 @@ function computelocalmode!(v::Vector{Int},
 
     tmp1[1] = lbeta(priorC.A[1, b], priorC.B[1, b])
     tmp1[2] = lbeta(priorC.A[2, b], priorC.B[2, b])
-    tmp1[3] = lbeta(priorC.A[3, b], priorC.B[3, b]) - priorC.logω[3]
-    tmp1[4] = lbeta(priorC.A[4, b], priorC.B[4, b]) - priorC.logω[4]
+    tmp1[3] = lbeta(priorC.A[3, b], priorC.B[3, b]) - priorC.logω[k][1]
+    tmp1[4] = lbeta(priorC.A[4, b], priorC.B[4, b]) - priorC.logω[k][2]
 
     for l in 1:k
       g = cl[l]
@@ -66,11 +66,11 @@ function computelocalmode!(v::Vector{Int},
         for l in 1:k
           if tmp2[1, l] >= tmp2[2, l]
             C[cl[l], b] = 0x03
-            logpC[1] += priorC.logω[3]
+            logpC[1] += priorC.logω[k][1]
             logpC[2] -= tmp2[1, l]
           else
             C[cl[l], b] = 0x04
-            logpC[1] += priorC.logω[4]
+            logpC[1] += priorC.logω[k][2]
             logpC[2] -= tmp2[2, l]
           end
         end
@@ -120,8 +120,8 @@ function computelocalmode!(state::State,
 
     tmp1[1] = lbeta(priorC.A[1, b], priorC.B[1, b])
     tmp1[2] = lbeta(priorC.A[2, b], priorC.B[2, b])
-    tmp1[3] = lbeta(priorC.A[3, b], priorC.B[3, b]) - priorC.logω[3]
-    tmp1[4] = lbeta(priorC.A[4, b], priorC.B[4, b]) - priorC.logω[4]
+    tmp1[3] = lbeta(priorC.A[3, b], priorC.B[3, b]) - priorC.logω[k][1]
+    tmp1[4] = lbeta(priorC.A[4, b], priorC.B[4, b]) - priorC.logω[k][2]
 
     for l in 1:k
       g = state.cl[l]
@@ -162,11 +162,11 @@ function computelocalmode!(state::State,
         for l in 1:k
           if tmp2[1, l] >= tmp2[2, l]
             state.C[state.cl[l], b] = 0x03
-            state.logpC[1] += priorC.logω[3]
+            state.logpC[1] += priorC.logω[k][1]
             state.logpC[2] -= tmp2[1, l]
           else
             state.C[state.cl[l], b] = 0x04
-            state.logpC[1] += priorC.logω[4]
+            state.logpC[1] += priorC.logω[k][2]
             state.logpC[2] -= tmp2[2, l]
           end
         end

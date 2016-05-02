@@ -30,6 +30,52 @@ x = AminoAcidData(fastafile)
 # compute log(normalization constant) as accurate as possible
 include("data/partitions.jl")
 
+function computelogp(b::Int,
+                     c::Vector{UInt8},
+                     n1s::Matrix{Float64},
+                     priorC::AminoAcidPriorCol)
+  k = size(n1s, 1)
+  logp = 0.0
+
+  if c[1] == UInt8(1)
+    logp = priorC.logγ[1]
+
+    for g in 1:k
+      logp += logmarglik(n1s[g, b], v[g], priorC.A[1, b], priorC.B[1, b])
+    end
+  elseif c1[1] == UInt8(2)
+    logp = priorC.logγ[2]
+
+    for g in 1:k
+      logp += logmarglik(n1s[g, b], v[g], priorC.A[2, b], priorC.B[2, b])
+    end
+  else
+    logp = priorC.logγ[3]
+
+    for g in 1:k
+      logp += priorC.logω[k][c[g] - 2] +
+              logmarglik(n1s[g, b], v[g], priorC.A[c[g], b], priorC.B[c[g], b])
+    end
+  end
+
+  logp
+end
+
+function addvalue!(b::Int,
+                   c::Vector{UInt8},
+                   value::Float64,
+                   S::Matrix{Float64})
+  if c[1] == UInt8(1)
+    S[1, b] += value
+  elseif c[1] == UInt8(2)
+    S[2, b] += value
+  else
+    S[3, b] += value
+  end
+
+  nothing
+end
+
 function computelognormconst(ck,
                              k::Int,
                              lumpp::Float64,
@@ -39,16 +85,19 @@ function computelognormconst(ck,
                              r::Float64,
                              priorR::PriorRowPartition)
   m, n = size(data)
-  priorC = AminoAcidPriorCol(data, k, γ, r)
+
+  priorC = AminoAcidPriorCol(data, γ, r, maxclust=k)
 
   st = po.index[po.k .== k][1]
   en = any(po.k .== k + 1) ? po.index[po.k .== k + 1][1] - 1 : st
 
-  C = zeros(UInt8, m, k)
+  R = zeros(Int, n)
   v = zeros(Float64, k)
-  n1s = zeros(Float64, m, k)
+  n1s = zeros(Float64, k, m)
 
   M = -Inf
+
+  g = 0
 
   p = 0.0
   logprR = 0.0
@@ -56,31 +105,31 @@ function computelognormconst(ck,
   logp = zeros(Float64, m)
 
   for l in st:en
-    R = po.partition[:, l]
-    logprR = logdPriorRow(R, priorR)
+    fill!(R, 0)
+    fill!(v, 0)
+    fill!(n1s, 0.0)
+    fill!(logp, 0.0)
 
-    for g in 1:k
-      v[g] = sum(R .== g)
-      n1s[: , g] = sum(float(data[:, R .== g]), 2)
+    for a in 1:n
+      g = po.partition[a, l]
+
+      R[a] = g
+      v[g] += 1
+
+      for b in 1:m
+        n1s[g, b] += float(data[b, a])
+      end
     end
 
+    logprR = logdPriorRow(R, priorR)
+
     for c1 in ck, c2 in ck, c3 in ck, c4 in ck
-      C[1, :] = copy(c1)
-      C[2, :] = copy(c2)
-      C[3, :] = copy(c3)
-      C[4, :] = copy(c4)
+      logp[1] += computelogp(1, c1, n1s, priorC)
+      logp[2] += computelogp(2, c2, n1s, priorC)
+      logp[3] += computelogp(3, c3, n1s, priorC)
+      logp[4] += computelogp(4, c4, n1s, priorC)
 
-      idx = C[:, 1] + 4 * collect(0:(m - 1))
-      logp = priorC.logγ[C[:, 1]] + priorC.logω[C[:, 1]] +
-             logmarglik(n1s[:, 1], v[1], priorC.A[idx], priorC.B[idx])
-
-      for g in 2:k
-        idx = C[:, g] + 4 * collect(0:(m - 1))
-        logp += (priorC.logω[C[:, g]] +
-                 logmarglik(n1s[:, g], v[g], priorC.A[idx], priorC.B[idx]))
-      end
-
-      logpost = logprR + sum(logp)
+      logpost = logprR + logp[1] + logp[2] + logp[3] + logp[4]
 
       if logpost > M
         M = logpost
@@ -139,71 +188,71 @@ function computeProbs(cs,
   m, n = size(data)
 
   P = zeros(Float64, div(n * (n - 1), 2))
-  S = zeros(Float64, m, 3)
+  S = zeros(Float64, 3, m)
   K = zeros(Float64, n)
 
   u = falses(div(n * (n - 1), 2))
 
+  R = zeros(Int, n)
+
   logprR = 0.0
+  logpost = 0.0
+  logp = zeros(Float64, m)
 
   println("Computing probabilities...")
   for k in 1:(n - 1)
     println("k = ", k)
-    priorC = AminoAcidPriorCol(data, k, γ, r)
+
+    priorC = AminoAcidPriorCol(data, γ, r, maxclust=k)
 
     st = po.index[po.k .== k][1]
     en = po.index[po.k .== k + 1][1] - 1
 
-    C = zeros(UInt8, m, k)
     v = zeros(Float64, k)
-    n1s = zeros(Float64, m, k)
+    n1s = zeros(Float64, k, m)
 
     for l in st:en
-      R = po.partition[:, l]
-      logprR = logdPriorRow(R, priorR)
+      fill!(R, 0)
+      fill!(v, 0)
+      fill!(n1s, 0.0)
+      fill!(logp, 0.0)
 
-      for g in 1:k
-        v[g] = sum(R .== g)
-        n1s[: , g] = sum(float(data[:, R .== g]), 2)
+      for a in 1:n
+        g = po.partition[a, l]
+
+        R[a] = g
+        v[g] += 1
+
+        for b in 1:m
+          n1s[g, b] += float(data[b, a])
+        end
       end
 
-      idx = 0
+      logprR = logdPriorRow(R, priorR)
+
+      idx = 1
       for i in 1:(n - 1)
         for j in (i + 1):n
-          u[idx += 1] = R[i] == R[j]
+          u[idx] = (R[i] == R[j])
+          idx += 1
         end
       end
 
       for c1 in cs[k], c2 in cs[k], c3 in cs[k], c4 in cs[k]
-        C[1, :] = copy(c1)
-        C[2, :] = copy(c2)
-        C[3, :] = copy(c3)
-        C[4, :] = copy(c4)
+        logp[1] += computelogp(1, c1, n1s, priorC)
+        logp[2] += computelogp(2, c2, n1s, priorC)
+        logp[3] += computelogp(3, c3, n1s, priorC)
+        logp[4] += computelogp(4, c4, n1s, priorC)
 
-        idx = C[:, 1] + 4 * collect(0:(m - 1))
-        logp = priorC.logγ[C[:, 1]] + priorC.logω[C[:, 1]] +
-               logmarglik(n1s[:, 1], v[1], priorC.A[idx], priorC.B[idx])
-
-        for g in 2:k
-          idx = C[:, g] + 4 * collect(0:(m - 1))
-          logp += (priorC.logω[C[:, g]] +
-                   logmarglik(n1s[:, g], v[g], priorC.A[idx], priorC.B[idx]))
-        end
-
-        tmp = exp(logprR + sum(logp) - lumpp)
+        tmp = exp(logpost - lumpp)
 
         P[u] += tmp
         K[k] += tmp
 
-        for b in 1:m
-          if C[b, 1] == 0x01
-            S[b, 1] += tmp
-          elseif C[b, 1] == 0x02
-            S[b, 2] += tmp
-          else
-            S[b, 3] += tmp
-          end
-        end
+        addvalue!(1, c1, tmp, S)
+        addvalue!(2, c2, tmp, S)
+        addvalue!(3, c3, tmp, S)
+        addvalue!(4, c4, tmp, S)
       end
     end
   end
@@ -211,44 +260,48 @@ function computeProbs(cs,
   # no units are in the same cluster
   k = n
   println("k = ", k)
-  priorC = AminoAcidPriorCol(data, k, γ, r)
 
-  C = zeros(UInt8, m, k)
+  priorC = AminoAcidPriorCol(data, γ, r, maxclust=k)
+
   v = ones(Float64, k)
-  n1s = float(data)
+  n1s = zeros(Float64, k, m)
 
-  R = collect(1:k)
-  logprR = logdPriorRow(R, priorR)
+  fill!(R, 0)
+  fill!(logp, 0.0)
 
-  for c1 in cs[k], c2 in cs[k], c3 in cs[k], c4 in cs[k]
-    C[1, :] = copy(c1)
-    C[2, :] = copy(c2)
-    C[3, :] = copy(c3)
-    C[4, :] = copy(c4)
-
-    idx = C[:, 1] + 4 * collect(0:(m - 1))
-    logp = priorC.logγ[C[:, 1]] + priorC.logω[C[:, 1]] +
-           logmarglik(n1s[:, 1], v[1], priorC.A[idx], priorC.B[idx])
-
-    for g in 2:k
-      idx = C[:, g] + 4 * collect(0:(m - 1))
-      logp += (priorC.logω[C[:, g]] +
-               logmarglik(n1s[:, g], v[g], priorC.A[idx], priorC.B[idx]))
-    end
-
-    tmp = exp(logprR + sum(logp) - lumpp)
-
-    K[k] += tmp
+  for a in 1:n
+    R[a] = a
 
     for b in 1:m
-      if C[b, 1] == 0x01
-        S[b, 1] += tmp
-      elseif C[b, 1] == 0x02
-        S[b, 2] += tmp
-      else
-        S[b, 3] += tmp
-      end
+      n1s[a, b] = float(data[b, a])
     end
+  end
+
+  logprR = logdPriorRow(R, priorR)
+
+  idx = 1
+  for i in 1:(n - 1)
+    for j in (i + 1):n
+      u[idx] = (R[i] == R[j])
+      idx += 1
+    end
+  end
+
+  for c1 in cs[k], c2 in cs[k], c3 in cs[k], c4 in cs[k]
+    logp[1] += computelogp(1, c1, n1s, priorC)
+    logp[2] += computelogp(2, c2, n1s, priorC)
+    logp[3] += computelogp(3, c3, n1s, priorC)
+    logp[4] += computelogp(4, c4, n1s, priorC)
+
+    tmp = exp(logpost - lumpp)
+
+    P[u] += tmp
+    K[k] += tmp
+
+    addvalue!(1, c1, tmp, S)
+    addvalue!(2, c2, tmp, S)
+    addvalue!(3, c3, tmp, S)
+    addvalue!(4, c4, tmp, S)
   end
   println("Done.")
 

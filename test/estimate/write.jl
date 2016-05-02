@@ -10,7 +10,8 @@ R = normalizepartition(partition, x.id)
 k = maximum(R)
 
 priorR = EwensPitman(settings.α, settings.θ)
-priorC = AminoAcidPriorCol(x.data, k, settings.γ, settings.r)
+priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r,
+                           maxclust=max(k, settings.maxclust))
 
 state = AminoAcidState(x.data, R, priorR, priorC, settings)
 

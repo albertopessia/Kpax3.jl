@@ -132,7 +132,5 @@ function performmerge!(hi::Int,
   copy!(state.logpC, support.logpC)
   state.loglik = support.loglik
 
-  copy!(priorC.logω, support.logω)
-
   nothing
 end

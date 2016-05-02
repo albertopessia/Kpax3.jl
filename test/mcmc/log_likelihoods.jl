@@ -26,10 +26,11 @@ data = UInt8[0 0 0 0 0 1;
 
 m, n = size(data)
 
+priorR = EwensPitman(settings.α, settings.θ)
+priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+
 # merge
 # [1; 1; 1; 2; 2; 3] => [1; 1; 1; 3; 3; 3]
-priorR = EwensPitman(settings.α, settings.θ)
-priorC = AminoAcidPriorCol(data, 3, settings.γ, settings.r)
 state = AminoAcidState(data, [1; 1; 1; 2; 2; 3], priorR, priorC, settings)
 
 mergesupport = KSupport(m, n, settings.maxclust, settings.maxunit)
@@ -59,8 +60,6 @@ end
 
 # split
 # [1; 1; 1; 3; 3; 3] => [1; 1; 1; 3; 3; 2]
-priorR = EwensPitman(settings.α, settings.θ)
-priorC = AminoAcidPriorCol(data, 2, settings.γ, settings.r)
 state = AminoAcidState(data, [1; 1; 1; 3; 3; 3], priorR, priorC, settings)
 
 splitsupport = KSupport(m, n, settings.maxclust, settings.maxunit)
@@ -98,8 +97,6 @@ end
 
 # biased random walk
 # [1; 1; 1; 3; 3; 2] => [1; 1; 1; 3; 3; 3]
-priorR = EwensPitman(settings.α, settings.θ)
-priorC = AminoAcidPriorCol(data, 3, settings.γ, settings.r)
 state = AminoAcidState(data, [1; 1; 1; 3; 3; 2], priorR, priorC, settings)
 
 brwsupport = KSupport(m, n, settings.maxclust, settings.maxunit)
@@ -132,8 +129,6 @@ end
 @test_approx_eq_eps brwsupport.loglik correctloglik ε
 
 # [1; 1; 1; 3; 3; 2] => [1; 1; 2; 3; 3; 2]
-priorR = EwensPitman(settings.α, settings.θ)
-priorC = AminoAcidPriorCol(data, 3, settings.γ, settings.r)
 state = AminoAcidState(data, [1; 1; 1; 3; 3; 2], priorR, priorC, settings)
 
 brwsupport = KSupport(m, n, settings.maxclust, settings.maxunit)
@@ -169,8 +164,6 @@ end
 @test_approx_eq_eps brwsupport.loglik correctloglik ε
 
 # [3; 3; 3; 2; 2; 4] => [3; 3; 1; 2; 2; 4]
-priorR = EwensPitman(settings.α, settings.θ)
-priorC = AminoAcidPriorCol(data, 3, settings.γ, settings.r)
 state = AminoAcidState(data, [2; 2; 2; 1; 1; 3], priorR, priorC, settings)
 
 state.R = [3; 3; 3; 2; 2; 4]

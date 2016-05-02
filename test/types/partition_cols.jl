@@ -19,19 +19,38 @@ data = UInt8[0 0 0 0 0 1;
              1 1 0 1 0 0;
              0 0 1 0 1 1]
 
-g = [0.6; 0.35; 0.05]
+γ = [0.6; 0.35; 0.05]
 r = log(0.001) / log(0.95)
-priorC = AminoAcidPriorCol(data, 3, g, r)
 
-@test priorC.logγ == [log(g[1]); log(g[2]); log(g[3]); log(g[3])]
-@test priorC.logω == [0.0; 0.0; log(2.0) - log(3.0); -log(3.0)]
+@test_throws KInputError AminoAcidPriorCol(data, [1.0; 1.0; 1.0; 1.0], r)
+
+@test_throws KDomainError AminoAcidPriorCol(data, [-1.0; 1.0; 1.0], r)
+@test_throws KDomainError AminoAcidPriorCol(data, [1.0; -1.0; 1.0], r)
+@test_throws KDomainError AminoAcidPriorCol(data, [1.0; 1.0; -1.0], r)
+@test_throws KDomainError AminoAcidPriorCol(data, γ, 0.0)
+@test_throws KDomainError AminoAcidPriorCol(data, γ, -1.0)
+@test_throws KDomainError AminoAcidPriorCol(data, γ, r, maxclust=0)
+
+priorC = AminoAcidPriorCol(data, γ, r)
+
+logγ = [log(γ[1]); log(γ[2]); log(γ[3])]
+logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:size(data, 2)]
+
+@test priorC.logγ == logγ
+@test priorC.logω == logω
 
 # TODO: Test A and B
 
-updateprior!(priorC, 2)
-@test priorC.logγ == [log(g[1]); log(g[2]); log(g[3]); log(g[3])]
-@test priorC.logω == [0.0; 0.0; -log(2.0); -log(2.0)]
+priorC = AminoAcidPriorCol(data, γ, r, maxclust=2)
 
-updateprior!(priorC, 4)
-@test priorC.logγ == [log(g[1]); log(g[2]); log(g[3]); log(g[3])]
-@test priorC.logω == [0.0; 0.0; log(3.0) - log(4.0); -log(4.0)]
+logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:2]
+
+@test priorC.logγ == logγ
+@test priorC.logω == logω
+
+# TODO: Test A and B
+
+resizelogω!(priorC, 4)
+
+logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:4]
+@test priorC.logω == logω

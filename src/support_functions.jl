@@ -60,24 +60,31 @@ function normalizepartition(infile::AbstractString,
   end
 end
 
-function initializestates(x::AminoAcidData,
-                          d::Vector{Float64},
-                          N::Int,
-                          settings::KSettings;
-                          kset::UnitRange{Int}=1:0)
-  m, n = size(x.data)
-
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, 1, settings.γ, settings.r)
-
-  R = ones(Int, n)
-
-  state = AminoAcidState(x.data, R, priorR, priorC, settings)
-  logpp = state.logpR + state.logpC[1] + state.loglik
+function initializepartition(D::Matrix{Float64},
+                             priorR::PriorRowPartition,
+                             priorC::AminoAcidPriorCol;
+                             kset::UnitRange{Int}=1:0)
+  n = size(D, 1)
 
   if length(kset) == 0
     kset = 2:max(ceil(Int, sqrt(n)), 100)
+  elseif kset[1] > 0
+    if kset[end] > n
+      kset = (kset[1] == 1) ? 2:n : kset[1]:n
+    elseif kset[1] == 1
+      kset = 2:kset[end]
+    end
+  else
+    throw(KDomainError("First element of 'kset' is less than one."))
   end
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r, maxclust=kset[end])
+
+  R = ones(Int, n)
+
+  s = AminoAcidState(x.data, R, priorR, priorC, settings)
+  slp = s.logpR + s.logpC[1] + s.loglik
 
   D = zeros(Float64, n, n)
   idx = 1
@@ -86,19 +93,38 @@ function initializestates(x::AminoAcidData,
     idx += 1
   end
 
-  tmpstate = copystate(state)
-  tmplogpp = logpp
+  t1 = copystate(s)
+  tlp1 = slp
 
+  t2 = copystate(s)
+  tlp2 = slp
+
+  niter = 0
   for k in kset
     updateprior!(priorC, k)
 
-    copy!(R, normalizepartition(kmedoids(D, k; maxiter=1000).assignments, n))
+    copy!(R, kmedoids(D, k).assignments)
+    updatestate!(t1, x.data, R, priorR, priorC, settings)
+    tlp1 = t1.logpR + t1.logpC[1] + t1.loglik
 
-    tmpstate = AminoAcidState(x.data, R, priorR, priorC, settings)
-    tmplogpp = tmpstate.logpR + tmpstate.logpC[1] + tmpstate.loglik
+    niter = 0
+    while niter < 10
+      copy!(R, kmedoids(D, k).assignments)
+      updatestate!(t2, x.data, R, priorR, priorC, settings)
+      tlp2 = t2.logpR + t2.logpC[1] + t2.loglik
+
+      if tlp2 > tlp1
+        copystate!(t1, t2)
+        tlp1 = tlp2
+      end
+
+      niter += 1
+    end
+
+    if tlp1 > slp
+      copystate!(s, t1)
+      slp = tlp1
+    end
   end
-
-    statelist = [copystate(state) for i in 1:N]
-
 
 end

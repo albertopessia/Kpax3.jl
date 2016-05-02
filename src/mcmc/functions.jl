@@ -126,17 +126,18 @@ end
 
 function initclusteriweights!(x::UInt8,
                               b::Int,
+                              k::Int,
                               priorC::AminoAcidPriorCol,
                               support::KSupport)
   support.ni[b] = float(x)
 
-  support.wi.w[1, b] = priorC.logγ[1] + support.logω[1] +
+  support.wi.w[1, b] = priorC.logγ[1] +
                        logmarglik(x, 1, priorC.A[1, b], priorC.B[1, b])
-  support.wi.w[2, b] = priorC.logγ[2] + support.logω[2] +
+  support.wi.w[2, b] = priorC.logγ[2] +
                        logmarglik(x, 1, priorC.A[2, b], priorC.B[2, b])
-  support.wi.w[3, b] = priorC.logγ[3] + support.logω[3] +
+  support.wi.w[3, b] = priorC.logγ[3] + priorC.logω[k][1] +
                        logmarglik(x, 1, priorC.A[3, b], priorC.B[3, b])
-  support.wi.w[4, b] = priorC.logγ[4] + support.logω[4] +
+  support.wi.w[4, b] = priorC.logγ[3] + priorC.logω[k][2] +
                        logmarglik(x, 1, priorC.A[4, b], priorC.B[4, b])
 
   M = max(support.wi.w[1, b], support.wi.w[2, b],
@@ -152,17 +153,18 @@ end
 
 function initclusterjweights!(x::UInt8,
                               b::Int,
+                              k::Int,
                               priorC::AminoAcidPriorCol,
                               support::KSupport)
   support.nj[b] = float(x)
 
-  support.wj.w[1, b] = priorC.logγ[1] + support.logω[1] +
+  support.wj.w[1, b] = priorC.logγ[1] +
                        logmarglik(x, 1, priorC.A[1, b], priorC.B[1, b])
-  support.wj.w[2, b] = priorC.logγ[2] + support.logω[2] +
+  support.wj.w[2, b] = priorC.logγ[2] +
                        logmarglik(x, 1, priorC.A[2, b], priorC.B[2, b])
-  support.wj.w[3, b] = priorC.logγ[3] + support.logω[3] +
+  support.wj.w[3, b] = priorC.logγ[3] + priorC.logω[k][1] +
                        logmarglik(x, 1, priorC.A[3, b], priorC.B[3, b])
-  support.wj.w[4, b] = priorC.logγ[4] + support.logω[4] +
+  support.wj.w[4, b] = priorC.logγ[3] + priorC.logω[k][2] +
                        logmarglik(x, 1, priorC.A[4, b], priorC.B[4, b])
 
   M = max(support.wj.w[1, b], support.wj.w[2, b],
@@ -183,10 +185,10 @@ function initsupportsplitmerge!(ij::Vector{Int},
                                 priorC::AminoAcidPriorCol,
                                 settings::KSettings,
                                 support::KSupport)
-  support.logω[1] = 0.0
-  support.logω[2] = 0.0
-  support.logω[3] = log(k - 1.0) - log(k)
-  support.logω[4] = -log(k)
+  if length(priorC.logω) < k
+    len = min(support.n, k + settings.maxclust - 1)
+    resizelogω!(priorC, len)
+  end
 
   support.vi = 1
   support.vj = 1
@@ -206,8 +208,8 @@ function initsupportsplitmerge!(ij::Vector{Int},
   end
 
   for b in 1:support.m
-    initclusteriweights!(data[b, ij[1]], b, priorC, support)
-    initclusterjweights!(data[b, ij[2]], b, priorC, support)
+    initclusteriweights!(data[b, ij[1]], b, k, priorC, support)
+    initclusterjweights!(data[b, ij[2]], b, k, priorC, support)
   end
 
   nothing
@@ -217,12 +219,13 @@ function initsupportbrw!(k::Int,
                          i::Int,
                          vi::Int,
                          data::Matrix{UInt8},
+                         priorC::AminoAcidPriorCol,
                          settings::KSettings,
                          support::KSupport)
-  support.logω[1] = 0.0
-  support.logω[2] = 0.0
-  support.logω[3] = log(k - 1.0) - log(k)
-  support.logω[4] = -log(k)
+  if length(priorC.logω) < k
+    len = min(support.n, k + settings.maxclust - 1)
+    resizelogω!(priorC, len)
+  end
 
   for b in 1:support.m
     support.ni[b] = float(data[b, i])

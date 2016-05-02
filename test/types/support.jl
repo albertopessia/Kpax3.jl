@@ -33,8 +33,6 @@ support = KSupport(m, n, maxclust, maxunit)
 
 @test support.C == zeros(UInt8, maxclust, m)
 
-@test support.logω == zeros(Float64, 4)
-
 @test support.logpC == zeros(Float64, 2)
 @test support.lograR == 0.0
 @test support.loglik == 0.0
