@@ -7,7 +7,8 @@ function kpax3(x::AminoAcidData,
   k = maximum(R)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, k, settings.γ, settings.r)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r,
+                             maxclust=max(k, settings.maxclust))
 
   support = KSupport(size(x.data, 1), size(x.data, 2), settings.maxclust,
                      settings.maxunit)

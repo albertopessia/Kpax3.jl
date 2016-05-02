@@ -1,5 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
+# TODO: refactor test files because it is a mess
+
 using Base.Test
 
 include("../src/boot.jl")
@@ -27,7 +29,10 @@ tests = ["data_processing/data_processing";
 
 for t in tests
   begin
-    include(string(t, ".jl"))
+    f = string(t, ".jl")
+    @printf("Going through tests in '%s'... ", f)
+    include(f)
+    @printf("PASSED!\n")
     nothing
   end
 end

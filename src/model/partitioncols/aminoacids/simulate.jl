@@ -40,22 +40,21 @@ function samplestrongsignal!(C::Matrix{UInt8},
                              k::Int,
                              b::Int,
                              x::Float64,
-                             logγ::Vector{Float64},
-                             logω::Vector{Float64},
-                             lω::Matrix{Float64})
-  logp[1] += logγ[3]
+                             lω::Matrix{Float64},
+                             priorC::AminoAcidPriorCol)
+  logp[1] += priorC.logγ[3]
   logp[2] += x
 
   for l in 1:k
     if rand() <= exp(lω[1, l])
       C[cl[l], b] = 0x03
 
-      logp[1] += logω[3]
+      logp[1] += priorC.logω[k][1]
       logp[2] += lω[1, l]
     else
       C[cl[l], b] = 0x04
 
-      logp[1] += logω[4]
+      logp[1] += priorC.logω[k][2]
       logp[2] += lω[2, l]
     end
   end
@@ -70,12 +69,15 @@ function computeclusterlogprobs!(logq::Matrix{Float64},
                                  l::Int,
                                  y::Real,
                                  n::Real,
-                                 logω::Vector{Float64},
                                  priorC::AminoAcidPriorCol)
+  k = size(lω, 2)
+
   logq[1, l] = logmarglik(y, n, priorC.A[1, b], priorC.B[1, b])
   logq[2, l] = logmarglik(y, n, priorC.A[2, b], priorC.B[2, b])
-  logq[3, l] = logω[3] + logmarglik(y, n, priorC.A[3, b], priorC.B[3, b])
-  logq[4, l] = logω[4] + logmarglik(y, n, priorC.A[4, b], priorC.B[4, b])
+  logq[3, l] = priorC.logω[k][1] +
+               logmarglik(y, n, priorC.A[3, b], priorC.B[3, b])
+  logq[4, l] = priorC.logω[k][2] +
+               logmarglik(y, n, priorC.A[4, b], priorC.B[4, b])
 
   lγ[1] += logq[1, l]
   lγ[2] += logq[2, l]
@@ -122,7 +124,7 @@ function rpostpartitioncols!(C::Matrix{UInt8},
 
     for l in 1:k
       computeclusterlogprobs!(logq, lγ, lω, b, l, n1s[cl[l], b], v[cl[l]],
-                              priorC.logω, priorC)
+                              priorC)
     end
 
     if (lγ[1] >= lγ[2]) && (lγ[1] >= lγ[3])
@@ -144,8 +146,7 @@ function rpostpartitioncols!(C::Matrix{UInt8},
     elseif p <= exp(lγ[1]) + exp(lγ[2])
       sampleweaksignal!(C, logp, cl, k, b, lγ[2], priorC.logγ)
     else
-      samplestrongsignal!(C, logp, cl, k, b, lγ[3], priorC.logγ, priorC.logω,
-                          lω)
+      samplestrongsignal!(C, logp, cl, k, b, lγ[3], lω, priorC)
     end
   end
 
@@ -189,33 +190,33 @@ function simcbrw!(k::Int,
 
     for l in 1:h
       computeclusterlogprobs!(logq, lγ, lω, b, l, state.n1s[support.cl[l], b],
-                              state.v[support.cl[l]], support.logω, priorC)
+                              state.v[support.cl[l]], priorC)
     end
 
     if k == state.k
       # remove i from its cluster
       computeclusterlogprobs!(logq, lγ, lω, b, support.k - 1,
                               state.n1s[hi, b] - support.ni[b],
-                              state.v[hi] - 1, support.logω, priorC)
+                              state.v[hi] - 1, priorC)
 
       # move i into an existing cluster
       computeclusterlogprobs!(logq, lγ, lω, b, support.k,
                               state.n1s[hj, b] + support.ni[b],
-                              state.v[hj] + 1, support.logω, priorC)
+                              state.v[hj] + 1, priorC)
     elseif k > state.k
       # remove i from its cluster
       computeclusterlogprobs!(logq, lγ, lω, b, support.k - 1,
                               state.n1s[hi, b] - support.ni[b],
-                              state.v[hi] - 1, support.logω, priorC)
+                              state.v[hi] - 1, priorC)
 
       # move singleton i into its own cluster
       computeclusterlogprobs!(logq, lγ, lω, b, support.k, support.ni[b], 1,
-                              support.logω, priorC)
+                              priorC)
     else
       # move i into an existing cluster
       computeclusterlogprobs!(logq, lγ, lω, b, support.k,
                               state.n1s[hj, b] + support.ni[b],
-                              state.v[hj] + 1, support.logω, priorC)
+                              state.v[hj] + 1, priorC)
     end
 
     if (lγ[1] >= lγ[2]) && (lγ[1] >= lγ[3])
@@ -237,8 +238,8 @@ function simcbrw!(k::Int,
     elseif p <= exp(lγ[1]) + exp(lγ[2])
       sampleweaksignal!(support.C, support.logpC, 1:k, k, b, lγ[2], priorC.logγ)
     else
-      samplestrongsignal!(support.C, support.logpC, 1:k, k, b, lγ[3],
-                          priorC.logγ, support.logω, lω)
+      samplestrongsignal!(support.C, support.logpC, 1:k, k, b, lγ[3], lω,
+                          priorC)
     end
   end
 
@@ -279,11 +280,10 @@ function simcmerge!(k::Int,
 
     for l in 1:(support.k - 1)
       computeclusterlogprobs!(logq, lγ, lω, b, l, state.n1s[support.cl[l], b],
-                              state.v[support.cl[l]], support.logω, priorC)
+                              state.v[support.cl[l]], priorC)
     end
 
-    computeclusterlogprobs!(logq, lγ, lω, b, support.k, ni[b], vi, support.logω,
-                            priorC)
+    computeclusterlogprobs!(logq, lγ, lω, b, support.k, ni[b], vi, priorC)
 
     if (lγ[1] >= lγ[2]) && (lγ[1] >= lγ[3])
       tmp = lγ[1] + log1p(exp(lγ[2] - lγ[1]) + exp(lγ[3] - lγ[1]))
@@ -304,8 +304,8 @@ function simcmerge!(k::Int,
     elseif p <= exp(lγ[1]) + exp(lγ[2])
       sampleweaksignal!(support.C, support.logpC, 1:k, k, b, lγ[2], priorC.logγ)
     else
-      samplestrongsignal!(support.C, support.logpC, 1:k, k, b, lγ[3],
-                          priorC.logγ, support.logω, lω)
+      samplestrongsignal!(support.C, support.logpC, 1:k, k, b, lγ[3], lω,
+                          priorC)
     end
   end
 
@@ -343,14 +343,14 @@ function simcsplit!(k::Int,
 
     for l in 1:(support.k - 2)
       computeclusterlogprobs!(logq, lγ, lω, b, l, state.n1s[support.cl[l], b],
-                              state.v[support.cl[l]], support.logω, priorC)
+                              state.v[support.cl[l]], priorC)
     end
 
     computeclusterlogprobs!(logq, lγ, lω, b, support.k - 1, support.ni[b],
-                            support.vi, support.logω, priorC)
+                            support.vi, priorC)
 
     computeclusterlogprobs!(logq, lγ, lω, b, support.k, support.nj[b],
-                            support.vj, support.logω, priorC)
+                            support.vj, priorC)
 
     if (lγ[1] >= lγ[2]) && (lγ[1] >= lγ[3])
       tmp = lγ[1] + log1p(exp(lγ[2] - lγ[1]) + exp(lγ[3] - lγ[1]))
@@ -371,8 +371,8 @@ function simcsplit!(k::Int,
     elseif p <= exp(lγ[1]) + exp(lγ[2])
       sampleweaksignal!(support.C, support.logpC, 1:k, k, b, lγ[2], priorC.logγ)
     else
-      samplestrongsignal!(support.C, support.logpC, 1:k, k, b, lγ[3],
-                          priorC.logγ, support.logω, lω)
+      samplestrongsignal!(support.C, support.logpC, 1:k, k, b, lγ[3], lω,
+                          priorC)
     end
   end
 

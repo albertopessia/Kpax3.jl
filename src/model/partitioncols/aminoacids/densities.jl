@@ -6,14 +6,24 @@ logp(C | R)
 function logpriorC(C::Matrix{UInt8},
                    cl::Vector{Int},
                    k::Int,
-                   logγ::Vector{Float64},
-                   logω::Vector{Float64})
+                   priorC::AminoAcidPriorCol)
   logp = 0.0
 
   for b in 1:size(C, 2)
-    logp += logγ[C[cl[1], b]] + logω[C[cl[1], b]]
-    for l in 2:k
-      logp += logω[C[cl[l], b]]
+    if C[cl[1], b] == UInt8(1)
+      logp += priorC.logγ[1]
+    elseif C[cl[1], b] == UInt8(2)
+      logp += priorC.logγ[2]
+    else
+      logp += priorC.logγ[3]
+
+      for l in 1:k
+        if C[cl[l], b] == UInt8(3)
+          logp += priorC.logω[k][1]
+        else
+          logp += priorC.logω[k][2]
+        end
+      end
     end
   end
 
@@ -22,14 +32,24 @@ end
 
 function logpriorC(C::Matrix{UInt8},
                    k::Int,
-                   logγ::Vector{Float64},
-                   logω::Vector{Float64})
+                   priorC::AminoAcidPriorCol)
   logp = 0.0
 
   for b in 1:size(C, 2)
-    logp += logγ[C[1, b]] + logω[C[1, b]]
-    for g in 2:k
-      logp += logω[C[g, b]]
+    if C[1, b] == UInt8(1)
+      logp += priorC.logγ[1]
+    elseif C[1, b] == UInt8(2)
+      logp += priorC.logγ[2]
+    else
+      logp += priorC.logγ[3]
+
+      for l in 1:k
+        if C[l, b] == UInt8(3)
+          logp += priorC.logω[k][1]
+        else
+          logp += priorC.logω[k][2]
+        end
+      end
     end
   end
 
@@ -44,7 +64,6 @@ function logcondpostS(S::Vector{UInt8},
                       k::Int,
                       v::Vector{Int},
                       n1s::Matrix{Float64},
-                      logω::Vector{Float64},
                       priorC::AminoAcidPriorCol)
   logp = 0.0
 
@@ -65,10 +84,10 @@ function logcondpostS(S::Vector{UInt8},
       lγ[1] += logmarglik(n1s[g, b], v[g], priorC.A[1, b], priorC.B[1, b])
       lγ[2] += logmarglik(n1s[g, b], v[g], priorC.A[2, b], priorC.B[2, b])
 
-      tmp1[1] = logω[3] +
+      tmp1[1] = priorC.logω[k][1] +
                 logmarglik(n1s[g, b], v[g], priorC.A[3, b], priorC.B[3, b])
 
-      tmp1[2] = logω[4] +
+      tmp1[2] = priorC.logω[k][2] +
                 logmarglik(n1s[g, b], v[g], priorC.A[4, b], priorC.B[4, b])
 
       if tmp1[1] > tmp1[2]
@@ -100,7 +119,6 @@ function logcondpostC(C::Matrix{UInt8},
                       k::Int,
                       v::Vector{Int},
                       n1s::Matrix{Float64},
-                      logω::Vector{Float64},
                       priorC::AminoAcidPriorCol)
   logp = 0.0
 
@@ -121,9 +139,9 @@ function logcondpostC(C::Matrix{UInt8},
 
       logq[1, l] = logmarglik(n1s[g, b], v[g], priorC.A[1, b], priorC.B[1, b])
       logq[2, l] = logmarglik(n1s[g, b], v[g], priorC.A[2, b], priorC.B[2, b])
-      logq[3, l] = logω[3] +
+      logq[3, l] = priorC.logω[k][1] +
                    logmarglik(n1s[g, b], v[g], priorC.A[3, b], priorC.B[3, b])
-      logq[4, l] = logω[4] +
+      logq[4, l] = priorC.logω[k][2] +
                    logmarglik(n1s[g, b], v[g], priorC.A[4, b], priorC.B[4, b])
 
       lγ[1] += logq[1, l]
