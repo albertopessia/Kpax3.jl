@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
-function kpax3Restimate(infile::AbstractString)
-  (pk, pR, pS) = processchain(infile)
+function kpax3Restimate(ifile::AbstractString)
+  (pk, pR, pS) = processchain(ifile)
 
   n = length(pk)
 
@@ -19,17 +19,17 @@ function kpax3Restimate(infile::AbstractString)
   tmp = 0
   for k in 1:n
     if pk[k] > 0.0
-      estimate = kmedoids(D, k; maxiter=1000)
+      estimate = kmedoids(D, k).assignments
       tmp = 1
       while tmp <= 100
-        lossnew = loss_binder(estimate.assignments, pR)
+        lossnew = loss_binder(estimate, pR)
 
         if lossnew < lossold
           lossold = lossnew
-          copy!(R, estimate.assignments)
+          copy!(R, estimate)
         end
 
-        estimate = kmedoids(D, k; maxiter=1000)
+        estimate = kmedoids(D, k).assignments
         tmp += 1
       end
     end
@@ -39,13 +39,12 @@ function kpax3Restimate(infile::AbstractString)
 end
 
 function kpax3estimate(x::AminoAcidData,
-                       infile::AbstractString,
                        settings::KSettings)
-  R = kpax3Restimate(infile)
+  R = kpax3Restimate(settings.ofile)
 
   (m, n) = size(x.data)
 
-  fp = open(infile, "r")
+  fp = open(settings.ofile, "r")
   tmp = zeros(Float64, 6)
   read!(fp, tmp)
   close(fp)
@@ -55,10 +54,15 @@ function kpax3estimate(x::AminoAcidData,
   γ = [tmp[3]; tmp[4]; tmp[5]]
   r = tmp[6]
 
-  settings = KSettings(infile, settings.T, settings.burnin, settings.tstep,
-                       settings.op, α, θ, γ, r, settings.distws,
-                       settings.parawm, settings.maxclust, settings.maxunit,
-                       settings.verbose, settings.verbosestep)
+  op = copy(StatsBase.values(settings.op))
+  (λs1, λs2) = Distributions.params(settings.distws)
+
+  settings = KSettings(settings.ifile, settings.ofile, α, θ, γ, r,
+                       settings.maxclust, settings.maxunit, settings.verbose,
+                       settings.verbosestep, settings.popsize, settings.xrate,
+                       settings.mrate, settings.T, settings.burnin,
+                       settings.tstep, StatsBase.WeightVec(op),
+                       Distributions.Beta(λs1, λs2), settings.parawm)
 
   k = maximum(R)
 

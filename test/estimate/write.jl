@@ -1,10 +1,12 @@
 # This file is part of Kpax3. License is MIT.
 
-fastafile = "data/proper_aa.fasta"
+ifile = "data/proper_aa.fasta"
+ofile = "../build/test.bin"
 partition = "data/proper_aa_partition.csv"
 
-x = AminoAcidData(fastafile)
-settings = KSettings("../build/test.bin", γ=[0.4; 0.35; 0.25])
+settings = KSettings(ifile, ofile, γ=[0.4; 0.35; 0.25])
+
+x = AminoAcidData(settings)
 
 R = normalizepartition(partition, x.id)
 k = maximum(R)
@@ -15,7 +17,7 @@ priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r,
 
 state = AminoAcidState(x.data, R, priorR, priorC, settings)
 
-writeresults(x, state, "../build/test_results", what=4, verbose=false)
+writeresults(x, state, "../build/test_results", what=4)
 
 y1 = readall("../build/test_results_partition.csv")
 y2 = parse(Float64,

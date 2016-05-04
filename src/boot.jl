@@ -3,8 +3,8 @@
 #################
 # Load packages #
 #################
-import StatsBase: sample, sample!, WeightVec
-import Distributions: Beta
+import StatsBase: sample, sample!, WeightVec, values
+import Distributions: Beta, params
 import Clustering: kmedoids
 import FileIO: File, @format_str
 import JLD: load, save

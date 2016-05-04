@@ -46,7 +46,7 @@ Value:
 =#
 function distnttn84(data::Matrix{UInt8},
                     ref::Vector{UInt8})
-  m, n = size(data)
+  (m, n) = size(data)
 
   d = zeros(Float64, div(n * (n - 1), 2))
 
@@ -150,7 +150,7 @@ Value:
 =#
 function distntmtn84(data::Matrix{UInt8},
                      ref::Vector{UInt8})
-  m, n = size(data)
+  (m, n) = size(data)
 
   d = zeros(Float64, div(n * (n - 1), 2))
 

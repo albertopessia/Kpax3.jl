@@ -37,11 +37,11 @@ immutable TestPartition
   n::Int
   B::Int
   C::Int
-  k::Array{Int, 1}
-  index::Array{Int, 1}
-  blocksize::Array{Int, 2}
-  blockcount::Array{Int, 2}
-  partition::Array{Int, 2}
+  k::Vector{Int}
+  index::Vector{Int}
+  blocksize::Matrix{Int}
+  blockcount::Matrix{Int}
+  partition::Matrix{Int}
 end
 
 """Partitions of 1"""

@@ -19,7 +19,7 @@ data = UInt8[0 0 0 0 0 1;
              1 1 0 1 0 0;
              0 0 1 0 1 1]
 
-m, n = size(data)
+(m, n) = size(data)
 n1s = Float64[1; 5; 3; 3; 2; 2; 3; 3; 1; 3; 2; 1; 3; 2; 4; 2; 3; 3]
 
 r1 = 2.0
@@ -73,17 +73,17 @@ for k in 1:n
   end
 end
 
-settings = KSettings("../build/test.bin", T=1, burnin=0, tstep=1,
-                     op=[0.6; 0.3; 0.1], α=0.0, θ=1.0, γ=[0.6; 0.35; 0.05],
-                     r=135.0, λs1=1.0, λs2=1.0, parawm=5.0, maxclust=100,
-                     maxunit=1, verbose=true, verbosestep=1)
+ifile = "data/proper_aa.fasta"
+ofile = "../build/test.bin"
+
+settings = KSettings(ifile, ofile, maxclust=100, maxunit=1)
 
 data = UInt8[1 1 0 0 1 1;
              0 0 1 1 0 0;
              1 1 0 0 0 1;
              1 0 0 0 1 1]
 
-m, n = size(data)
+(m, n) = size(data)
 
 R = [1; 1; 2; 2; 3; 1]
 k = length(unique(R))

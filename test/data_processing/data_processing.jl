@@ -1,32 +1,31 @@
 # This file is part of Kpax3. License is MIT.
 
+missdna = UInt8['?', '*', '#', '-', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's', 'v',
+                'w', 'x', 'y', 'j', 'z']
+misspro = UInt8['?', '*', '#', '-', 'b', 'j', 'x', 'z']
+
 ##############
 # Exceptions #
 ##############
-@test_throws KDomainError readfasta("data/proper_nt.fasta", true, UInt8[0, 63],
-                                    10, false, 0)
-@test_throws KDomainError readfasta("data/proper_nt.fasta", true,
-                                    zeros(UInt8, 0), -1, false, 0)
+@test_throws KFASTAError readfasta("data/empty_file.fasta", false, missdna,
+                                   100000000, false, 0)
+@test_throws KFASTAError readfasta("data/no_1st_seq.fasta", false, missdna,
+                                   100000000, false, 0)
+@test_throws KFASTAError readfasta("data/no_id_char.fasta", false, missdna,
+                                   100000000, false, 0)
+@test_throws KFASTAError readfasta("data/no_nth_seq.fasta", false, missdna,
+                                   100000000, false, 0)
 
-@test_throws KFASTAError readfasta("data/empty_file.fasta", true,
-                                   zeros(UInt8, 0), 100000000, false, 0)
-@test_throws KFASTAError readfasta("data/no_1st_seq.fasta", true,
-                                   zeros(UInt8, 0), 100000000, false, 0)
-@test_throws KFASTAError readfasta("data/no_id_char.fasta", true,
-                                   zeros(UInt8, 0), 100000000, false, 0)
-@test_throws KFASTAError readfasta("data/no_nth_seq.fasta", true,
-                                   zeros(UInt8, 0), 100000000, false, 0)
-
-@test_throws TypeError readfasta("data/utf8_id.fasta", true, zeros(UInt8, 0),
+@test_throws TypeError readfasta("data/utf8_id.fasta", false, missdna,
                                  100000000, false, 0)
-@test_throws TypeError readfasta("data/utf8_seq.fasta", true, zeros(UInt8, 0),
+@test_throws TypeError readfasta("data/utf8_seq.fasta", false, missdna,
                                  100000000, false, 0)
 
 #################################
 # FASTA file filled with blanks #
 #################################
-data, id, refseq = readfasta("data/blanks.fasta", true, zeros(UInt8, 0),
-                             100000000, false, 0)
+(data, id, refseq) = readfasta("data/blanks.fasta", false, missdna, 100000000,
+                               false, 0)
 @test data == UInt8['g' 'a';
                     'a' 'g';
                     'g' 'c';
@@ -39,7 +38,7 @@ data, id, refseq = readfasta("data/blanks.fasta", true, zeros(UInt8, 0),
 
 @test_throws KDomainError categorical2binary(data, UInt8(1), UInt8('?'))
 
-bindata, val, key = categorical2binary(data, UInt8(127), UInt8('?'))
+(bindata, val, key) = categorical2binary(data, UInt8(127), UInt8('?'))
 @test bindata == UInt8[0 1;
                        1 0;
                        1 0;
@@ -55,8 +54,7 @@ bindata, val, key = categorical2binary(data, UInt8(127), UInt8('?'))
 @test val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c', 'g']
 @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
-data, id, refseq = readfasta("data/blanks.fasta", true, zeros(UInt8, 0), 1,
-                             false, 0)
+(data, id, refseq) = readfasta("data/blanks.fasta", false, missdna, 1, false, 0)
 @test data == UInt8['g' 'a';
                     'a' 'g';
                     'g' 'c';
@@ -70,8 +68,9 @@ data, id, refseq = readfasta("data/blanks.fasta", true, zeros(UInt8, 0), 1,
 #########################
 # Proper DNA FASTA file #
 #########################
-data, id, refseq = readfasta("data/proper_nt.fasta", true, zeros(UInt8, 0),
-                             100000000, false, 0)
+(data, id, refseq) = readfasta("data/proper_nt.fasta", false, missdna,
+                               100000000, false, 0)
+
 @test data == UInt8['t' 't' 't' 't' 't' 'c';
                     'g' 'g' 'a' 'g' 'a' 'a';
                     'a' 'a' '?' 'g' 'g' '?';
@@ -86,7 +85,7 @@ data, id, refseq = readfasta("data/proper_nt.fasta", true, zeros(UInt8, 0),
 
 @test_throws KDomainError categorical2binary(data, UInt8(1), UInt8('?'))
 
-bindata, val, key = categorical2binary(data, UInt8(127), UInt8('?'))
+(bindata, val, key) = categorical2binary(data, UInt8(127), UInt8('?'))
 @test bindata == UInt8[0 0 0 0 0 1;
                        1 1 1 1 1 0;
                        0 0 1 0 1 1;
@@ -109,8 +108,8 @@ bindata, val, key = categorical2binary(data, UInt8(127), UInt8('?'))
                    'g', 't', 'a', 't', 'c', 'g']
 @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
-data, id, refseq = readfasta("data/proper_nt.fasta", true, zeros(UInt8, 0), 1,
-                             false, 0)
+(data, id, refseq) = readfasta("data/proper_nt.fasta", false, missdna, 1, false,
+                               0)
 @test data == UInt8['t' 't' 't' 't' 't' 'c';
                     'g' 'g' 'a' 'g' 'a' 'a';
                     'a' 'a' '?' 'g' 'g' '?';
@@ -124,8 +123,8 @@ data, id, refseq = readfasta("data/proper_nt.fasta", true, zeros(UInt8, 0), 1,
                       'a']
 
 # consider all characters
-data, id, refseq = readfasta("data/proper_nt.fasta", true, zeros(UInt8, 1),
-                             100000000, false, 0)
+(data, id, refseq) = readfasta("data/proper_nt.fasta", false, zeros(UInt8, 1),
+                               100000000, false, 0)
 @test data == UInt8['t' 't' 't' 't' 't' 'c';
                     'g' 'g' 'a' 'g' 'a' 'a';
                     'a' 'a' 'x' 'g' 'g' 'x';
@@ -141,7 +140,7 @@ data, id, refseq = readfasta("data/proper_nt.fasta", true, zeros(UInt8, 1),
 
 @test_throws KDomainError categorical2binary(data, UInt8(1), UInt8('\0'))
 
-bindata, val, key = categorical2binary(data, UInt8(127), UInt8('\0'))
+(bindata, val, key) = categorical2binary(data, UInt8(127), UInt8('\0'))
 @test bindata == UInt8[0 0 0 0 0 1;
                        1 1 1 1 1 0;
                        0 0 1 0 1 1;
@@ -170,8 +169,9 @@ bindata, val, key = categorical2binary(data, UInt8(127), UInt8('\0'))
 #############################
 # Proper Protein FASTA file #
 #############################
-data, id, refseq = readfasta("data/proper_aa.fasta", false, zeros(UInt8, 0),
-                             100000000, false, 0)
+(data, id, refseq) = readfasta("data/proper_aa.fasta", true, misspro, 100000000,
+                               false, 0)
+
 @test data == UInt8['k' 'k' 'k' 'k' 'k' 'e';
                     'k' 'k' 'i' 'k' 'i' 'i';
                     'l' 'l' '?' 'v' 'v' '?';
@@ -184,7 +184,7 @@ data, id, refseq = readfasta("data/proper_aa.fasta", false, zeros(UInt8, 0),
 @test refseq == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
                       'f']
 
-bindata, val, key = categorical2binary(data, UInt8(127), UInt8('?'))
+(bindata, val, key) = categorical2binary(data, UInt8(127), UInt8('?'))
 @test bindata == UInt8[0 0 0 0 0 1;
                        1 1 1 1 1 0;
                        0 0 1 0 1 1;
@@ -207,7 +207,7 @@ bindata, val, key = categorical2binary(data, UInt8(127), UInt8('?'))
                    'l', 'm', 'c', 'y', 'a', 't']
 @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
-data, id, refseq = readfasta("data/proper_aa.fasta", false, zeros(UInt8, 0), 1,
+(data, id, refseq) = readfasta("data/proper_aa.fasta", true, misspro, 1,
                              false, 0)
 @test data == UInt8['k' 'k' 'k' 'k' 'k' 'e';
                     'k' 'k' 'i' 'k' 'i' 'i';
@@ -222,8 +222,8 @@ data, id, refseq = readfasta("data/proper_aa.fasta", false, zeros(UInt8, 0), 1,
                       'f']
 
 # consider all characters
-data, id, refseq = readfasta("data/proper_aa.fasta", true, zeros(UInt8, 1),
-                             100000000, false, 0)
+(data, id, refseq) = readfasta("data/proper_aa.fasta", true, zeros(UInt8, 1),
+                               100000000, false, 0)
 @test data == UInt8['k' 'k' 'k' 'k' 'k' 'e';
                     'k' 'k' 'i' 'k' 'i' 'i';
                     'l' 'l' 'x' 'v' 'v' 'x';
@@ -237,7 +237,7 @@ data, id, refseq = readfasta("data/proper_aa.fasta", true, zeros(UInt8, 1),
 @test refseq == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
                       '.']
 
-bindata, val, key = categorical2binary(data, UInt8(127), UInt8('\0'))
+(bindata, val, key) = categorical2binary(data, UInt8(127), UInt8('\0'))
 @test bindata == UInt8[0 0 0 0 0 1;
                        1 1 1 1 1 0;
                        0 0 1 0 1 1;

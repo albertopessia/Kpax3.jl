@@ -14,17 +14,19 @@ ProfileView.view(r[1], lidict=r[2])
 function benchmark()
   include("src/boot.jl")
 
-  x = AminoAcidData(fastafile)
-  settings = KSettings("test/data/mcmc_6.fasta", T=1000000, burnin=500000,
-                       tstep=1, op=[0.6; 0.3; 0.1], α=0.5, θ=-0.25,
-                       γ=[0.6; 0.35; 0.05], r=log(0.001)/log(0.95), λs1=1.0,
-                       λs2=1.0, parawm=5.0, maxclust=1, maxunit=1,
-                       verbose=false, verbosestep=100000)
+  settings = KSettings("test/data/mcmc_6.fasta", "test/data/mcmc_6.bin",
+                       α=0.5, θ=-0.25, γ=[0.6; 0.35; 0.05],
+                       r=log(0.001)/log(0.95), maxclust=1, maxunit=1,
+                       verbose=false, verbosestep=100000, popsize=50,
+                       xrate=0.9, mrate=0.05, T=1000000, burnin=500000, tstep=1,
+                       op=[0.6; 0.3; 0.1], λs1=1.0, λs2=1.0, parawm=5.0)
+
+  x = AminoAcidData(settings)
 
   # Run once, to force compilation.
   println("-- First run --")
   srand(20150326)
-  @time kpax3(x, partition, settings)
+  @time kpax3mcmc(x, partition, settings)
 
   # Run a second time, with profiling.
   println("-- Second run --")
@@ -32,7 +34,7 @@ function benchmark()
   Profile.init(delay=0.01)
   Profile.clear()
   Profile.clear_malloc_data()
-  @profile @time kpax3(x, partition, settings)
+  @profile @time kpax3mcmc(x, partition, settings)
 
   # Write profile results
   r = Profile.retrieve()
