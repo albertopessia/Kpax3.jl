@@ -1,5 +1,8 @@
 # This file is part of Kpax3. License is MIT.
 
+ifile = "data/proper_aa.fasta"
+ofile = "../build/test.bin"
+
 data = UInt8[0 0 0 0 0 1;
              1 1 1 1 1 0;
              0 0 1 0 1 1;
@@ -19,12 +22,9 @@ data = UInt8[0 0 0 0 0 1;
              1 1 0 1 0 0;
              0 0 1 0 1 1]
 
-m, n = size(data)
+(m, n) = size(data)
 
-settings = KSettings("../build/test.bin", T=1, burnin=0, tstep=1,
-                     op=[0.6; 0.3; 0.1], α=0.0, θ=1.0, γ=[0.6; 0.35; 0.05],
-                     r=135.0, λs1=1.0, λs2=1.0, parawm=5.0, maxclust=100,
-                     maxunit=1, verbose=true, verbosestep=1)
+settings = KSettings(ifile, ofile, maxclust=100, maxunit=1)
 
 R = [13; 13; 42; 42; 76; 76]
 
@@ -51,7 +51,7 @@ state = AminoAcidState(data, R, priorR, priorC, settings)
 
 @test state.R == [1; 1; 2; 2; 3; 3]
 
-@test isa(state.C, Array{UInt8, 2})
+@test isa(state.C, Matrix{UInt8})
 @test size(state.C, 1) == n
 @test size(state.C, 2) == m
 
@@ -231,7 +231,7 @@ state1.loglik = loglikelihood(state1.C, state1.cl, state1.k, state1.v,
 @test state2.logpC == logpC
 @test state2.loglik == loglik
 
-settings = KSettings("../build/test.bin", maxclust=1, maxunit=1)
+settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
 state2 = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
 copystate!(state2, state1)
@@ -277,7 +277,7 @@ state1.loglik = loglikelihood(state1.C, state1.cl, state1.k, state1.v,
 @test state2.logpC != state1.logpC
 @test state2.loglik != state1.loglik
 
-settings = KSettings("../build/test.bin", maxclust=6, maxunit=6)
+settings = KSettings(ifile, ofile, maxclust=6, maxunit=6)
 state1 = AminoAcidState(copy(R), copy(C), copy(emptycluster), copy(cl), copy(k),
                         copy(v), copy(n1s), deepcopy(unit), logpR, copy(logpC),
                         loglik)
@@ -336,7 +336,7 @@ end
 @test state2.logpC != state1.logpC
 @test state2.loglik != state1.loglik
 
-settings = KSettings("../build/test.bin", maxclust=1, maxunit=1)
+settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
 state1 = AminoAcidState(data, [1; 1; 1; 1; 2; 3], priorR, priorC, settings)
 state2 = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
@@ -356,7 +356,7 @@ updatestate!(state2, data, [1; 1; 1; 1; 2; 3], priorR, priorC, settings)
 @test state2.logpC == state1.logpC
 @test state2.loglik == state1.loglik
 
-settings = KSettings("../build/test.bin", maxclust=6, maxunit=6)
+settings = KSettings(ifile, ofile, maxclust=6, maxunit=6)
 state1 = AminoAcidState(data, [1; 1; 1; 2; 2; 2], priorR, priorC, settings)
 state2 = AminoAcidState(data, [1; 1; 2; 2; 3; 3], priorR, priorC, settings)
 
@@ -377,3 +377,37 @@ l = state1.cl[1:state1.k]
 @test state2.logpR == state1.logpR
 @test state2.logpC == state1.logpC
 @test state2.loglik == state1.loglik
+
+# TODO: How to test properly initializestate?
+settings = KSettings(ifile, ofile, maxclust=6, maxunit=6)
+
+D = zeros(Float64, n, n)
+for j in 1:(n - 1), i in (j + 1):n
+  D[i, j] = D[j, i] = sum(data[:, j] .!= data[:, i]) / m
+end
+
+(s, slp) = initializestate(data, D, 1:6, priorR, priorC, settings)
+
+@test isa(s.R, Vector{Int})
+@test all(s.R .> 0)
+
+t = AminoAcidState(data, s.R, priorR, priorC, settings)
+tlp = t.logpR + t.logpC[1] + t.loglik
+
+l = t.cl[1:t.k]
+
+@test s.R == t.R
+@test s.C == t.C
+@test s.emptycluster == t.emptycluster
+@test s.cl == t.cl
+@test s.k == t.k
+@test s.v == t.v
+@test s.n1s == t.n1s
+for g in l
+  @test s.unit[g][1:s.v[g]] == t.unit[g][1:t.v[g]]
+end
+@test s.logpR == t.logpR
+@test s.logpC == t.logpC
+@test s.loglik == t.loglik
+
+@test_approx_eq_eps slp tlp ε

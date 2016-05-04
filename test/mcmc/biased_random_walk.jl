@@ -1,9 +1,9 @@
 # This file is part of Kpax3. License is MIT.
 
-settings = KSettings("../build/test.bin", T=1, burnin=0, tstep=1,
-                     op=[0.0; 1.0; 0.0], α=0.0, θ=1.0, γ=[0.6; 0.35; 0.05],
-                     r=135.0, λs1=1.0, λs2=1.0, parawm=5.0, maxclust=15,
-                     maxunit=1, verbose=true, verbosestep=1)
+ifile = "data/proper_aa.fasta"
+ofile = "../build/test.bin"
+
+settings = KSettings(ifile, ofile, maxclust=15, maxunit=1, op=[0.0; 1.0; 0.0])
 
 data = UInt8[0 0 0 0 0 1;
              1 1 1 1 1 0;
@@ -24,7 +24,7 @@ data = UInt8[0 0 0 0 0 1;
              1 1 0 1 0 0;
              0 0 1 0 1 1]
 
-m, n = size(data)
+(m, n) = size(data)
 
 priorR = EwensPitman(settings.α, settings.θ)
 priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
@@ -271,10 +271,7 @@ end
 
 # [2; 2; 2; 1; 1; 3] => [2; 2; 4; 1; 1; 3]
 # allocate new resources
-settings = KSettings("../build/test.bin", T=1, burnin=0, tstep=1,
-                     op=[0.0; 1.0; 0.0], α=0.0, θ=1.0, γ=[0.6; 0.35; 0.05],
-                     r=135.0, λs1=1.0, λs2=1.0, parawm=5.0, maxclust=3,
-                     maxunit=1, verbose=true, verbosestep=1)
+settings = KSettings(ifile, ofile, maxclust=3, maxunit=1, op=[0.0; 1.0; 0.0])
 
 priorR = EwensPitman(settings.α, settings.θ)
 priorC = AminoAcidPriorCol(data, settings.γ, settings.r,

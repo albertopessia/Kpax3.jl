@@ -4,7 +4,7 @@ function writeresults(x::KData,
                       state::State,
                       file::AbstractString;
                       what::Int=1,
-                      verbose::Bool=true)
+                      verbose::Bool=false)
   fp = open("$(file)_partition.csv", "w")
   for i in 1:size(x.data, 2)
     write(fp, "\"$(x.id[i])\",$(state.R[i])\n")

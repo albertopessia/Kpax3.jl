@@ -32,7 +32,7 @@ function AminoAcidPriorCol(data::Matrix{UInt8},
     throw(KDomainError("Argument 'maxclust' is less than 1."))
   end
 
-  m, n = size(data)
+  (m, n) = size(data)
 
   maxclust = min(n, maxclust)
 

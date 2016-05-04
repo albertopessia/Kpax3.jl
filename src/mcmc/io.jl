@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
-function processchain(infile::AbstractString)
-  fp = open(infile, "r")
+function processchain(ifile::AbstractString)
+  fp = open(ifile, "r")
 
   # discard prior hyperparameters
   tmp = zeros(Float64, 6)

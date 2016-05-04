@@ -7,7 +7,7 @@ using Base.Test
 include("../src/boot.jl")
 
 ε = 1.0e-13
-srand(1427328000)
+srand(1427371200)
 
 tests = ["data_processing/data_processing";
          "types/settings";
@@ -16,10 +16,12 @@ tests = ["data_processing/data_processing";
          "types/partition_cols";
          "types/partition_rows";
          "types/state";
+         "types/state_list";
          "model/likelihoods";
          "model/partition_cols";
          "model/partition_rows";
          "model/loss_binder";
+         "optimizer/local_mode";
          "mcmc/functions";
          "mcmc/partition_ratios";
          "mcmc/log_likelihoods";

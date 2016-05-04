@@ -58,12 +58,11 @@ Create a new NucleotideData object.
 
 ## Usage
 
-NucleotideData(f; miss=['?', '\*', '#', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's',
-'v', 'w', 'x', 'y'], l=100000000, t=500)
+NucleotideData(settings)
 
 ## Arguments
 
-* `infile` Path to the input data file
+* `ifile` Path to the input data file
 * `miss` Values to be considered missing.
 * `l` Sequence length. If unknown, it is better to choose a value which is
 surely greater than the real sequence length. If `l` is found to be
@@ -73,23 +72,15 @@ datasets
 * `verbose` If `true`, print status reports
 * `verbosestep` Print a status report every `verbosestep` read sequences
 =#
-function NucleotideData(infile::ASCIIString;
-                        miss::Vector{Char}=['?', '*', '#', '-', 'b', 'd', 'h',
-                                            'k', 'm', 'n', 'r', 's', 'v', 'w',
-                                            'x', 'y'],
-                        l::Int=100000000,
-                        verbose::Bool=false,
-                        verbosestep::Int=500)
-  missuint = zeros(UInt8, length(miss))
-  i = 0
+function NucleotideData(settings::KSettings)
+  missval = if (length(settings.miss) == 1) && (settings.miss[1] == 0x00)
+              0x00
+            else
+              UInt8('?')
+            end
 
-  for c in miss
-    missuint[i += 1] = UInt8(c)
-  end
-
-  missval = (length(miss) == 1) && (missuint[1] == 0x00) ? 0x00 : UInt8('?')
-
-  (data, id, ref) = readfasta(infile, true, missuint, l, verbose, verbosestep)
+  (data, id, ref) = readfasta(settings.ifile, false, settings.miss, settings.l,
+                              settings.verbose, settings.verbosestep)
   (bindata, val, key) = categorical2binary(data, UInt8(127), missval)
 
   NucleotideData(bindata, id, ref, val, key)
@@ -148,12 +139,11 @@ Create a new AminoAcidData object.
 
 ## Usage
 
-AminoAcidData(infile; miss=['?', '\*', '#', 'b', 'j', 'x', 'z'],
-l=100000000, t=500)
+AminoAcidData(settings)
 
 ## Arguments
 
-* `infile` Path to the input data file
+* `ifile` Path to the input data file
 * `miss` Values to be considered missing.
 * `l` Sequence length. If unknown, it is better to choose a value which is
 surely greater than the real sequence length. If `l` is found to be
@@ -163,22 +153,15 @@ datasets
 * `verbose` If `true`, print status reports
 * `verbosestep` Print a status report every `verbosestep` read sequences
 =#
-function AminoAcidData(infile::ASCIIString;
-                       miss::Vector{Char}=['?', '*', '#', '-',
-                                           'b', 'j', 'x', 'z'],
-                       l::Int=100000000,
-                       verbose::Bool=false,
-                       verbosestep::Int=500)
-  missuint = zeros(UInt8, length(miss))
-  i = 0
+function AminoAcidData(settings::KSettings)
+  missval = if (length(settings.miss) == 1) && (settings.miss[1] == 0x00)
+              0x00
+            else
+              UInt8('?')
+            end
 
-  for c in miss
-    missuint[i += 1] = UInt8(c)
-  end
-
-  missval = (length(miss) == 1) && (missuint[1] == 0x00) ? 0x00 : UInt8('?')
-
-  (data, id, ref) = readfasta(infile, false, missuint, l, verbose, verbosestep)
+  (data, id, ref) = readfasta(settings.ifile, true, settings.miss, settings.l,
+                              settings.verbose, settings.verbosestep)
   (bindata, val, key) = categorical2binary(data, UInt8(127), missval)
 
   AminoAcidData(bindata, id, ref, val, key)

@@ -71,7 +71,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
                     settings::KSettings,
                     support::KSupport,
                     state::AminoAcidState)
-  fp = open(settings.fpath, "w")
+  fp = open(settings.ofile, "w")
 
   # indices of units i and j
   ij = zeros(Int, 2)

@@ -24,7 +24,7 @@ function AminoAcidState(data::Matrix{UInt8},
                         priorR::PriorRowPartition,
                         priorC::AminoAcidPriorCol,
                         settings::KSettings)
-  m, n = size(data)
+  (m, n) = size(data)
 
   R = normalizepartition(R, n)
   k = maximum(R)
@@ -162,13 +162,108 @@ function copystate!(dest::AminoAcidState,
   nothing
 end
 
+function initializestate(data::Matrix{UInt8},
+                         D::Matrix{Float64},
+                         kset::UnitRange{Int},
+                         priorR::PriorRowPartition,
+                         priorC::PriorColPartition,
+                         settings::KSettings)
+  if length(priorC.logω) < kset[end]
+    resizelogω!(priorC, kset[end])
+  end
+
+  n = size(data, 2)
+
+  R = ones(Int, n)
+
+  s = AminoAcidState(data, R, priorR, priorC, settings)
+  slp = s.logpR + s.logpC[1] + s.loglik
+
+  t1 = copystate(s)
+  tlp1 = slp
+
+  t2 = copystate(s)
+  tlp2 = slp
+
+  # TODO: remove the hack once kmedoids is fixed
+
+  if settings.verbose
+    @printf("Log-posterior (plus a constant) for one cluster: %.4f.\n", slp)
+    @printf("Now scanning %d to %d clusters.\n", kset[1], kset[end])
+  end
+
+  niter = 0
+  notupdated = true
+  for k in kset
+    if settings.verbose && (k % 10 == 0)
+      @printf("Total number of clusters = %d.\n", k)
+    end
+
+    fill!(R, 0)
+    notupdated = true
+    while notupdated
+      try
+        copy!(R, kmedoids(D, k).assignments)
+      catch
+        fill!(R, 0)
+      end
+
+      if R[1] > 0
+        notupdated = false
+      end
+    end
+
+    updatestate!(t1, data, R, priorR, priorC, settings)
+    tlp1 = t1.logpR + t1.logpC[1] + t1.loglik
+
+    niter = 0
+    while niter < 10
+      notupdated = true
+      while notupdated
+        try
+          copy!(R, kmedoids(D, k).assignments)
+        catch
+          fill!(R, 0)
+        end
+
+        if R[1] > 0
+          notupdated = false
+        end
+      end
+
+      updatestate!(t2, data, R, priorR, priorC, settings)
+      tlp2 = t2.logpR + t2.logpC[1] + t2.loglik
+
+      if tlp2 > tlp1
+        copystate!(t1, t2)
+        tlp1 = tlp2
+      end
+
+      niter += 1
+    end
+
+    if tlp1 > slp
+      copystate!(s, t1)
+      slp = tlp1
+
+      if settings.verbose
+        @printf("Found a better solution! ")
+        @printf("Log-posterior (plus a constant) for %d clusters: %.4f.\n", k,
+                slp)
+      end
+    end
+  end
+
+  (s, slp)
+end
+
 function updatestate!(state::AminoAcidState,
                       data::Matrix{UInt8},
                       R::Vector{Int},
                       priorR::PriorRowPartition,
                       priorC::AminoAcidPriorCol,
                       settings::KSettings)
-  m, n = size(data)
+  (m, n) = size(data)
 
   copy!(state.R, normalizepartition(R, n))
   state.k = maximum(R)

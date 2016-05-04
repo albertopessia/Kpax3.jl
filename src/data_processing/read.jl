@@ -10,12 +10,12 @@ required to be aligned. Only polymorphic columns are stored.
 
 ## Usage
 
-readfasta(infile, dna, miss, l, verbose, verbosestep)
+readfasta(ifile, protein, miss, l, verbose, verbosestep)
 
 ## Arguments
 
-* `infile` Path to the input data file
-* `dna` `true` if reading DNA data or `false` if reading protein data
+* `ifile` Path to the input data file
+* `protein` `true` if reading protein data or `false` if reading DNA data
 * `miss` Characters (as `UInt8`) to be considered missing. Use
 `miss = zeros(UInt8, 1)` if all characters are to be considered valid. Default
 characters for `miss` are:
@@ -111,8 +111,8 @@ A tuple containing the following variables:
 sequences storing the values of homogeneous sites. SNPs are instead represented
 by a value of 46 ('.')
 """
-function readfasta(infile::AbstractString,
-                   dna::Bool,
+function readfasta(ifile::AbstractString,
+                   protein::Bool,
                    miss::Vector{UInt8},
                    l::Int,
                    verbose::Bool,
@@ -123,50 +123,7 @@ function readfasta(infile::AbstractString,
   # the second time we store the data, keeping only the SNPs
 
   # note: this function has been written with a huge dataset in mind
-
-  # disable status reports if verbosestep is not positive
-  verbose = verbose && (verbosestep > 0)
-
-  if length(miss) == 0
-    if dna
-      miss = UInt8['?', '*', '#', '-', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's',
-                   'v', 'w', 'x', 'y', 'j', 'z']
-    else
-      miss = UInt8['?', '*', '#', '-', 'b', 'j', 'x', 'z']
-    end
-  else
-    if length(miss) == 1
-      if miss[1] != UInt8(0)
-        if UInt8(0) < miss[1] < UInt8(128)
-          if UInt8(64) < miss[1] < UInt8(91)
-            # convert to lowercase
-            miss[1] += UInt8(32)
-          end
-        else
-          throw(KDomainError(string("Value 'miss[1]' is not in the range ",
-                                    "[1, ..., 127]:", Int(miss[1]), ".")))
-        end
-      end
-    else
-      for i in 1:length(miss)
-        if UInt8(0) < miss[i] < UInt8(128)
-          if UInt8(64) < miss[i] < UInt8(91)
-            # convert to lowercase
-            miss[i] += UInt8(32)
-          end
-        else
-          throw(KDomainError(string("Value 'miss[", i, "]' is not in the ",
-                                    "range [1, ..., 127]:", Int(miss[i]), ".")))
-        end
-      end
-    end
-  end
-
-  if l < 1
-    throw(KDomainError("Argument 'l' is not positive."))
-  end
-
-  f = open(infile, "r")
+  f = open(ifile, "r")
 
   s = strip(readuntil(f, '>'))::ASCIIString
   if length(s) == 0
@@ -383,7 +340,7 @@ function readfasta(infile::AbstractString,
     enc[h1] = !missing ? UInt8(h1) : UInt8('?')
   end
 
-  if dna
+  if !protein
     enc[Int('u')] = UInt8('t')
   end
 

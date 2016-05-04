@@ -2,12 +2,12 @@
 
 include("exceptions.jl")
 
+include("settings.jl")
+
 include("partition_cols.jl")
 include("partition_rows.jl")
 
 include("data.jl")
-
-include("settings.jl")
 
 include("support.jl")
 include("state.jl")
