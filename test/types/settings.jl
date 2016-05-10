@@ -14,6 +14,8 @@ maxunit = 2
 verbose = false
 verbosestep = 1
 popsize = 10
+maxiter = 5
+maxgap = 1
 xrate = 0.8
 mrate = 0.2
 T = 10
@@ -27,8 +29,9 @@ parawm = 2.0
 settings = KSettings(ifile, ofile, protein=protein, miss=miss, l=l, α=α, θ=θ,
                      γ=γ, r=r, maxclust=maxclust, maxunit=maxunit,
                      verbose=verbose, verbosestep=verbosestep, popsize=popsize,
-                     xrate=xrate, mrate=mrate, T=T, burnin=burnin, tstep=tstep,
-                     op=op, λs1=λs1, λs2=λs2, parawm=parawm)
+                     maxiter=maxiter, maxgap=maxgap, xrate=xrate, mrate=mrate,
+                     T=T, burnin=burnin, tstep=tstep, op=op, λs1=λs1, λs2=λs2,
+                     parawm=parawm)
 
 @test settings.ifile == ifile
 @test settings.ofile == ofile
@@ -42,6 +45,8 @@ settings = KSettings(ifile, ofile, protein=protein, miss=miss, l=l, α=α, θ=θ
 @test settings.verbose == verbose
 @test settings.verbosestep == verbosestep
 @test settings.popsize == popsize
+@test settings.maxiter == maxiter
+@test settings.maxgap == maxgap
 @test settings.xrate == xrate
 @test settings.mrate == mrate
 @test settings.T == T
@@ -91,6 +96,8 @@ settings = KSettings(ifile, ofile, protein=false,
 @test_throws KDomainError KSettings(ifile, ofile, popsize=-1)
 @test_throws KDomainError KSettings(ifile, ofile, popsize=0)
 @test_throws KDomainError KSettings(ifile, ofile, popsize=1)
+@test_throws KDomainError KSettings(ifile, ofile, maxiter=0)
+@test_throws KDomainError KSettings(ifile, ofile, maxgap=-1)
 @test_throws KDomainError KSettings(ifile, ofile, xrate=-1.0)
 @test_throws KDomainError KSettings(ifile, ofile, xrate=2.0)
 @test_throws KDomainError KSettings(ifile, ofile, mrate=-1.0)
