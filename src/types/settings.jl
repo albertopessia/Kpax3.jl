@@ -11,6 +11,7 @@
 immutable KSettings
   ifile::AbstractString
   ofile::AbstractString
+  # Common parameters
   protein::Bool
   miss::Vector{UInt8}
   l::Int
@@ -22,9 +23,13 @@ immutable KSettings
   maxunit::Int
   verbose::Bool
   verbosestep::Int
+  # Genetic Algorithm parameters
   popsize::Int
+  maxiter::Int
+  maxgap::Int
   xrate::Float64
   mrate::Float64
+  # MCMC parameters
   T::Int
   burnin::Int
   tstep::Int
@@ -35,7 +40,6 @@ end
 
 function KSettings(ifile::AbstractString,
                    ofile::AbstractString;
-                   # Common parameters
                    protein::Bool=true,
                    miss::Vector{UInt8}=zeros(UInt8, 0),
                    l::Int=100000000,
@@ -47,11 +51,11 @@ function KSettings(ifile::AbstractString,
                    maxunit::Int=500,
                    verbose::Bool=false,
                    verbosestep::Int=500,
-                   # Genetic Algorithm parameters
                    popsize::Int=50,
+                   maxiter::Int=1000000,
+                   maxgap::Int=1000000,
                    xrate::Float64=0.9,
                    mrate::Float64=0.05,
-                   # MCMC parameters
                    T::Int=1000000,
                    burnin::Int=100000,
                    tstep::Int=1,
@@ -140,6 +144,14 @@ function KSettings(ifile::AbstractString,
     throw(KDomainError("Argument 'popsize' is lesser than 2."))
   end
 
+  if maxiter < 1
+    throw(KDomainError("Argument 'maxiter' is lesser than 1."))
+  end
+
+  if maxgap < 0
+    throw(KDomainError("Argument 'maxgap' is lesser than 1."))
+  end
+
   if !(0 <= xrate <= 1)
     throw(KDomainError("Argument 'xrate' is not in the range [0, 1]."))
   end
@@ -183,6 +195,7 @@ function KSettings(ifile::AbstractString,
   end
 
   KSettings(ifile, ofile, protein, miss, l, α, θ, γ, r, maxclust, maxunit,
-            verbose, verbosestep, popsize, xrate, mrate, T, burnin, tstep,
-            StatsBase.WeightVec(op), Distributions.Beta(λs1, λs2), parawm)
+            verbose, verbosestep, popsize, maxiter, maxgap, xrate, mrate, T,
+            burnin, tstep, StatsBase.WeightVec(op),
+            Distributions.Beta(λs1, λs2), parawm)
 end

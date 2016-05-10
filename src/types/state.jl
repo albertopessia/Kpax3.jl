@@ -20,13 +20,13 @@ type AminoAcidState <: State
 end
 
 function AminoAcidState(data::Matrix{UInt8},
-                        R::Vector{Int},
+                        partition::Vector{Int},
                         priorR::PriorRowPartition,
                         priorC::AminoAcidPriorCol,
                         settings::KSettings)
   (m, n) = size(data)
 
-  R = normalizepartition(R, n)
+  R = normalizepartition(partition, n)
   k = maximum(R)
 
   maxclust = max(k, min(n, settings.maxclust))
