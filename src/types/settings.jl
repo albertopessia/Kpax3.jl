@@ -52,10 +52,10 @@ function KSettings(ifile::AbstractString,
                    verbose::Bool=false,
                    verbosestep::Int=500,
                    popsize::Int=50,
-                   maxiter::Int=1000000,
-                   maxgap::Int=1000000,
+                   maxiter::Int=10000,
+                   maxgap::Int=10000,
                    xrate::Float64=0.9,
-                   mrate::Float64=0.05,
+                   mrate::Float64=0.005,
                    T::Int=1000000,
                    burnin::Int=100000,
                    tstep::Int=1,
@@ -140,8 +140,8 @@ function KSettings(ifile::AbstractString,
   # disable status reports if verbosestep is not positive
   verbose = verbose && (verbosestep > 0)
 
-  if popsize < 2
-    throw(KDomainError("Argument 'popsize' is lesser than 2."))
+  if popsize < 4
+    throw(KDomainError("Argument 'popsize' is lesser than 4."))
   end
 
   if maxiter < 1

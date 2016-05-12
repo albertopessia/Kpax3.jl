@@ -32,7 +32,6 @@ function AminoAcidStateList(data::Matrix{UInt8},
 
   state[1] = AminoAcidState(data, s.R, priorR, priorC, settings)
   logpp[1] = slp
-  encodepartition!(state[1].R)
 
   R = zeros(Int, n)
   for i in 2:settings.popsize
@@ -40,7 +39,6 @@ function AminoAcidStateList(data::Matrix{UInt8},
     modifypartition!(R, s.k)
     state[i] = AminoAcidState(data, R, priorR, priorC, settings)
     logpp[i] = state[i].logpR + state[i].logpC[1] + state[i].loglik
-    encodepartition!(state[i].R)
   end
 
   sortperm!(rank, logpp, rev=true, initialized=true)
@@ -63,7 +61,6 @@ function AminoAcidStateList(data::Matrix{UInt8},
 
   state[1] = AminoAcidState(data, partition, priorR, priorC, settings)
   logpp[1] = state[1].logpR + state[1].logpC[1] + state[1].loglik
-  encodepartition!(state[1].R)
 
   if settings.verbose
     @printf("Creating solution set... ")
@@ -75,7 +72,6 @@ function AminoAcidStateList(data::Matrix{UInt8},
     modifypartition!(R, state[1].k)
     state[i] = AminoAcidState(data, R, priorR, priorC, settings)
     logpp[i] = state[i].logpR + state[i].logpC[1] + state[i].loglik
-    encodepartition!(state[i].R)
   end
 
   sortperm!(rank, logpp, rev=true, initialized=true)
@@ -101,4 +97,16 @@ function AminoAcidStateList(popsize::Int,
   sortperm!(rank, logpp, rev=true, initialized=true)
 
   AminoAcidStateList(state, logpp, rank)
+end
+
+function copystatelist!(dest::AminoAcidStateList,
+                        src::AminoAcidStateList,
+                        popsize::Int)
+  for i in 1:popsize
+    copystate!(dest.state[i], src.state[src.rank[i]])
+    dest.logpp[i] = src.logpp[src.rank[i]]
+    dest.rank[i] = i
+  end
+
+  nothing
 end

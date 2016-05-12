@@ -10,6 +10,7 @@ include("../src/boot.jl")
 srand(1427371200)
 
 tests = ["data_processing/data_processing";
+         "misc/partition_functions";
          "types/settings";
          "types/support";
          "types/data";
@@ -22,6 +23,7 @@ tests = ["data_processing/data_processing";
          "model/partition_rows";
          "model/loss_binder";
          "optimizer/local_mode";
+         "optimizer/selection";
          "mcmc/functions";
          "mcmc/partition_ratios";
          "mcmc/log_likelihoods";
