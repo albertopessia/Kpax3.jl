@@ -31,6 +31,12 @@ support = KSupport(m, n, maxclust, maxunit)
 @test support.cl == zeros(Int, n)
 @test support.k == 0
 
+@test support.oi.R == zeros(Int, n)
+@test support.oi.v == zeros(Int, n)
+
+@test support.oj.R == zeros(Int, n)
+@test support.oj.v == zeros(Int, n)
+
 @test support.C == zeros(UInt8, maxclust, m)
 
 @test support.logpC == zeros(Float64, 2)

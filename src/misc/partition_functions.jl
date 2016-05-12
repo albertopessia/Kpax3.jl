@@ -60,35 +60,23 @@ function normalizepartition(ifile::AbstractString,
   end
 end
 
-function encodepartition(partition::Vector{Int})
-  n = length(partition)
-
-  R = zeros(Int, n)
-  lidx = zeros(Int, n)
-
-  g = 0
-  for a in 1:n
-    g = partition[a]
-
-    if lidx[g] == 0
-      lidx[g] = a
-    end
-
-    # linear index of unit a in the n-by-n adjacency matrix
-    R[a] = a + n * (lidx[g] - 1)
+function decodepartition!(R::Vector{Int})
+  for a in 1:length(R)
+    R[a] = 1 + div(R[a] - a, length(R))
   end
 
-  R
+  nothing
 end
 
-function encodepartition!(R::Vector{Int})
-  n = length(R)
+function encodepartition!(R::Vector{Int},
+                          S::Vector{Int})
+  n = length(S)
 
   lidx = zeros(Int, n)
 
   g = 0
   for a in 1:n
-    g = R[a]
+    g = S[a]
 
     if lidx[g] == 0
       lidx[g] = a

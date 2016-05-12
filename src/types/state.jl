@@ -266,7 +266,7 @@ function updatestate!(state::AminoAcidState,
   (m, n) = size(data)
 
   copy!(state.R, normalizepartition(R, n))
-  state.k = maximum(R)
+  state.k = maximum(state.R)
 
   if size(state.C, 1) < state.k
     # reallocate memory

@@ -6,6 +6,11 @@ type KWeight
   z::Matrix{Float64}
 end
 
+type KOffspring
+  R::Vector{Int}
+  v::Vector{Int}
+end
+
 """
 # Support object
 
@@ -35,6 +40,9 @@ type KSupport
   cl::Vector{Int}
   k::Int
 
+  oi::KOffspring
+  oj::KOffspring
+
   C::Matrix{UInt8}
 
   logpC::Vector{Float64}
@@ -61,9 +69,13 @@ function KSupport(m::Int,
   cl = zeros(Int, n)
   k = 0
 
+  oi = KOffspring(zeros(Int, n), zeros(Int, n))
+  oj = KOffspring(zeros(Int, n), zeros(Int, n))
+
   C = zeros(UInt8, maxclust, m)
 
   logpC = zeros(Float64, 2)
 
-  KSupport(m, n, vi, ni, ui, wi, vj, nj, uj, wj, tmp, cl, k, C, logpC, 0.0, 0.0)
+  KSupport(m, n, vi, ni, ui, wi, vj, nj, uj, wj, tmp, cl, k, oi, oj, C, logpC,
+           0.0, 0.0)
 end
