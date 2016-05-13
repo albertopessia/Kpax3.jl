@@ -4,7 +4,7 @@
 
 using Base.Test
 
-include("../src/boot.jl")
+include("../src/Kpax3.jl")
 
 ε = 1.0e-13
 srand(1427371200)

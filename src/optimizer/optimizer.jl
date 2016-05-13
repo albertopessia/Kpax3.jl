@@ -6,4 +6,4 @@ include("selection.jl")
 include("crossover.jl")
 include("mutation.jl")
 
-include("genetic_algorithm.jl")
+include("algorithm.jl")
