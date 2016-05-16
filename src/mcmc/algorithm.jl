@@ -19,7 +19,7 @@ function splitmerge!(ij::Vector{Int},
                      support::KSupport,
                      state::AminoAcidState)
   # cluster founders (units i and j)
-  StatsBase.sample!(1:support.n, ij, replace=false, ordered=false)
+  sample!(1:support.n, ij, replace=false, ordered=false)
 
   # clusters of i and j respectively
   gi = state.R[ij[1]]
@@ -96,8 +96,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
       end
 
       # sample which operators we are going to use
-      operator = StatsBase.sample([0x01; 0x02; 0x03], settings.op,
-                                  settings.burnin)
+      operator = sample(UInt8[1; 2; 3], settings.op, settings.burnin)
 
       for t in 1:settings.burnin
         if operator[t] == 0x01
@@ -123,7 +122,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
       println("Starting collecting samples...")
     end
 
-    operator = StatsBase.sample([0x01; 0x02; 0x03], settings.op, settings.T)
+    operator = sample(UInt8[1; 2; 3], settings.op, settings.T)
 
     for t in 1:settings.T
       if operator[t] == 0x01

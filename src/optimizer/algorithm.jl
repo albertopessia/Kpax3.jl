@@ -215,8 +215,6 @@ function kpax3ga(settings::KSettings;
   population = AminoAcidStateList(x.data, D, kset, priorR, priorC, settings)
 
   kpax3ga!(x.data, population, priorR, priorC, settings)
-
-  nothing
 end
 
 function kpax3ga(x::AminoAcidData,
@@ -232,6 +230,4 @@ function kpax3ga(x::AminoAcidData,
   population = AminoAcidStateList(x.data, R, priorR, priorC, settings)
 
   kpax3ga!(x.data, population, priorR, priorC, settings)
-
-  nothing
 end

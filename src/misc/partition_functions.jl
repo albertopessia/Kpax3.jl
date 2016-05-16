@@ -128,7 +128,7 @@ function modifymerge!(R::Vector{Int},
   c = zeros(Int, 2)
 
   while k != q
-    StatsBase.sample!(cset, c, replace=false, ordered=false)
+    sample!(cset, c, replace=false, ordered=false)
 
     for a in 1:n
       if R[a] == c[2]
@@ -163,8 +163,8 @@ function modifysplit!(R::Vector{Int},
   while k != q
     k += 1
 
-    w = StatsBase.WeightVec(Float64[t[a] > 0 ? t[a] - 1 : 0 for a in 1:n])
-    g = StatsBase.sample(w)
+    w = WeightVec(Float64[t[a] > 0 ? t[a] - 1 : 0 for a in 1:n])
+    g = sample(w)
 
     for a in 1:n
       if (R[a] == g) && ((t[k] == 0) || (rand() <= 0.25))
@@ -202,8 +202,8 @@ function modifyscramble!(R::Vector{Int},
         v[a] = t[a] > 0 ? t[a] - 1 : 0
       end
 
-      w = StatsBase.WeightVec(v)
-      h = StatsBase.sample(w)
+      w = WeightVec(v)
+      h = sample(w)
 
       keepgoing = true
       moved = false

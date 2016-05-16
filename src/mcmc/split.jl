@@ -15,7 +15,7 @@ function split!(ij::Vector{Int},
   initsupportsplitmerge!(ij, S, k, data, priorC, settings, support)
 
   # sample a new proportion for cluster 'hi'
-  w = Distributions.rand(settings.distws)
+  w = rand(settings.distws)
 
   # logarithm of the product of sequential probabilities
   lq = 0.0
@@ -59,15 +59,14 @@ function split!(ij::Vector{Int},
 
   logliksplit!(hi, priorC, support, state)
 
-  distwm = Distributions.Beta(settings.parawm + support.vi,
-                              settings.parawm + support.vj)
+  distwm = Beta(settings.parawm + support.vi, settings.parawm + support.vj)
 
   ratio = exp(support.lograR +
               support.logpC[1] - state.logpC[1] +
               support.loglik - state.loglik +
               state.logpC[2] - support.logpC[2] +
-              Distributions.logpdf(distwm, w) -
-              Distributions.logpdf(settings.distws, w) -
+              logpdf(distwm, w) -
+              logpdf(settings.distws, w) -
               lq)
 
   if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))

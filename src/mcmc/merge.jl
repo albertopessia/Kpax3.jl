@@ -17,11 +17,10 @@ function merge!(ij::Vector{Int},
   hi = state.R[ij[1]]
   hj = state.R[ij[2]]
 
-  distwm = Distributions.Beta(settings.parawm + state.v[hi],
-                              settings.parawm + state.v[hj])
+  distwm = Beta(settings.parawm + state.v[hi], settings.parawm + state.v[hj])
 
   # sample a new proportion for cluster 'hi'
-  w = Distributions.rand(distwm)
+  w = rand(distwm)
 
   # logarithm of the product of sequential probabilities
   lq = 0.0
@@ -73,8 +72,8 @@ function merge!(ij::Vector{Int},
               support.logpC[1] - state.logpC[1] +
               support.loglik - state.loglik +
               state.logpC[2] - support.logpC[2] +
-              Distributions.logpdf(settings.distws, w) -
-              Distributions.logpdf(distwm, w) +
+              logpdf(settings.distws, w) -
+              logpdf(distwm, w) +
               lq)
 
   if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
