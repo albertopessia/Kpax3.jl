@@ -33,8 +33,8 @@ immutable KSettings
   T::Int
   burnin::Int
   tstep::Int
-  op::StatsBase.WeightVec
-  distws::Distributions.Beta
+  op::WeightVec
+  distws::Beta
   parawm::Float64
 end
 
@@ -196,6 +196,5 @@ function KSettings(ifile::AbstractString,
 
   KSettings(ifile, ofile, protein, miss, l, α, θ, γ, r, maxclust, maxunit,
             verbose, verbosestep, popsize, maxiter, maxgap, xrate, mrate, T,
-            burnin, tstep, StatsBase.WeightVec(op),
-            Distributions.Beta(λs1, λs2), parawm)
+            burnin, tstep, WeightVec(op), Beta(λs1, λs2), parawm)
 end

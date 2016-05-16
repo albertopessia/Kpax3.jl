@@ -4,7 +4,7 @@
 
 using Base.Test
 
-include("../src/Kpax3.jl")
+include("../src/boot.jl")
 
 ε = 1.0e-13
 srand(1427371200)
@@ -24,6 +24,7 @@ tests = ["data_processing/data_processing";
          "model/loss_binder";
          "optimizer/local_mode";
          "optimizer/selection";
+         "optimizer/crossover";
          "mcmc/functions";
          "mcmc/partition_ratios";
          "mcmc/log_likelihoods";

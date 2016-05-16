@@ -8,12 +8,12 @@ function biased_random_walk!(data::Matrix{UInt8},
                              state::AminoAcidState)
   k = state.k
 
-  i = StatsBase.sample(1:support.n)
+  i = sample(1:support.n)
   hi = state.R[i]
 
   if state.v[hi] > 1
     if k > 1
-      v = StatsBase.sample(1:k)
+      v = sample(1:k)
 
       if v == k
         # move i to a new cluster
@@ -34,7 +34,7 @@ function biased_random_walk!(data::Matrix{UInt8},
   else
     # move i to another cluster
     k -= 1
-    v = StatsBase.sample(1:k)
+    v = sample(1:k)
     hj = state.cl[v] < hi ? state.cl[v] : state.cl[v + 1]
     support.lograR = logratiopriorrowbrwmerge(k, state.v[hj], priorR)
   end
