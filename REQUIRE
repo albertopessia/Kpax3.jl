@@ -1,4 +1,5 @@
 julia 0.4
+Clustering 0.5
 Distributions 0.8
 FileIO 0.0
 JLD 0.5
