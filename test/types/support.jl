@@ -31,9 +31,11 @@ support = KSupport(m, n, maxclust, maxunit)
 @test support.cl == zeros(Int, n)
 @test support.k == 0
 
+@test isa(support.oi, KOffspring)
 @test support.oi.R == zeros(Int, n)
 @test support.oi.v == zeros(Int, n)
 
+@test isa(support.oj, KOffspring)
 @test support.oj.R == zeros(Int, n)
 @test support.oj.v == zeros(Int, n)
 

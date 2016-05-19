@@ -71,16 +71,10 @@ function kpax3ga!(x::AminoAcidData,
         crossover!(population.state[i1].R, population.state[i2].R, support)
       else
         copy!(support.oi.R, population.state[i1].R)
-
-        fill!(support.oi.v, 0)
-        copy!(support.oi.v, 1, population.state[i1].v, 1,
-              population.state[i1].cl[population.state[i1].k])
+        copy!(support.oi.v, population.state[i1].v)
 
         copy!(support.oj.R, population.state[i2].R)
-
-        fill!(support.oj.v, 0)
-        copy!(support.oj.v, 1, population.state[i2].v, 1,
-              population.state[i2].cl[population.state[i2].k])
+        copy!(support.oj.v, population.state[i2].v)
       end
 
       mutation!(support.oi, settings.mrate)
