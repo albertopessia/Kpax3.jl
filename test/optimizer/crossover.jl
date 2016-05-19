@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-support = KSupport(10, 6, 1, 1);
+support = KSupport(10, 6, 1, 1)
 
 R1 = [1; 1; 2; 2; 2; 3]
 R2 = [1; 2; 3; 4; 5; 5]
@@ -196,60 +196,60 @@ pr = [1 / 5; 2 / 5; 1 / 5; 1 / 15; 1 / 10; 1 / 30; 1 / 10; 8 / 25; 1 / 50;
       1 / 100; 1 / 100; 1 / 20; 1 / 100; 1 / 50; 1 / 100; 1 / 20; 1 / 100;
       1 / 100; 1 / 20; 1 / 20; 1 / 100; 1 / 100; 1 / 100; 1 / 4]
 
-tmp = zeros(Float64, 24)
+tmp = zeros(Float64, length(pr))
 
 for i in 1:N
   crossover!(R1, R2, support)
 
-  if all(support.oi.R .== [1; 2; 3; 4; 5; 5])
+  if support.oi.R == [1; 2; 3; 4; 5; 5]
     tmp[ 1] += 1
-  elseif all(support.oi.R .== [1; 1; 3; 4; 5; 5])
+  elseif support.oi.R == [1; 1; 3; 4; 5; 5]
     tmp[ 2] += 1
-  elseif all(support.oi.R .== [1; 1; 3; 3; 5; 5])
+  elseif support.oi.R == [1; 1; 3; 3; 5; 5]
     tmp[ 3] += 1
-  elseif all(support.oi.R .== [1; 1; 3; 3; 3; 1])
+  elseif support.oi.R == [1; 1; 3; 3; 3; 1]
     tmp[ 4] += 1
-  elseif all(support.oi.R .== [1; 1; 3; 3; 3; 3])
+  elseif support.oi.R == [1; 1; 3; 3; 3; 3]
     tmp[ 5] += 1
-  elseif all(support.oi.R .== [1; 1; 3; 3; 3; 6])
+  elseif support.oi.R == [1; 1; 3; 3; 3; 6]
     tmp[ 6] += 1
   end
 
-  if all(support.oj.R .== [1; 1; 3; 3; 3; 6])
+  if support.oj.R == [1; 1; 3; 3; 3; 6]
     tmp[ 7] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 3; 3; 6])
+  elseif support.oj.R == [1; 2; 3; 3; 3; 6]
     tmp[ 8] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 1; 1; 6])
+  elseif support.oj.R == [1; 2; 3; 1; 1; 6]
     tmp[ 9] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 2; 1; 6])
+  elseif support.oj.R == [1; 2; 3; 2; 1; 6]
     tmp[10] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 3; 1; 6])
+  elseif support.oj.R == [1; 2; 3; 3; 1; 6]
     tmp[11] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 4; 1; 6])
+  elseif support.oj.R == [1; 2; 3; 4; 1; 6]
     tmp[12] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 1; 2; 6])
+  elseif support.oj.R == [1; 2; 3; 1; 2; 6]
     tmp[13] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 2; 2; 6])
+  elseif support.oj.R == [1; 2; 3; 2; 2; 6]
     tmp[14] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 3; 2; 6])
+  elseif support.oj.R == [1; 2; 3; 3; 2; 6]
     tmp[15] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 4; 2; 6])
+  elseif support.oj.R == [1; 2; 3; 4; 2; 6]
     tmp[16] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 1; 3; 6])
+  elseif support.oj.R == [1; 2; 3; 1; 3; 6]
     tmp[17] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 2; 3; 6])
+  elseif support.oj.R == [1; 2; 3; 2; 3; 6]
     tmp[18] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 4; 3; 6])
+  elseif support.oj.R == [1; 2; 3; 4; 3; 6]
     tmp[19] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 4; 4; 6])
+  elseif support.oj.R == [1; 2; 3; 4; 4; 6]
     tmp[20] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 1; 5; 6])
+  elseif support.oj.R == [1; 2; 3; 1; 5; 6]
     tmp[21] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 2; 5; 6])
+  elseif support.oj.R == [1; 2; 3; 2; 5; 6]
     tmp[22] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 3; 5; 6])
+  elseif support.oj.R == [1; 2; 3; 3; 5; 6]
     tmp[23] += 1
-  elseif all(support.oj.R .== [1; 2; 3; 4; 5; 6])
+  elseif support.oj.R == [1; 2; 3; 4; 5; 6]
     tmp[24] += 1
   end
 end

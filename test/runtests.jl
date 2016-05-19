@@ -25,6 +25,7 @@ tests = ["data_processing/data_processing";
          "optimizer/local_mode";
          "optimizer/selection";
          "optimizer/crossover";
+         "optimizer/mutation";
          "mcmc/functions";
          "mcmc/partition_ratios";
          "mcmc/log_likelihoods";
