@@ -116,20 +116,17 @@ function performmerge!(hi::Int,
   end
 
   if length(state.unit[hi]) < vi
-    tmp = zeros(Int, min(support.n, vi + settings.maxunit - 1))
-    copy!(tmp, 1, state.unit[hi], 1, state.v[hi])
-    copy!(tmp, state.v[hi] + 1, state.unit[hj], 1, state.v[hj])
-    state.unit[hi] = tmp
-  else
-    copy!(state.unit[hi], state.v[hi] + 1, state.unit[hj], 1,
-          state.v[hj])
+    resize!(state.unit[hi], vi)
   end
+
+  copy!(state.unit[hi], state.v[hi] + 1, state.unit[hj], 1, state.v[hj])
 
   state.v[hi] = vi
 
   state.logpR += support.lograR
   copy!(state.logpC, support.logpC)
   state.loglik = support.loglik
+  state.logpp = state.logpR + state.logpC[1] + state.loglik
 
   nothing
 end

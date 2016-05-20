@@ -95,6 +95,10 @@ end
 
 @test_approx_eq_eps state.loglik correctloglik ε
 
+@test_approx_eq_eps state.logpp (logdPriorRow(n, k, v, priorR) +
+                                 logpriorC(state.C, state.cl, state.k, priorC) +
+                                 correctloglik) ε
+
 # [2; 2; 2; 1; 1; 3] => [2; 2; 3; 1; 1; 3]
 support = KSupport(m, n, settings.maxclust, settings.maxunit)
 state = AminoAcidState(data, [2; 2; 2; 1; 1; 3], priorR, priorC, settings)
@@ -169,6 +173,10 @@ for b in 1:m
 end
 
 @test_approx_eq_eps state.loglik correctloglik ε
+
+@test_approx_eq_eps state.logpp (logdPriorRow(n, k, v, priorR) +
+                                 logpriorC(state.C, state.cl, state.k, priorC) +
+                                 correctloglik) ε
 
 # [3; 3; 3; 2; 2; 4] => [3; 3; 1; 2; 2; 4]
 support = KSupport(m, n, settings.maxclust, settings.maxunit)
@@ -269,6 +277,10 @@ end
 
 @test_approx_eq_eps state.loglik correctloglik ε
 
+@test_approx_eq_eps state.logpp (logdPriorRow(n, k, v, priorR) +
+                                 logpriorC(state.C, state.cl, state.k, priorC) +
+                                 correctloglik) ε
+
 # [2; 2; 2; 1; 1; 3] => [2; 2; 4; 1; 1; 3]
 # allocate new resources
 settings = KSettings(ifile, ofile, maxclust=3, maxunit=1, op=[0.0; 1.0; 0.0])
@@ -360,3 +372,7 @@ for b in 1:m
 end
 
 @test_approx_eq_eps state.loglik correctloglik ε
+
+@test_approx_eq_eps state.logpp (logdPriorRow(n, k, v, priorR) +
+                                 logpriorC(state.C, state.cl, state.k, priorC) +
+                                 correctloglik) ε

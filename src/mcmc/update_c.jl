@@ -8,5 +8,7 @@ function updateC!(priorC::PriorColPartition,
   state.loglik = loglikelihood(state.C, state.cl, state.k, state.v, state.n1s,
                                priorC)
 
+  state.logpp = state.logpR + state.logpC[1] + state.loglik
+
   nothing
 end

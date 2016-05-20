@@ -27,7 +27,7 @@ y4 = readall("../build/test_results_characteristic.csv")
 y5 = readall("../build/test_results_dataset.txt")
 
 @test y1 == readall(partition)
-@test_approx_eq_eps y2 (state.logpR + state.logpC[1] + state.loglik) ε
+@test_approx_eq_eps y2 state.logpp ε
 @test y3 == readall("data/proper_aa_attributes.csv")
 @test y4 == readall("data/proper_aa_characteristic.csv")
 @test y5 == readall("data/proper_aa_dataset.txt")
