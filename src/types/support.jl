@@ -25,6 +25,8 @@ type KSupport
   m::Int
   n::Int
 
+#  u::Vector{Int}
+
   vi::Int
   ni::Vector{Float64}
   ui::Vector{Int}
@@ -54,6 +56,10 @@ function KSupport(m::Int,
                   n::Int,
                   maxclust::Int,
                   maxunit::Int)
+  u = Int[a for a in 1:n]
+
+  q = zeros(Float64, 4, maxclust, m)
+
   vi = 0
   ni = zeros(Float64, m)
   ui = zeros(Int, maxunit)

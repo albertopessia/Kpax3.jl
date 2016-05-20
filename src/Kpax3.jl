@@ -48,7 +48,7 @@ module Kpax3
   ########################
   # Load basic functions #
   ########################
-  include("misc/partition_functions.jl")
+  include("misc/misc.jl")
 
   #################
   # Load the rest #

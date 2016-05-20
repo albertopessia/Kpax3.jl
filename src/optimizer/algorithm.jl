@@ -57,10 +57,8 @@ function kpax3ga!(x::AminoAcidData,
 
       newpopulation.state[i] = AminoAcidState(x.data, R, priorR, priorC,
                                               settings)
+      newpopulation.logpp[i] = newpopulation.state[i].logpp
 
-      newpopulation.logpp[i] = newpopulation.state[i].logpR +
-                               newpopulation.state[i].logpC[1] +
-                               newpopulation.state[i].loglik
       i += 1
     end
 
@@ -85,13 +83,8 @@ function kpax3ga!(x::AminoAcidData,
       updatestate!(newpopulation.state[i + 1], x.data, support.oj.R, priorR,
                    priorC, settings)
 
-      newpopulation.logpp[i] = newpopulation.state[i].logpR +
-                               newpopulation.state[i].logpC[1] +
-                               newpopulation.state[i].loglik
-
-      newpopulation.logpp[i + 1] = newpopulation.state[i + 1].logpR +
-                                   newpopulation.state[i + 1].logpC[1] +
-                                   newpopulation.state[i + 1].loglik
+      newpopulation.logpp[i] = newpopulation.state[i].logpp
+      newpopulation.logpp[i + 1] = newpopulation.state[i + 1].logpp
 
       i += 2
     end

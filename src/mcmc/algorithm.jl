@@ -1,15 +1,5 @@
 # This file is part of Kpax3. License is MIT.
 
-function randompermute!(x::Vector{Int},
-                        S::Int)
-  for i = S:-1:2
-    j = rand(1:i)
-    x[i], x[j] = x[j], x[i]
-  end
-
-  nothing
-end
-
 function splitmerge!(ij::Vector{Int},
                      neighbours::Vector{Int},
                      data::Matrix{UInt8},
@@ -39,7 +29,7 @@ function splitmerge!(ij::Vector{Int},
       end
     end
 
-    randompermute!(neighbours, S)
+    shuffle!(neighbours, S)
 
     split!(ij, neighbours, S, data, priorR, priorC, settings, support, state)
   else
@@ -57,7 +47,7 @@ function splitmerge!(ij::Vector{Int},
       end
     end
 
-    randompermute!(neighbours, S)
+    shuffle!(neighbours, S)
 
     merge!(ij, neighbours, S, data, priorR, priorC, settings, support, state)
   end

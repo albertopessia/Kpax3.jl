@@ -17,6 +17,7 @@ type AminoAcidState <: State
   logpR::Float64
   logpC::Vector{Float64}
   loglik::Float64
+  logpp::Float64
 end
 
 function AminoAcidState(data::Matrix{UInt8},
@@ -30,6 +31,8 @@ function AminoAcidState(data::Matrix{UInt8},
   k = maximum(R)
 
   maxclust = max(k, min(n, settings.maxclust))
+
+  resizelogω!(priorC, maxclust)
 
   C = zeros(UInt8, maxclust, m)
 
@@ -78,7 +81,10 @@ function AminoAcidState(data::Matrix{UInt8},
 
   loglik = loglikelihood(C, cl, k, v, n1s, priorC)
 
-  AminoAcidState(R, C, emptycluster, cl, k, v, n1s, unit, logpR, logpC, loglik)
+  logpp = logpR + logpC[1] + loglik
+
+  AminoAcidState(R, C, emptycluster, cl, k, v, n1s, unit, logpR, logpC, loglik,
+                 logpp)
 end
 
 function copystate(x::AminoAcidState)
@@ -99,17 +105,15 @@ function copystate(x::AminoAcidState)
   logpR = x.logpR
   logpC = copy(x.logpC)
   loglik = x.loglik
+  logpp = x.logpp
 
-  AminoAcidState(R, C, emptycluster, cl, k, v, n1s, unit, logpR, logpC, loglik)
+  AminoAcidState(R, C, emptycluster, cl, k, v, n1s, unit, logpR, logpC, loglik,
+                 logpp)
 end
 
 function copystate!(dest::AminoAcidState,
                     src::AminoAcidState)
-  dest.k = src.k
-  dest.logpR = src.logpR
-  dest.logpC[1] = src.logpC[1]
-  dest.logpC[2] = src.logpC[2]
-  dest.loglik = src.loglik
+  resizestate!(dest, src.cl[src.k])
 
   if length(dest.R) == length(src.R)
     copy!(dest.R, src.R)
@@ -117,47 +121,49 @@ function copystate!(dest::AminoAcidState,
     dest.R = copy(src.R)
   end
 
-  if (size(dest.C, 2) == size(src.C, 2)) && (size(dest.C, 1) >= src.cl[src.k])
-    fill!(dest.emptycluster, true)
+  if size(dest.C, 2) != size(src.C, 2)
+    dest.C = zeros(UInt8, size(dest.C, 1), size(src.C, 2))
+    dest.n1s = zeros(Float64, size(dest.n1s, 1), size(src.n1s, 2))
+  end
 
-    g = 0
+  fill!(dest.emptycluster, true)
+
+  g = 0
+  for l in 1:src.k
+    g = src.cl[l]
+
+    dest.C[g, 1] = src.C[g, 1]
+    dest.emptycluster[g] = false
+    dest.cl[l] = src.cl[l]
+    dest.v[g] = src.v[g]
+    dest.n1s[g, 1] = src.n1s[g, 1]
+
+    if length(dest.unit[g]) < src.v[g]
+      resize!(dest.unit[g], src.v[g])
+    end
+
+    copy!(dest.unit[g], 1, src.unit[g], 1, src.v[g])
+  end
+
+  for b in 2:size(dest.C, 2)
     for l in 1:src.k
       g = src.cl[l]
 
-      dest.C[g, 1] = src.C[g, 1]
-      dest.emptycluster[g] = false
-      dest.cl[l] = src.cl[l]
-      dest.v[g] = src.v[g]
-      dest.n1s[g, 1] = src.n1s[g, 1]
-
-      if length(dest.unit[g]) >= src.v[g]
-        copy!(dest.unit[g], 1, src.unit[g], 1, src.v[g])
-      else
-        dest.unit[g] = copy(src.unit[g])
-      end
-    end
-
-    for b in 2:size(dest.C, 2)
-      for l in 1:src.k
-        g = src.cl[l]
-
-        dest.C[g, b] = src.C[g, b]
-        dest.n1s[g, b] = src.n1s[g, b]
-      end
-    end
-  else
-    dest.C = copy(src.C)
-
-    dest.emptycluster = copy(src.emptycluster)
-    dest.cl = copy(src.cl)
-    dest.v = copy(src.v)
-    dest.n1s = copy(src.n1s)
-
-    dest.unit = Array{Vector{Int}}(length(src.unit))
-    for l in 1:length(src.unit)
-      dest.unit[l] = copy(src.unit[l])
+      dest.C[g, b] = src.C[g, b]
+      dest.n1s[g, b] = src.n1s[g, b]
     end
   end
+
+  dest.k = src.k
+
+  dest.logpR = src.logpR
+
+  dest.logpC[1] = src.logpC[1]
+  dest.logpC[2] = src.logpC[2]
+
+  dest.loglik = src.loglik
+
+  dest.logpp = src.logpp
 
   nothing
 end
@@ -168,27 +174,21 @@ function initializestate(data::Matrix{UInt8},
                          priorR::PriorRowPartition,
                          priorC::PriorColPartition,
                          settings::KSettings)
-  if length(priorC.logω) < kset[end]
-    resizelogω!(priorC, kset[end])
-  end
+  resizelogω!(priorC, kset[end])
 
   n = size(data, 2)
 
   R = ones(Int, n)
 
   s = AminoAcidState(data, R, priorR, priorC, settings)
-  slp = s.logpR + s.logpC[1] + s.loglik
 
   t1 = copystate(s)
-  tlp1 = slp
-
   t2 = copystate(s)
-  tlp2 = slp
 
   # TODO: remove the hack once kmedoids is fixed
 
   if settings.verbose
-    @printf("Log-posterior (plus a constant) for one cluster: %.4f.\n", slp)
+    @printf("Log-posterior (plus a constant) for one cluster: %.4f.\n", s.logpp)
     @printf("Now scanning %d to %d clusters.\n", kset[1], kset[end])
   end
 
@@ -214,7 +214,6 @@ function initializestate(data::Matrix{UInt8},
     end
 
     updatestate!(t1, data, R, priorR, priorC, settings)
-    tlp1 = t1.logpR + t1.logpC[1] + t1.loglik
 
     niter = 0
     while niter < 10
@@ -232,29 +231,26 @@ function initializestate(data::Matrix{UInt8},
       end
 
       updatestate!(t2, data, R, priorR, priorC, settings)
-      tlp2 = t2.logpR + t2.logpC[1] + t2.loglik
 
-      if tlp2 > tlp1
+      if t2.logpp > t1.logpp
         copystate!(t1, t2)
-        tlp1 = tlp2
       end
 
       niter += 1
     end
 
-    if tlp1 > slp
+    if t1.logpp > s.logpp
       copystate!(s, t1)
-      slp = tlp1
 
       if settings.verbose
         @printf("Found a better solution! ")
         @printf("Log-posterior (plus a constant) for %d clusters: %.4f.\n", k,
-                slp)
+                s.logpp)
       end
     end
   end
 
-  (s, slp)
+  s
 end
 
 function updatestate!(state::AminoAcidState,
@@ -266,32 +262,15 @@ function updatestate!(state::AminoAcidState,
   (m, n) = size(data)
 
   copy!(state.R, normalizepartition(R, n))
-  state.k = maximum(state.R)
+  k = maximum(state.R)
 
-  if size(state.C, 1) < state.k
-    # reallocate memory
-    len = min(n, state.k + settings.maxclust - 1)
+  resizestate!(state, k, settings)
 
-    state.C = zeros(UInt8, len, m)
-    state.emptycluster = trues(len)
-    state.cl = zeros(Int, len)
-    state.v = zeros(Int, len)
-    state.n1s = zeros(Float64, len, m)
+  state.k = k
 
-    unit = Array{Vector{Int}}(len)
-    for l in 1:length(state.unit)
-      unit[l] = state.unit[l]
-    end
-    for l in (length(state.unit) + 1):len
-      unit[l] = zeros(Int, settings.maxunit)
-    end
-    state.unit = unit
-  else
-    # TODO: no need to fill the whole array
-    fill!(state.emptycluster, true)
-    fill!(state.v, 0)
-    fill!(state.n1s, 0.0)
-  end
+  fill!(state.emptycluster, true)
+  fill!(state.v, 0)
+  fill!(state.n1s, 0.0)
 
   g = 0
   for a in 1:n
@@ -328,6 +307,94 @@ function updatestate!(state::AminoAcidState,
 
   state.loglik = loglikelihood(state.C, state.cl, state.k, state.v, state.n1s,
                                priorC)
+
+  state.logpp = state.logpR + state.logpC[1] + state.loglik
+
+  nothing
+end
+
+function resizestate!(state::AminoAcidState,
+                      k::Int,
+                      settings::KSettings)
+  oldlen = size(state.C, 1)
+
+  if oldlen < k
+    m = size(state.C, 2)
+    n = length(state.R)
+
+    newlen = min(n, k + settings.maxclust - 1)
+
+    resize!(state.emptycluster, newlen)
+    resize!(state.cl, newlen)
+    resize!(state.v, newlen)
+    resize!(state.unit, newlen)
+
+    for l in (oldlen + 1):newlen
+      state.emptycluster[l] = true
+      state.cl[l] = 0
+      state.v[l] = 0
+      state.unit[l] = zeros(Int, settings.maxunit)
+    end
+
+    C = zeros(UInt8, newlen, m)
+    n1s = zeros(Float64, newlen, m)
+
+    for b in 1:m
+      for l in 1:state.k
+        g = state.cl[l]
+        C[g, b] = state.C[g, b]
+        n1s[g, b] = state.n1s[g, b]
+      end
+    end
+
+    state.C = C
+    state.n1s = n1s
+  end
+
+  nothing
+end
+
+function resizestate!(state::AminoAcidState,
+                      newlen::Int)
+  oldlen = size(state.C, 1)
+
+  if oldlen < newlen
+    m = size(state.C, 2)
+    n = length(state.R)
+
+    resize!(state.emptycluster, newlen)
+    resize!(state.cl, newlen)
+    resize!(state.v, newlen)
+    resize!(state.unit, newlen)
+
+    z = 1
+    for l in 1:oldlen
+      if length(state.unit[l]) > z
+        z = length(state.unit[l])
+      end
+    end
+
+    for l in (oldlen + 1):newlen
+      state.emptycluster[l] = true
+      state.cl[l] = 0
+      state.v[l] = 0
+      state.unit[l] = zeros(Int, z)
+    end
+
+    C = zeros(UInt8, newlen, m)
+    n1s = zeros(Float64, newlen, m)
+
+    for b in 1:m
+      for l in 1:state.k
+        g = state.cl[l]
+        C[g, b] = state.C[g, b]
+        n1s[g, b] = state.n1s[g, b]
+      end
+    end
+
+    state.C = C
+    state.n1s = n1s
+  end
 
   nothing
 end
