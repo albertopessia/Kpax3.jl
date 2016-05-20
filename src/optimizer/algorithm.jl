@@ -6,6 +6,10 @@ function kpax3ga!(x::AminoAcidData,
                   priorC::PriorColPartition,
                   settings::KSettings,
                   support::KSupport)
+  if settings.verbose
+    @printf("Initializing Genetic Algorithm... ")
+  end
+
   # check if we can write to the backup file
   fp = open(settings.ofile, "w")
   close(fp)
@@ -36,6 +40,10 @@ function kpax3ga!(x::AminoAcidData,
   beststate = copystate(population.state[population.rank[1]])
 
   newpopulation = AminoAcidStateList(settings.popsize, population.state[idx])
+
+  if settings.verbose
+    @printf("done.\nStochastic optimization will now begin.\n")
+  end
 
   iter = 0
   gap = 0
@@ -192,6 +200,7 @@ function kpax3ga(settings::KSettings;
          end
 
   x = AminoAcidData(settings)
+  (m, n) = size(x.data)
 
   priorR = EwensPitman(settings.α, settings.θ)
   priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r,
@@ -199,20 +208,33 @@ function kpax3ga(settings::KSettings;
 
   population = AminoAcidStateList(x.data, D, kset, priorR, priorC, settings)
 
-  kpax3ga!(x.data, population, priorR, priorC, settings)
+  maxunit = min(n, max(maximum(population.state[population.rank[1]].v),
+                       settings.maxunit))
+
+  support = KSupport(m, n, kset[end], maxunit)
+
+  kpax3ga!(x, population, priorR, priorC, settings, support)
 end
 
 function kpax3ga(x::AminoAcidData,
                  partition,
                  settings::KSettings)
+  (m, n) = size(x.data)
+
   R = normalizepartition(partition, x.id)
   k = maximum(R)
 
+  maxclust = min(n, max(k, settings.maxclust))
+
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r,
-                             maxclust=max(k, settings.maxclust))
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r, maxclust=maxclust)
 
   population = AminoAcidStateList(x.data, R, priorR, priorC, settings)
 
-  kpax3ga!(x.data, population, priorR, priorC, settings)
+  maxunit = min(n, max(maximum(population.state[population.rank[1]].v),
+                       settings.maxunit))
+
+  support = KSupport(m, n, maxclust, maxunit)
+
+  kpax3ga!(x, population, priorR, priorC, settings, support)
 end

@@ -87,7 +87,7 @@ function AminoAcidStateList(popsize::Int,
                             s::AminoAcidState)
   state = Array{AminoAcidState}(popsize)
   logpp = zeros(Float64, popsize)
-  rank = Int[i for i in 1:settings.popsize]
+  rank = Int[i for i in 1:popsize]
 
   for i in 1:popsize
     state[i] = copystate(s)
