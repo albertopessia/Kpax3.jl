@@ -37,8 +37,7 @@ state = [AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings);
 
 popsize = 5
 
-logpp = Float64[state[i].logpR + state[i].logpC[1] + state[i].loglik
-                for i in 1:popsize]
+logpp = Float64[state[i].logpp for i in 1:popsize]
 
 # (1, 2) => 2 wins
 # (1, 3) => 1 wins

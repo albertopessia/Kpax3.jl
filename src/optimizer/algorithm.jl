@@ -34,7 +34,6 @@ function kpax3ga!(x::AminoAcidData,
   end
 
   beststate = copystate(population.state[population.rank[1]])
-  bestlogpp = population.logpp[population.rank[1]]
 
   newpopulation = AminoAcidStateList(settings.popsize, population.state[idx])
 
@@ -94,15 +93,14 @@ function kpax3ga!(x::AminoAcidData,
 
     copystatelist!(population, newpopulation, settings.popsize)
 
-    if population.logpp[population.rank[1]] > bestlogpp
+    if population.logpp[population.rank[1]] >  beststate.logpp
       copystate!(beststate, population.state[population.rank[1]])
-      bestlogpp = population.logpp[population.rank[1]]
       gap = 0
 
       if settings.verbose
         @printf("Found a better solution! ")
         @printf("Log-posterior (plus a constant) for %d clusters: %.4f.\n",
-                beststate.k, bestlogpp)
+                beststate.k, beststate.logpp)
       end
     else
       gap += 1
@@ -128,7 +126,7 @@ function kpax3ga!(x::AminoAcidData,
     end
   end
 
-  (beststate, bestlogpp)
+  beststate
 end
 
 function kpax3ga(settings::KSettings;

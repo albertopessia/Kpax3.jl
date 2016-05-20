@@ -65,6 +65,11 @@ function performbrw!(i::Int,
                      settings::KSettings,
                      support::KSupport,
                      state::AminoAcidState)
+  if hj == 0
+    resizestate!(state, k, settings)
+    hj = k
+  end
+
   # remove i from the list of units of cluster hi
   idx = 0
   for j in 1:state.v[hi]
@@ -73,23 +78,20 @@ function performbrw!(i::Int,
     end
   end
 
-  if hj > 0
-    if state.v[hi] > 1
-      if state.emptycluster[hj]
-        performbrwsplit!(i, hi, hj, priorC, settings, support, state)
-      else
-        performbrwmove!(i, hi, hj, settings, support, state)
-      end
+  if state.v[hi] > 1
+    if state.emptycluster[hj]
+      performbrwsplit!(i, hi, hj, priorC, settings, support, state)
     else
-      performbrwmerge!(i, hi, hj, priorC, settings, support, state)
+      performbrwmove!(i, hi, hj, settings, support, state)
     end
   else
-    performbrwsplitallocate!(i, hi, k, priorC, settings, support, state)
+    performbrwmerge!(i, hi, hj, priorC, settings, support, state)
   end
 
   state.logpR += support.lograR
   copy!(state.logpC, support.logpC)
   state.loglik = support.loglik
+  state.logpp = state.logpR + state.logpC[1] + state.loglik
 
   nothing
 end
@@ -211,87 +213,6 @@ function performbrwsplit!(i::Int,
   end
 
   state.unit[hj][state.v[hj]] = i
-
-  nothing
-end
-
-function performbrwsplitallocate!(i::Int,
-                                  hi::Int,
-                                  k::Int,
-                                  priorC::PriorColPartition,
-                                  settings::KSettings,
-                                  support::KSupport,
-                                  state::AminoAcidState)
-  len = min(support.n, k + settings.maxclust - 1)
-
-  C = zeros(UInt8, len, support.m)
-  emptycluster = trues(len)
-  cl = zeros(Int, len)
-  v = zeros(Int, len)
-  n1s = zeros(Float64, len, support.m)
-  unit = Array{Vector{Int}}(len)
-
-  # prevent losing pre-allocated vectors
-  for l in 1:length(state.unit)
-    unit[l] = state.unit[l]
-  end
-
-  for l in (length(state.unit) + 1):len
-    unit[l] = zeros(Int, settings.maxunit)
-  end
-
-  g = 0
-  for l in 1:(support.k - 2)
-    g = support.cl[l]
-    C[g, 1] = support.C[l, 1]
-    v[g] = state.v[g]
-    n1s[g, 1] = state.n1s[g, 1]
-    emptycluster[g] = false
-  end
-
-  C[hi, 1] = support.C[support.k - 1, 1]
-  v[hi] = state.v[hi] - 1
-  n1s[hi, 1] = state.n1s[hi, 1] - support.ni[1]
-  copy!(state.unit[hi], 1, support.ui, 1, support.vi - 1)
-  emptycluster[hi] = false
-
-  C[k, 1] = support.C[support.k, 1]
-  v[k] = 1
-  n1s[k, 1] = support.ni[1]
-  unit[k][1] = i
-  emptycluster[k] = false
-
-  for b in 2:support.m
-    for l in 1:(support.k - 2)
-      g = support.cl[l]
-      C[g, b] = support.C[l, b]
-      n1s[g, b] = state.n1s[g, b]
-    end
-    C[hi, b] = support.C[support.k - 1, b]
-    n1s[hi, b] = state.n1s[hi, b] - support.ni[b]
-    C[k, b] = support.C[support.k, b]
-    n1s[k, b] = support.ni[b]
-  end
-
-  state.R[i] = k
-
-  state.C = C
-
-  state.emptycluster = emptycluster
-
-  h = 0
-  for a in 1:length(state.emptycluster)
-    if !state.emptycluster[a]
-      cl[h += 1] = a
-    end
-  end
-
-  state.cl = cl
-  state.k = h
-
-  state.v = v
-  state.n1s = n1s
-  state.unit = unit
 
   nothing
 end

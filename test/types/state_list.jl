@@ -27,7 +27,6 @@ slist = AminoAcidStateList(x.data, [3; 3; 3; 1; 1; 2], priorR, priorC, settings)
 
 for i in 1:settings.popsize
   t = AminoAcidState(x.data, slist.state[i].R, priorR, priorC, settings)
-  tlp = t.logpR + t.logpC[1] + t.loglik
 
   l = t.cl[1:t.k]
 
@@ -45,7 +44,7 @@ for i in 1:settings.popsize
   @test slist.state[i].logpC == t.logpC
   @test slist.state[i].loglik == t.loglik
 
-  @test_approx_eq_eps slist.logpp[i] tlp ε
+  @test_approx_eq_eps slist.logpp[i] slist.state[i].logpp ε
 end
 
 (m, n) = size(x.data)
@@ -68,7 +67,6 @@ slist = AminoAcidStateList(x.data, D, 1:n, priorR, priorC, settings)
 
 for i in 1:settings.popsize
   t = AminoAcidState(x.data, slist.state[i].R, priorR, priorC, settings)
-  tlp = t.logpR + t.logpC[1] + t.loglik
 
   l = t.cl[1:t.k]
 
@@ -86,5 +84,5 @@ for i in 1:settings.popsize
   @test slist.state[i].logpC == t.logpC
   @test slist.state[i].loglik == t.loglik
 
-  @test_approx_eq_eps slist.logpp[i] tlp ε
+  @test_approx_eq_eps slist.logpp[i] slist.state[i].logpp ε
 end

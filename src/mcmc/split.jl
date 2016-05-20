@@ -82,120 +82,43 @@ function performsplit!(hi::Int,
                        settings::KSettings,
                        support::KSupport,
                        state::AminoAcidState)
+  resizestate!(state, k, settings)
+
   hj = findfirst(state.emptycluster)
 
-  if hj > 0
-    for b in 1:support.m
-      for l in 1:(support.k - 2)
-        state.C[support.cl[l], b] = support.C[l, b]
-      end
-      state.C[hi, b] = support.C[support.k - 1, b]
-      state.C[hj, b] = support.C[support.k, b]
-
-      state.n1s[hi, b] = support.ni[b]
-      state.n1s[hj, b] = support.nj[b]
-    end
-
-    state.emptycluster[hj] = false
-
-    h = 0
-    for a in 1:length(state.emptycluster)
-      if !state.emptycluster[a]
-        state.cl[h += 1] = a
-      end
-    end
-
-    state.k = h
-
-    state.v[hi] = support.vi
-    state.unit[hi] = copy!(state.unit[hi], 1, support.ui, 1, support.vi)
-
-    state.v[hj] = support.vj
-
-    if length(state.unit[hj]) < state.v[hj]
-      tmp = zeros(Int, min(support.n, state.v[hj] + settings.maxunit - 1))
-      state.unit[hj] = copy!(tmp, 1, support.uj, 1, support.vj)
-    else
-      state.unit[hj] = copy!(state.unit[hj], 1, support.uj, 1, support.vj)
-    end
-  else
-    hj = k
-
-    # reallocate memory
-    len = min(support.n, k + settings.maxclust - 1)
-
-    C = zeros(UInt8, len, support.m)
-    emptycluster = trues(len)
-    cl = zeros(Int, len)
-    v = zeros(Int, len)
-    n1s = zeros(Float64, len, support.m)
-    unit = Array{Vector{Int}}(len)
-
-    # prevent losing pre-allocated vectors
-    for l in 1:length(state.unit)
-      unit[l] = state.unit[l]
-    end
-
-    for l in (length(state.unit) + 1):len
-      unit[l] = zeros(Int, settings.maxunit)
-    end
-
-    g = 0
+  for b in 1:support.m
     for l in 1:(support.k - 2)
-      g = support.cl[l]
-      C[g, 1] = support.C[l, 1]
-      v[g] = state.v[g]
-      n1s[g, 1] = state.n1s[g, 1]
-      emptycluster[g] = false
+      state.C[support.cl[l], b] = support.C[l, b]
     end
+    state.C[hi, b] = support.C[support.k - 1, b]
+    state.C[hj, b] = support.C[support.k, b]
 
-    C[hi, 1] = support.C[support.k - 1, 1]
-    v[hi] = support.vi
-    n1s[hi, 1] = support.ni[1]
-    copy!(state.unit[hi], 1, support.ui, 1, support.vi)
-    emptycluster[hi] = false
-
-    C[k, 1] = support.C[support.k, 1]
-    v[k] = support.vj
-    n1s[k, 1] = support.nj[1]
-
-    if v[k] > length(unit[k])
-      resize!(unit[k], min(support.n, v[k] + settings.maxunit - 1))
-    end
-
-    copy!(unit[k], 1, support.uj, 1, support.vj)
-    emptycluster[k] = false
-
-    for b in 2:support.m
-      for l in 1:(support.k - 2)
-        g = support.cl[l]
-        C[g, b] = support.C[l, b]
-        n1s[g, b] = state.n1s[g, b]
-      end
-      C[hi, b] = support.C[support.k - 1, b]
-      n1s[hi, b] = support.ni[b]
-      C[k, b] = support.C[support.k, b]
-      n1s[k, b] = support.nj[b]
-    end
-
-    state.C = C
-
-    state.emptycluster = emptycluster
-
-    h = 0
-    for a in 1:length(state.emptycluster)
-      if !state.emptycluster[a]
-        cl[h += 1] = a
-      end
-    end
-
-    state.cl = cl
-    state.k = h
-
-    state.v = v
-    state.n1s = n1s
-    state.unit = unit
+    state.n1s[hi, b] = support.ni[b]
+    state.n1s[hj, b] = support.nj[b]
   end
+
+  state.emptycluster[hj] = false
+
+  h = 0
+  for a in 1:length(state.emptycluster)
+    if !state.emptycluster[a]
+      h += 1
+      state.cl[h] = a
+    end
+  end
+
+  state.k = h
+
+  state.v[hi] = support.vi
+  state.unit[hi] = copy!(state.unit[hi], 1, support.ui, 1, support.vi)
+
+  state.v[hj] = support.vj
+
+  if length(state.unit[hj]) < state.v[hj]
+    resize!(state.unit[hj], state.v[hj])
+  end
+
+  state.unit[hj] = copy!(state.unit[hj], 1, support.uj, 1, support.vj)
 
   # move units to their new cluster
   for j in 1:support.vj
@@ -205,6 +128,7 @@ function performsplit!(hi::Int,
   state.logpR += support.lograR
   copy!(state.logpC, support.logpC)
   state.loglik = support.loglik
+  state.logpp = state.logpR + state.logpC[1] + state.loglik
 
   nothing
 end
