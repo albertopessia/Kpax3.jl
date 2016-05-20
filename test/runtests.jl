@@ -10,6 +10,7 @@ include("../src/boot.jl")
 srand(1427371200)
 
 tests = ["data_processing/data_processing";
+         "misc/basic_functions";
          "misc/partition_functions";
          "types/settings";
          "types/support";

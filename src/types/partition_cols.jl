@@ -106,8 +106,10 @@ end
 function resizelogω!(priorC::AminoAcidPriorCol,
                      newlen::Int)
   oldlen = length(priorC.logω)
-  if newlen > oldlen
+
+  if oldlen < newlen
     resize!(priorC.logω, newlen)
+
     for k in (oldlen + 1):newlen
       priorC.logω[k] = [log(k - 1) - log(k); -log(k)]
     end

@@ -20,7 +20,7 @@ function AminoAcidStateList(data::Matrix{UInt8},
     @printf("Initializing state...\n")
   end
 
-  (s, slp) = initializestate(data, D, kset, priorR, priorC, settings)
+  s = initializestate(data, D, kset, priorR, priorC, settings)
 
   if settings.verbose
     @printf("Initialization done. Creating solution set... ")
@@ -31,14 +31,14 @@ function AminoAcidStateList(data::Matrix{UInt8},
   rank = Int[i for i in 1:settings.popsize]
 
   state[1] = AminoAcidState(data, s.R, priorR, priorC, settings)
-  logpp[1] = slp
+  logpp[1] = state[1].logpp
 
   R = zeros(Int, n)
   for i in 2:settings.popsize
     copy!(R, s.R)
     modifypartition!(R, s.k)
     state[i] = AminoAcidState(data, R, priorR, priorC, settings)
-    logpp[i] = state[i].logpR + state[i].logpC[1] + state[i].loglik
+    logpp[i] = state[i].logpp
   end
 
   sortperm!(rank, logpp, rev=true, initialized=true)
@@ -60,7 +60,7 @@ function AminoAcidStateList(data::Matrix{UInt8},
   rank = Int[i for i in 1:settings.popsize]
 
   state[1] = AminoAcidState(data, partition, priorR, priorC, settings)
-  logpp[1] = state[1].logpR + state[1].logpC[1] + state[1].loglik
+  logpp[1] = state[1].logpp
 
   if settings.verbose
     @printf("Creating solution set... ")
@@ -71,7 +71,7 @@ function AminoAcidStateList(data::Matrix{UInt8},
     copy!(R, partition)
     modifypartition!(R, state[1].k)
     state[i] = AminoAcidState(data, R, priorR, priorC, settings)
-    logpp[i] = state[i].logpR + state[i].logpC[1] + state[i].loglik
+    logpp[i] = state[i].logpp
   end
 
   sortperm!(rank, logpp, rev=true, initialized=true)
@@ -91,7 +91,7 @@ function AminoAcidStateList(popsize::Int,
 
   for i in 1:popsize
     state[i] = copystate(s)
-    logpp[i] = state[i].logpR + state[i].logpC[1] + state[i].loglik
+    logpp[i] = state[i].logpp
   end
 
   sortperm!(rank, logpp, rev=true, initialized=true)

@@ -185,10 +185,7 @@ function initsupportsplitmerge!(ij::Vector{Int},
                                 priorC::AminoAcidPriorCol,
                                 settings::KSettings,
                                 support::KSupport)
-  if length(priorC.logω) < k
-    len = min(support.n, k + settings.maxclust - 1)
-    resizelogω!(priorC, len)
-  end
+  resizelogω!(priorC, min(support.n, k + settings.maxclust - 1))
 
   support.vi = 1
   support.vj = 1
@@ -222,10 +219,7 @@ function initsupportbrw!(k::Int,
                          priorC::AminoAcidPriorCol,
                          settings::KSettings,
                          support::KSupport)
-  if length(priorC.logω) < k
-    len = min(support.n, k + settings.maxclust - 1)
-    resizelogω!(priorC, len)
-  end
+  resizelogω!(priorC, min(support.n, k + settings.maxclust - 1))
 
   for b in 1:support.m
     support.ni[b] = float(data[b, i])
