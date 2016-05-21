@@ -34,6 +34,7 @@ module Kpax3
   computelocalmode!,
 
   # i/o
+  initializepartition,
   normalizepartition,
   readfasta,
   categorical2binary,

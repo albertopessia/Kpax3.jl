@@ -42,7 +42,10 @@ function kpax3ga!(x::AminoAcidData,
   newpopulation = AminoAcidStateList(settings.popsize, population.state[idx])
 
   if settings.verbose
-    @printf("done.\nStochastic optimization will now begin.\n")
+    @printf("done.\n")
+    @printf("Current number of clusters: %d.\n", beststate.k)
+    @printf("Current log-posterior (plus a constant): %.4f.\n", beststate.logpp)
+    @printf("Stochastic optimization is now running...\n")
   end
 
   iter = 0
@@ -137,81 +140,25 @@ function kpax3ga!(x::AminoAcidData,
   beststate
 end
 
-function kpax3ga(settings::KSettings;
-                 kset::UnitRange{Int}=1:0)
-  if settings.verbose
-    @printf("Computing pairwise distances... ")
-  end
-
-  tmp = zeros(UInt8, length(settings.miss))
-  idx = 0
-  for c in 1:length(settings.miss)
-    if settings.miss[c] != UInt8('-')
-      idx += 1
-      tmp[idx] = settings.miss[c]
-    end
-  end
-
-  miss = if idx > 0
-           copy!(zeros(UInt8, idx), 1, tmp, 1, idx)
-         else
-           zeros(UInt8, 1)
-         end
-
-  (data, id, ref) = readfasta(settings.ifile, settings.protein, miss,
-                              settings.l, false, 0)
-
-  n = size(data, 2)
-
-  d = if settings.protein
-        distaamtn84(data, ref)
-      else
-        distntmtn93(data, ref)
-      end
-
-  D = zeros(Float64, n, n)
-  idx = 1
-  for j in 1:(n - 1), i in (j + 1):n
-    D[i, j] = D[j, i] = d[idx]
-    idx += 1
-  end
-
-  if settings.verbose
-    @printf("done.\n")
-  end
-
-  # expected number of cluster approximately between cbrt(n) and sqrt(n)
-  g = ceil(Int, n^(2 / 5))
-
-  kset = if length(kset) == 0
-           max(1, g - 20):min(n, g + 20)
-         elseif kset[1] > 0
-           if kset[end] > n
-             if kset[1] == 1
-               2:n
-             else
-               kset[1]:n
-             end
-           elseif kset[1] == 1
-             2:kset[end]
-           end
-         else
-           throw(KDomainError("First element of 'kset' is less than one."))
-         end
-
+function kpax3ga(partition,
+                 settings::KSettings)
   x = AminoAcidData(settings)
   (m, n) = size(x.data)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r,
-                             maxclust=max(kset[end], settings.maxclust))
+  R = normalizepartition(partition, x.id)
+  k = maximum(R)
 
-  population = AminoAcidStateList(x.data, D, kset, priorR, priorC, settings)
+  maxclust = min(n, max(k, settings.maxclust))
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r, maxclust=maxclust)
+
+  population = AminoAcidStateList(x.data, R, priorR, priorC, settings)
 
   maxunit = min(n, max(maximum(population.state[population.rank[1]].v),
                        settings.maxunit))
 
-  support = KSupport(m, n, kset[end], maxunit)
+  support = KSupport(m, n, maxclust, maxunit)
 
   kpax3ga!(x, population, priorR, priorC, settings, support)
 end
