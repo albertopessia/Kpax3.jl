@@ -6,7 +6,7 @@ function splitmerge!(ij::Vector{Int},
                      priorR::PriorRowPartition,
                      priorC::PriorColPartition,
                      settings::KSettings,
-                     support::KSupport,
+                     support::MCMCSupport,
                      state::AminoAcidState)
   # cluster founders (units i and j)
   sample!(1:support.n, ij, replace=false, ordered=false)
@@ -25,7 +25,8 @@ function splitmerge!(ij::Vector{Int},
     for l in 1:state.v[gi]
       u = state.unit[gi][l]
       if (u != ij[1]) && (u != ij[2])
-        neighbours[S += 1] = u
+        S += 1
+        neighbours[S] = u
       end
     end
 
@@ -36,14 +37,16 @@ function splitmerge!(ij::Vector{Int},
     for l in 1:state.v[gi]
       u = state.unit[gi][l]
       if u != ij[1]
-        neighbours[S += 1] = u
+        S += 1
+        neighbours[S] = u
       end
     end
 
     for l in 1:state.v[gj]
       u = state.unit[gj][l]
       if u != ij[2]
-        neighbours[S += 1] = u
+        S += 1
+        neighbours[S] = u
       end
     end
 
@@ -59,7 +62,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
                     priorR::PriorRowPartition,
                     priorC::PriorColPartition,
                     settings::KSettings,
-                    support::KSupport,
+                    support::MCMCSupport,
                     state::AminoAcidState)
   fp = open(settings.ofile, "w")
 
@@ -86,17 +89,17 @@ function kpax3mcmc!(data::Matrix{UInt8},
       end
 
       # sample which operators we are going to use
-      operator = sample(UInt8[1; 2; 3], settings.op, settings.burnin)
+      operator = sample(UInt8[1; 2], settings.op, settings.burnin)
 
       for t in 1:settings.burnin
         if operator[t] == 0x01
           splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
                       state)
-        elseif operator[t] == 0x02
+        else
           biased_random_walk!(data, priorR, priorC, settings, support, state)
-        elseif operator[t] == 0x03
-          updateC!(priorC, state)
         end
+
+        sampleC!(priorC, state)
 
         if settings.verbose && (t % settings.verbosestep == 0)
           println("Burnin: step ", t, " done.")
@@ -112,17 +115,17 @@ function kpax3mcmc!(data::Matrix{UInt8},
       println("Starting collecting samples...")
     end
 
-    operator = sample(UInt8[1; 2; 3], settings.op, settings.T)
+    operator = sample(UInt8[1; 2], settings.op, settings.T)
 
     for t in 1:settings.T
       if operator[t] == 0x01
         splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
                     state)
-      elseif operator[t] == 0x02
+      else
         biased_random_walk!(data, priorR, priorC, settings, support, state)
-      elseif operator[t] == 0x03
-        updateC!(priorC, state)
       end
+
+      sampleC!(priorC, state)
 
       if t % settings.tstep == 0
         savestate!(fp, state)
@@ -198,7 +201,7 @@ function kpax3mcmc(settings::KSettings)
 
   state = initializestate(x.data, D, kset, priorR, priorC, settings)
 
-  support = KSupport(m, n, kset[end], maximum(state.v))
+  support = MCMCSupport(state, priorC)
 
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
 
@@ -236,9 +239,9 @@ function kpax3mcmc(x::AminoAcidData,
   priorR = EwensPitman(settings.α, settings.θ)
   priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r, maxclust=maxclust)
 
-  support = KSupport(m, n, maxclust, maxunit)
-
   state = AminoAcidState(x.data, R, priorR, priorC, settings)
+
+  support = MCMCSupport(state, priorC)
 
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
 

@@ -4,7 +4,7 @@ function gibbs!(data::Matrix{UInt8},
                 priorR::PriorRowPartition,
                 priorC::PriorColPartition,
                 settings::KSettings,
-                support::KSupport,
+                support::MCMCSupport,
                 state::AminoAcidState)
   shuffle!(support.u)
 

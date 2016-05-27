@@ -2,7 +2,7 @@
 
 function crossover!(R1::Vector{Int},
                     R2::Vector{Int},
-                    support::KSupport)
+                    support::GASupport)
   fill!(support.oi.v, 0)
   fill!(support.oj.v, 0)
 
