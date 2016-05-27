@@ -28,7 +28,7 @@ function logcondmarglik(x::Real,
                         n::Real,
                         α::Real,
                         β::Real)
-  (x * log(α + y) + (0x01 - x) * log(β + n - y) - log(α + β + n))::Float64
+  (x * log(α + y) + (one(x) - x) * log(β + n - y) - log(α + β + n))::Float64
 end
 
 function marglik(y::Vector{Float64},

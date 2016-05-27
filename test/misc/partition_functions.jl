@@ -1,27 +1,52 @@
 # This file is part of Kpax3. License is MIT.
 
-ifile = "data/proper_aa.fasta"
-ofile = "../build/test.bin"
+# TODO: test normalizepartition, modifypartition, modifymerge, modifysplit,
+#       modifyscramble
 
-settings = KSettings(ifile, ofile)
+function test_partition_functions_initializepartition()
+  ifile = "data/proper_aa.fasta"
+  ofile = "../build/test.bin"
 
-R = initializepartition(settings)
+  settings = KSettings(ifile, ofile)
 
-@test isa(R, Vector{Int})
-@test minimum(R) >= 1
-@test maximum(R) <= 6
+  R = initializepartition(settings)
 
-R = initializepartition(settings, kset=1:6)
+  @test isa(R, Vector{Int})
+  @test minimum(R) >= 1
+  @test maximum(R) <= 6
 
-@test isa(R, Vector{Int})
-@test minimum(R) >= 1
-@test maximum(R) <= 6
+  R = initializepartition(settings, kset=1:6)
 
-# TODO: test normalizepartition functions
+  @test isa(R, Vector{Int})
+  @test minimum(R) >= 1
+  @test maximum(R) <= 6
 
-R = zeros(Int, 6)
-S = [3; 3; 3; 2; 2; 1]
+  nothing
+end
 
-encodepartition!(R, S)
+test_partition_functions_initializepartition()
 
-@test R == [1; 2; 3; 22; 23; 36]
+function test_partition_functions_encodepartition()
+  R = zeros(Int, 6)
+  S = [3; 3; 3; 2; 2; 1]
+
+  encodepartition!(R, S)
+
+  @test R == [1; 2; 3; 22; 23; 36]
+
+  nothing
+end
+
+test_partition_functions_encodepartition()
+
+function test_partition_functions_decodepartition()
+  R = [1; 2; 3; 22; 23; 36]
+
+  decodepartition!(R)
+
+  @test R == [1; 1; 1; 4; 4; 6]
+
+  nothing
+end
+
+test_partition_functions_decodepartition()

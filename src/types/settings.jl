@@ -59,7 +59,7 @@ function KSettings(ifile::AbstractString,
                    T::Int=1000000,
                    burnin::Int=100000,
                    tstep::Int=1,
-                   op::Vector{Float64}=[0.6; 0.3; 0.1],
+                   op::Vector{Float64}=[0.3; 0.7],
                    λs1::Float64=1.0,
                    λs2::Float64=1.0,
                    parawm::Float64=5.0)
@@ -172,14 +172,12 @@ function KSettings(ifile::AbstractString,
     throw(KDomainError("Argument 'tstep' is negative."))
   end
 
-  if length(op) != 3
-    throw(KInputError("Argument 'op' does not have length 3."))
+  if length(op) != 2
+    throw(KInputError("Argument 'op' does not have length 2."))
   elseif op[1] < 0
     throw(KDomainError("Argument 'op[1]' is negative."))
   elseif op[2] < 0
     throw(KDomainError("Argument 'op[2]' is negative."))
-  elseif op[3] < 0
-    throw(KDomainError("Argument 'op[3]' is negative."))
   end
 
   if λs1 <= 0.0

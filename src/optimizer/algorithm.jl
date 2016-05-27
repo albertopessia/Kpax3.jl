@@ -5,7 +5,7 @@ function kpax3ga!(x::AminoAcidData,
                   priorR::PriorRowPartition,
                   priorC::PriorColPartition,
                   settings::KSettings,
-                  support::KSupport)
+                  support::GASupport)
   if settings.verbose
     @printf("Initializing Genetic Algorithm... ")
   end
@@ -155,10 +155,7 @@ function kpax3ga(partition,
 
   population = AminoAcidStateList(x.data, R, priorR, priorC, settings)
 
-  maxunit = min(n, max(maximum(population.state[population.rank[1]].v),
-                       settings.maxunit))
-
-  support = KSupport(m, n, maxclust, maxunit)
+  support = GASupport(m, n)
 
   kpax3ga!(x, population, priorR, priorC, settings, support)
 end
@@ -178,10 +175,7 @@ function kpax3ga(x::AminoAcidData,
 
   population = AminoAcidStateList(x.data, R, priorR, priorC, settings)
 
-  maxunit = min(n, max(maximum(population.state[population.rank[1]].v),
-                       settings.maxunit))
-
-  support = KSupport(m, n, maxclust, maxunit)
+  support = GASupport(m, n)
 
   kpax3ga!(x, population, priorR, priorC, settings, support)
 end

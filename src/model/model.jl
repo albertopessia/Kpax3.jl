@@ -12,8 +12,6 @@ include("partitioncols/aminoacids/densities.jl")
 include("partitioncols/aminoacids/simulate.jl")
 
 include("partitionrows/ewenspitman/densities.jl")
-include("partitionrows/ewenspitman/split.jl")
-include("partitionrows/ewenspitman/merge.jl")
-include("partitionrows/ewenspitman/biased_random_walk.jl")
+include("partitionrows/ewenspitman/mcmc.jl")
 
 include("loss_functions/binder.jl")

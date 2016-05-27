@@ -4,13 +4,15 @@ function biased_random_walk!(data::Matrix{UInt8},
                              priorR::PriorRowPartition,
                              priorC::PriorColPartition,
                              settings::KSettings,
-                             support::KSupport,
+                             support::MCMCSupport,
                              state::AminoAcidState)
   k = state.k
 
   i = sample(1:support.n)
   hi = state.R[i]
+  hj = 0
 
+  v = 0
   if state.v[hi] > 1
     if k > 1
       v = sample(1:k)
@@ -18,80 +20,156 @@ function biased_random_walk!(data::Matrix{UInt8},
       if v == k
         # move i to a new cluster
         k += 1
-        hj = findfirst(state.emptycluster)
-        support.lograR = logratiopriorrowbrwsplit(k, state.v[hi], priorR)
-      else
-        hj = state.cl[v] < hi ? state.cl[v] : state.cl[v + 1]
-        support.lograR = logratiopriorrowbrwmove(state.v[hi], state.v[hj],
-                                                 priorR)
       end
     else
       # move i to a new cluster
       k = 2
-      hj = findfirst(state.emptycluster)
-      support.lograR = logratiopriorrowbrwsplit(k, state.v[hi], priorR)
     end
   else
     # move i to another cluster
     k -= 1
     v = sample(1:k)
-    hj = state.cl[v] < hi ? state.cl[v] : state.cl[v + 1]
-    support.lograR = logratiopriorrowbrwmerge(k, state.v[hj], priorR)
   end
 
-  initsupportbrw!(k, i, state.v[hi], data, priorC, settings, support)
+  if k == state.k
+    hj = state.cl[v] < hi ? state.cl[v] : state.cl[v + 1]
 
-  simcbrw!(k, hi, hj, priorC, support, state)
+    initsupportbrwmove!(i, hi, hj, data, support, state)
 
-  loglikbrw!(k, hi, hj, priorC, support, state)
+    support.lograR = logratiopriorrowbrwmove(state.v[hi], state.v[hj], priorR)
 
-  ratio = exp(support.lograR +
-              support.logpC[1] - state.logpC[1] +
-              support.loglik - state.loglik +
-              state.logpC[2] - support.logpC[2])
+    updatelogmargliki!(priorC, support)
+    updatelogmarglikj!(priorC, support)
 
-  if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
-    performbrw!(i, hi, hj, k, priorC, settings, support, state)
+    logmarglikbrwmove!(state.cl, state.k, hi, hj, priorC, support)
+
+    ratio = exp(support.lograR + support.logmlikcandidate - support.logmlik)
+
+    if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
+      performbrwmove!(i, hi, hj, support, state)
+    end
+  elseif k > state.k
+    initsupportbrwsplit!(k, i, hi, data, priorC, settings, support, state)
+
+    support.lograR = logratiopriorrowbrwsplit(k, state.v[hi], priorR)
+
+    updatelogmargliki!(priorC, support)
+    updatelogmarglikj!(priorC, support)
+
+    logmarglikbrwsplit!(state.cl, state.k, hi, priorC, support)
+
+    ratio = exp(support.lograR + support.logmlikcandidate - support.logmlik)
+
+    if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
+      performbrwsplit!(i, hi, settings, support, state)
+    end
+  else
+    hj = state.cl[v] < hi ? state.cl[v] : state.cl[v + 1]
+
+    initsupportbrwmerge!(i, hj, data, support, state)
+
+    support.lograR = logratiopriorrowbrwmerge(k, state.v[hj], priorR)
+
+    updatelogmarglikj!(priorC, support)
+
+    logmarglikbrwmerge!(state.cl, state.k, hi, hj, priorC, support)
+
+    ratio = exp(support.lograR + support.logmlikcandidate - support.logmlik)
+
+    if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
+      performbrwmerge!(i, hi, hj, priorC, settings, support, state)
+    end
   end
 
   nothing
 end
 
-function performbrw!(i::Int,
-                     hi::Int,
-                     hj::Int,
-                     k::Int,
-                     priorC::PriorColPartition,
-                     settings::KSettings,
-                     support::KSupport,
-                     state::AminoAcidState)
-  if hj == 0
-    resizestate!(state, k, settings)
-    hj = k
+function performbrwmove!(i::Int,
+                         hi::Int,
+                         hj::Int,
+                         support::MCMCSupport,
+                         state::AminoAcidState)
+  state.R[i] = hj
+
+  state.v[hi] = support.vi
+  state.v[hj] = support.vj
+
+  for b in 1:support.m
+    state.n1s[hi, b] = support.ni[b]
+    state.n1s[hj, b] = support.nj[b]
+
+    support.lp[1, hi, b] = support.lpi[1, b]
+    support.lp[2, hi, b] = support.lpi[2, b]
+    support.lp[3, hi, b] = support.lpi[3, b]
+    support.lp[4, hi, b] = support.lpi[4, b]
+
+    support.lp[1, hj, b] = support.lpj[1, b]
+    support.lp[2, hj, b] = support.lpj[2, b]
+    support.lp[3, hj, b] = support.lpj[3, b]
+    support.lp[4, hj, b] = support.lpj[4, b]
   end
 
-  # remove i from the list of units of cluster hi
-  idx = 0
-  for j in 1:state.v[hi]
-    if state.unit[hi][j] != i
-      support.ui[idx += 1] = state.unit[hi][j]
-    end
-  end
+  copy!(state.unit[hi], 1, support.ui, 1, support.vi)
 
-  if state.v[hi] > 1
-    if state.emptycluster[hj]
-      performbrwsplit!(i, hi, hj, priorC, settings, support, state)
-    else
-      performbrwmove!(i, hi, hj, settings, support, state)
-    end
-  else
-    performbrwmerge!(i, hi, hj, priorC, settings, support, state)
-  end
+  resize!(state.unit[hj], state.v[hj])
+  state.unit[hj][state.v[hj]] = i
 
   state.logpR += support.lograR
-  copy!(state.logpC, support.logpC)
-  state.loglik = support.loglik
-  state.logpp = state.logpR + state.logpC[1] + state.loglik
+
+  support.logmlik = support.logmlikcandidate
+
+  nothing
+end
+
+function performbrwsplit!(i::Int,
+                          hi::Int,
+                          settings::KSettings,
+                          support::MCMCSupport,
+                          state::AminoAcidState)
+  resizestate!(state, state.k + 1, settings)
+
+  hj = findfirst(state.emptycluster)
+
+  state.R[i] = hj
+
+  state.emptycluster[hj] = false
+
+  h = 0
+  for a in 1:length(state.emptycluster)
+    if !state.emptycluster[a]
+      h += 1
+      state.cl[h] = a
+    end
+  end
+
+  state.k = h
+
+  state.v[hi] = support.vi
+  state.v[hj] = support.vj
+
+  for b in 1:support.m
+    state.n1s[hi, b] = support.ni[b]
+    state.n1s[hj, b] = support.nj[b]
+
+    support.lp[1, hi, b] = support.lpi[1, b]
+    support.lp[2, hi, b] = support.lpi[2, b]
+    support.lp[3, hi, b] = support.lpi[3, b]
+    support.lp[4, hi, b] = support.lpi[4, b]
+
+    support.lp[1, hj, b] = support.lpj[1, b]
+    support.lp[2, hj, b] = support.lpj[2, b]
+    support.lp[3, hj, b] = support.lpj[3, b]
+    support.lp[4, hj, b] = support.lpj[4, b]
+  end
+
+  copy!(state.unit[hi], 1, support.ui, 1, support.vi)
+
+  resize!(state.unit[hj], 1)
+  state.unit[hj][1] = i
+
+  state.logpR += support.lograR
+
+  support.logmlik = support.logmlikcandidate
 
   nothing
 end
@@ -101,118 +179,39 @@ function performbrwmerge!(i::Int,
                           hj::Int,
                           priorC::PriorColPartition,
                           settings::KSettings,
-                          support::KSupport,
+                          support::MCMCSupport,
                           state::AminoAcidState)
   state.R[i] = hj
 
   state.emptycluster[hi] = true
 
-  k = 0
+  h = 0
   for a in 1:length(state.emptycluster)
     if !state.emptycluster[a]
-      state.cl[k += 1] = a
+      h += 1
+      state.cl[h] = a
     end
   end
 
-  state.k = k
+  state.k = h
 
-  state.v[hj] += 1
-
-  if length(state.unit[hj]) < state.v[hj]
-    tmp = zeros(Int, min(support.n, state.v[hj] + settings.maxunit - 1))
-    state.unit[hj] = copy!(tmp, state.unit[hj])
-  end
-
-  state.unit[hj][state.v[hj]] = i
+  state.v[hj] = support.vj
 
   for b in 1:support.m
-    for l in 1:(support.k - 1)
-      state.C[support.cl[l], b] = support.C[l, b]
-    end
-    state.C[hj, b] = support.C[support.k, b]
+    state.n1s[hj, b] = support.nj[b]
 
-    state.n1s[hj, b] += support.ni[b]
+    support.lp[1, hj, b] = support.lpj[1, b]
+    support.lp[2, hj, b] = support.lpj[2, b]
+    support.lp[3, hj, b] = support.lpj[3, b]
+    support.lp[4, hj, b] = support.lpj[4, b]
   end
 
-  nothing
-end
-
-function performbrwmove!(i::Int,
-                         hi::Int,
-                         hj::Int,
-                         settings::KSettings,
-                         support::KSupport,
-                         state::AminoAcidState)
-  state.R[i] = hj
-
-  state.v[hi] -= 1
-  state.v[hj] += 1
-
-  copy!(state.unit[hi], 1, support.ui, 1, support.vi - 1)
-
-  if length(state.unit[hj]) < state.v[hj]
-    tmp = zeros(Int, min(support.n, state.v[hj] + settings.maxunit - 1))
-    state.unit[hj] = copy!(tmp, state.unit[hj])
-  end
-
+  resize!(state.unit[hj], state.v[hj])
   state.unit[hj][state.v[hj]] = i
 
-  for b in 1:support.m
-    for l in 1:(support.k - 2)
-      state.C[support.cl[l], b] = support.C[l, b]
-    end
-    state.C[hi, b] = support.C[support.k - 1, b]
-    state.C[hj, b] = support.C[support.k, b]
+  state.logpR += support.lograR
 
-    state.n1s[hi, b] -= support.ni[b]
-    state.n1s[hj, b] += support.ni[b]
-  end
-
-  nothing
-end
-
-function performbrwsplit!(i::Int,
-                          hi::Int,
-                          hj::Int,
-                          priorC::PriorColPartition,
-                          settings::KSettings,
-                          support::KSupport,
-                          state::AminoAcidState)
-  state.R[i] = hj
-
-  for b in 1:support.m
-    for l in 1:(support.k - 2)
-      state.C[support.cl[l], b] = support.C[l, b]
-    end
-    state.C[hi, b] = support.C[support.k - 1, b]
-    state.C[hj, b] = support.C[support.k, b]
-
-    state.n1s[hi, b] -= support.ni[b]
-    state.n1s[hj, b] = support.ni[b]
-  end
-
-  state.emptycluster[hj] = false
-
-  k = 0
-  for a in 1:length(state.emptycluster)
-    if !state.emptycluster[a]
-      state.cl[k += 1] = a
-    end
-  end
-
-  state.k = k
-
-  state.v[hi] -= 1
-  state.v[hj] = 1
-
-  copy!(state.unit[hi], 1, support.ui, 1, support.vi - 1)
-
-  if length(state.unit[hj]) < state.v[hj]
-    tmp = zeros(Int, min(support.n, state.v[hj] + settings.maxunit - 1))
-    state.unit[hj] = copy!(tmp, state.unit[hj])
-  end
-
-  state.unit[hj][state.v[hj]] = i
+  support.logmlik = support.logmlikcandidate
 
   nothing
 end

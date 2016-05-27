@@ -7,15 +7,14 @@ function split!(ij::Vector{Int},
                 priorR::PriorRowPartition,
                 priorC::PriorColPartition,
                 settings::KSettings,
-                support::KSupport,
+                support::MCMCSupport,
                 state::AminoAcidState)
   # number of clusters after the split
   k = state.k + 1
 
-  initsupportsplitmerge!(ij, S, k, data, priorC, settings, support)
+  initsupportsplit!(ij, k, data, priorC, settings, support)
 
-  # sample a new proportion for cluster 'hi'
-  w = rand(settings.distws)
+  hi = state.R[ij[1]]
 
   # logarithm of the product of sequential probabilities
   lq = 0.0
@@ -23,6 +22,7 @@ function split!(ij::Vector{Int},
   # temporary / support variables
   u = 0
   lcp = zeros(Float64, 2)
+  lw = zeros(Float64, 2)
   z = 0.0
   p = 0.0
 
@@ -37,9 +37,12 @@ function split!(ij::Vector{Int},
       lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, support)
     end
 
-    # (w * p1) / (w * p1 + (1 - w) * p2) = 1 / (1 + ((1 - w) / w) * (p2 / p1))
-    # => e^(-log(1 + e^(log(1 - w) - log(w) + log(p2) - log(p1))))
-    z = -log1p(exp(log(1 - w) - log(w) + lcp[2] - lcp[1]))
+    lw[1] = splitmergeweight(support.vi, priorR)
+    lw[2] = splitmergeweight(support.vj, priorR)
+
+    # (w1 * p1) / (w1 * p1 + w2 * p2) = 1 / (1 + (w2 * p2) / (w1 * p1))
+    # => e^(-log(1 + e^(log(w2) + log(p2) - log(w1) - log(p1))))
+    z = -log1p(exp(lw[2] + lcp[2] - lw[1] - lcp[1]))
     p = exp(z)
 
     if rand() <= p
@@ -51,23 +54,13 @@ function split!(ij::Vector{Int},
     end
   end
 
-  hi = state.R[ij[1]]
+  updatelogmargliki!(priorC, support)
+  updatelogmarglikj!(priorC, support)
 
-  simcsplit!(k, hi, priorC, support, state)
+  logratiopriorrowsplit!(k, priorR, support)
+  logmargliksplit!(state.cl, state.k, hi, priorC, support)
 
-  support.lograR = logratiopriorrowsplit(k, support.vi, support.vj, priorR)
-
-  logliksplit!(hi, priorC, support, state)
-
-  distwm = Beta(settings.parawm + support.vi, settings.parawm + support.vj)
-
-  ratio = exp(support.lograR +
-              support.logpC[1] - state.logpC[1] +
-              support.loglik - state.loglik +
-              state.logpC[2] - support.logpC[2] +
-              logpdf(distwm, w) -
-              logpdf(settings.distws, w) -
-              lq)
+  ratio = exp(support.lograR + support.logmlikcandidate - support.logmlik - lq)
 
   if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
     performsplit!(hi, k, priorC, settings, support, state)
@@ -80,21 +73,14 @@ function performsplit!(hi::Int,
                        k::Int,
                        priorC::PriorColPartition,
                        settings::KSettings,
-                       support::KSupport,
+                       support::MCMCSupport,
                        state::AminoAcidState)
   resizestate!(state, k, settings)
 
   hj = findfirst(state.emptycluster)
 
-  for b in 1:support.m
-    for l in 1:(support.k - 2)
-      state.C[support.cl[l], b] = support.C[l, b]
-    end
-    state.C[hi, b] = support.C[support.k - 1, b]
-    state.C[hj, b] = support.C[support.k, b]
-
-    state.n1s[hi, b] = support.ni[b]
-    state.n1s[hj, b] = support.nj[b]
+  for a in 1:support.vj
+    state.R[support.uj[a]] = hj
   end
 
   state.emptycluster[hj] = false
@@ -110,25 +96,31 @@ function performsplit!(hi::Int,
   state.k = h
 
   state.v[hi] = support.vi
-  state.unit[hi] = copy!(state.unit[hi], 1, support.ui, 1, support.vi)
-
   state.v[hj] = support.vj
 
-  if length(state.unit[hj]) < state.v[hj]
-    resize!(state.unit[hj], state.v[hj])
+  for b in 1:support.m
+    state.n1s[hi, b] = support.ni[b]
+    state.n1s[hj, b] = support.nj[b]
+
+    support.lp[1, hi, b] = support.lpi[1, b]
+    support.lp[2, hi, b] = support.lpi[2, b]
+    support.lp[3, hi, b] = support.lpi[3, b]
+    support.lp[4, hi, b] = support.lpi[4, b]
+
+    support.lp[1, hj, b] = support.lpj[1, b]
+    support.lp[2, hj, b] = support.lpj[2, b]
+    support.lp[3, hj, b] = support.lpj[3, b]
+    support.lp[4, hj, b] = support.lpj[4, b]
   end
 
-  state.unit[hj] = copy!(state.unit[hj], 1, support.uj, 1, support.vj)
+  copy!(state.unit[hi], 1, support.ui, 1, support.vi)
 
-  # move units to their new cluster
-  for j in 1:support.vj
-    state.R[support.uj[j]] = hj
-  end
+  resize!(state.unit[hj], support.vj)
+  copy!(state.unit[hj], 1, support.uj, 1, support.vj)
 
   state.logpR += support.lograR
-  copy!(state.logpC, support.logpC)
-  state.loglik = support.loglik
-  state.logpp = state.logpR + state.logpC[1] + state.loglik
+
+  support.logmlik = support.logmlikcandidate
 
   nothing
 end

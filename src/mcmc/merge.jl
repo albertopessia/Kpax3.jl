@@ -7,20 +7,15 @@ function merge!(ij::Vector{Int},
                 priorR::PriorRowPartition,
                 priorC::PriorColPartition,
                 settings::KSettings,
-                support::KSupport,
+                support::MCMCSupport,
                 state::AminoAcidState)
   # number of clusters after the merge
   k = state.k - 1
 
-  initsupportsplitmerge!(ij, S, k, data, priorC, settings, support)
+  initsupportmerge!(ij, k, data, priorC, support)
 
   hi = state.R[ij[1]]
   hj = state.R[ij[2]]
-
-  distwm = Beta(settings.parawm + state.v[hi], settings.parawm + state.v[hj])
-
-  # sample a new proportion for cluster 'hi'
-  w = rand(distwm)
 
   # logarithm of the product of sequential probabilities
   lq = 0.0
@@ -28,6 +23,7 @@ function merge!(ij::Vector{Int},
   # temporary / support variables
   u = 0
   lcp = zeros(Float64, 2)
+  lw = zeros(Float64, 2)
   z = 0.0
   p = 0.0
 
@@ -48,9 +44,12 @@ function merge!(ij::Vector{Int},
       lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, support)
     end
 
-    # (w * p1) / (w * p1 + (1 - w) * p2) = 1 / (1 + ((1 - w) / w) * (p2 / p1))
-    # => e^(-log(1 + e^(log(1 - w) - log(w) + log(p2) - log(p1))))
-    z = -log1p(exp(log(1 - w) - log(w) + lcp[2] - lcp[1]))
+    lw[1] = splitmergeweight(support.vi, priorR)
+    lw[2] = splitmergeweight(support.vj, priorR)
+
+    # (w1 * p1) / (w1 * p1 + w2 * p2) = 1 / (1 + (w2 * p2) / (w1 * p1))
+    # => e^(-log(1 + e^(log(w2) + log(p2) - log(w1) - log(p1))))
+    z = -log1p(exp(lw[2] + lcp[2] - lw[1] - lcp[1]))
     p = exp(z)
 
     if state.R[u] == hi
@@ -62,19 +61,12 @@ function merge!(ij::Vector{Int},
     end
   end
 
-  simcmerge!(k, hi, hj, vi, ni, priorC, support, state)
+  updatelogmargliki!(ni, vi, priorC, support)
 
-  support.lograR = logratiopriorrowmerge(k, support.vi, support.vj, priorR)
+  logratiopriorrowmerge!(k, priorR, support)
+  logmarglikmerge!(state.cl, state.k, hi, hj, priorC, support)
 
-  loglikmerge!(hi, hj, ni, vi, priorC, support, state)
-
-  ratio = exp(support.lograR +
-              support.logpC[1] - state.logpC[1] +
-              support.loglik - state.loglik +
-              state.logpC[2] - support.logpC[2] +
-              logpdf(settings.distws, w) -
-              logpdf(distwm, w) +
-              lq)
+  ratio = exp(support.lograR + support.logmlikcandidate - support.logmlik + lq)
 
   if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
     performmerge!(hi, hj, ni, vi, priorC, settings, support, state)
@@ -89,44 +81,41 @@ function performmerge!(hi::Int,
                        vi::Int,
                        priorC::PriorColPartition,
                        settings::KSettings,
-                       support::KSupport,
+                       support::MCMCSupport,
                        state::AminoAcidState)
-  for j in 1:state.v[hj]
-    state.R[state.unit[hj][j]] = hi
+  for a in 1:state.v[hj]
+    state.R[state.unit[hj][a]] = hi
   end
 
   state.emptycluster[hj] = true
 
-  k = 0
+  h = 0
   for a in 1:length(state.emptycluster)
     if !state.emptycluster[a]
-      state.cl[k += 1] = a
+      h += 1
+      state.cl[h] = a
     end
   end
 
-  state.k = k
+  state.k = h
 
   for b in 1:support.m
-    for l in 1:(support.k - 1)
-      state.C[support.cl[l], b] = support.C[l, b]
-    end
-    state.C[hi, b] = support.C[support.k, b]
-
     state.n1s[hi, b] = ni[b]
+
+    support.lp[1, hi, b] = support.lpi[1, b]
+    support.lp[2, hi, b] = support.lpi[2, b]
+    support.lp[3, hi, b] = support.lpi[3, b]
+    support.lp[4, hi, b] = support.lpi[4, b]
   end
 
-  if length(state.unit[hi]) < vi
-    resize!(state.unit[hi], vi)
-  end
-
+  resize!(state.unit[hi], vi)
   copy!(state.unit[hi], state.v[hi] + 1, state.unit[hj], 1, state.v[hj])
 
   state.v[hi] = vi
 
   state.logpR += support.lograR
-  copy!(state.logpC, support.logpC)
-  state.loglik = support.loglik
-  state.logpp = state.logpR + state.logpC[1] + state.loglik
+
+  support.logmlik = support.logmlikcandidate
 
   nothing
 end

@@ -1,614 +1,1038 @@
 # This file is part of Kpax3. License is MIT.
 
-ifile = "data/proper_aa.fasta"
-ofile = "../build/test.bin"
+function test_mcmc_merge_init()
+  # merge cluster 2 and cluster 3
+  ifile = "data/proper_aa.fasta"
+  ofile = "../build/test.bin"
 
-settings = KSettings(ifile, ofile, maxclust=3, maxunit=1)
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-data = UInt8[0 0 0 0 0 1;
-             1 1 1 1 1 0;
-             0 0 1 0 1 1;
-             1 1 0 1 0 0;
-             1 1 0 0 0 0;
-             0 0 0 1 1 0;
-             1 1 1 0 0 0;
-             0 0 0 1 1 1;
-             0 0 1 0 0 0;
-             1 0 0 1 0 1;
-             0 1 0 0 1 0;
-             0 0 0 0 0 1;
-             1 1 1 0 0 0;
-             0 0 0 1 1 0;
-             1 1 0 0 1 1;
-             0 0 1 1 0 0;
-             1 1 0 1 0 0;
-             0 0 1 0 1 1]
+  data = UInt8[0 0 0 0 0 1;
+               1 1 1 1 1 0;
+               0 0 1 0 1 1;
+               1 1 0 1 0 0;
+               1 1 0 0 0 0;
+               0 0 0 1 1 0;
+               1 1 1 0 0 0;
+               0 0 0 1 1 1;
+               0 0 1 0 0 0;
+               1 0 0 1 0 1;
+               0 1 0 0 1 0;
+               0 0 0 0 0 1;
+               1 1 1 0 0 0;
+               0 0 0 1 1 0;
+               1 1 0 0 1 1;
+               0 0 1 1 0 0;
+               1 1 0 1 0 0;
+               0 0 1 0 1 1]
 
-(m, n) = size(data)
+  (m, n) = size(data)
 
-priorR = EwensPitman(settings.α, settings.θ)
-priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                           maxclust=settings.maxclust)
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
+                             maxclust=settings.maxclust)
 
-# merge
-R = [13; 13; 13; 42; 42; 76]
-k = length(unique(R)) - 1
+  R = [13; 13; 13; 42; 42; 76]
+  k = length(unique(R)) - 1
 
-ij = [4; 6]
-S = 1
-u = 5
+  ij = [4; 6]
+  S = 1
+  u = 5
 
-# test merge functions by merging cluster 2 and cluster 3
-# test initialization
-mergesupport = KSupport(m, n, 1, 1)
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
 
-initsupportsplitmerge!(ij, S, k, data, priorC, settings, mergesupport)
+  initsupportmerge!(ij, k, data, priorC, support)
 
-wi = zeros(Float64, 4, m)
-for col in 1:m
-  wi[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
-                          priorC.B[1, col])
+  wi = zeros(Float64, 4, m)
+  for col in 1:m
+    wi[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
+                            priorC.B[1, col])
 
-  wi[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
-                          priorC.B[2, col])
+    wi[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
+                            priorC.B[2, col])
 
-  wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
-                          priorC.B[3, col])
+    wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
+                            priorC.B[3, col])
 
-  wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
-                          priorC.B[4, col])
+    wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
+                            priorC.B[4, col])
+  end
+
+  ci = Float64[log(sum(exp(support.wi.w[:, b]))) for b in 1:m]
+
+  wj = zeros(Float64, 4, m)
+  for col in 1:m
+    wj[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
+                            priorC.B[1, col])
+
+    wj[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
+                            priorC.B[2, col])
+
+    wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
+                            priorC.B[3, col])
+
+    wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
+                            priorC.B[4, col])
+  end
+
+  cj = Float64[log(sum(exp(support.wj.w[:, b]))) for b in 1:m]
+
+  @test support.vi == 1
+  @test support.ni == float(data[:, ij[1]])
+  @test support.ui == [ij[1]; 0; 0; 0; 0; 0]
+
+  @test maximum(abs(support.wi.w - wi)) <= ε
+  @test maximum(abs(support.wi.c - ci)) <= ε
+  @test support.wi.z == zeros(Float64, 4, m)
+
+  @test support.vj == 1
+  @test support.nj == float(data[:, ij[2]])
+  @test support.uj == [ij[2]; 0; 0; 0; 0; 0]
+
+  @test maximum(abs(support.wj.w - wj)) <= ε
+  @test maximum(abs(support.wj.c - cj)) <= ε
+  @test support.wj.z == zeros(Float64, 4, m)
+
+  nothing
 end
 
-ci = [log(sum(exp(mergesupport.wi.w[:, b])))::Float64 for b in 1:m]
+test_mcmc_merge_init()
 
-wj = zeros(Float64, 4, m)
-for col in 1:m
-  wj[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
-                          priorC.B[1, col])
+function test_mcmc_merge_updatei()
+  # move the first unit (u) to cluster 2 (test inverse split operator)
+  ifile = "data/proper_aa.fasta"
+  ofile = "../build/test.bin"
 
-  wj[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
-                          priorC.B[2, col])
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-  wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
-                          priorC.B[3, col])
+  data = UInt8[0 0 0 0 0 1;
+               1 1 1 1 1 0;
+               0 0 1 0 1 1;
+               1 1 0 1 0 0;
+               1 1 0 0 0 0;
+               0 0 0 1 1 0;
+               1 1 1 0 0 0;
+               0 0 0 1 1 1;
+               0 0 1 0 0 0;
+               1 0 0 1 0 1;
+               0 1 0 0 1 0;
+               0 0 0 0 0 1;
+               1 1 1 0 0 0;
+               0 0 0 1 1 0;
+               1 1 0 0 1 1;
+               0 0 1 1 0 0;
+               1 1 0 1 0 0;
+               0 0 1 0 1 1]
 
-  wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
-                          priorC.B[4, col])
+  (m, n) = size(data)
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
+                             maxclust=settings.maxclust)
+
+  R = [13; 13; 13; 42; 42; 76]
+  k = length(unique(R)) - 1
+
+  ij = [4; 6]
+  S = 1
+  u = 5
+
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
+
+  initsupportmerge!(ij, k, data, priorC, support)
+
+  lcp = zeros(Float64, 2)
+  for b in 1:m
+    lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, support)
+    lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, support)
+  end
+  updateclusteri!(u, data, support)
+
+  wi = zeros(Float64, 4, m)
+  for col in 1:m
+    wi[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
+                            priorC.B[1, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[1, col], priorC.B[1, col])
+
+    wi[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
+                            priorC.B[2, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[2, col], priorC.B[2, col])
+
+    wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
+                            priorC.B[3, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[3, col], priorC.B[3, col])
+
+    wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
+                            priorC.B[4, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[4, col], priorC.B[4, col])
+  end
+
+  zi = copy(wi)
+
+  ci = Float64[log(sum(exp(support.wi.w[:, b]))) for b in 1:m]
+
+  wj = zeros(Float64, 4, m)
+  zj = zeros(Float64, 4, m)
+  for col in 1:m
+    wj[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
+                            priorC.B[1, col])
+
+    wj[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
+                            priorC.B[2, col])
+
+    wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
+                            priorC.B[3, col])
+
+    wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
+                            priorC.B[4, col])
+
+    zj[1, col] = wj[1, col] +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[1, col], priorC.B[1, col])
+
+    zj[2, col] = wj[2, col] +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[2, col], priorC.B[2, col])
+
+    zj[3, col] = wj[3, col] +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[3, col], priorC.B[3, col])
+
+    zj[4, col] = wj[4, col] +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[4, col], priorC.B[4, col])
+
+  end
+
+  cj = Float64[log(sum(exp(support.wj.w[:, b]))) for b in 1:m]
+
+  @test support.vi == 2
+  @test support.ni == float(data[:, ij[1]]) + float(data[:, u])
+  @test support.ui == [ij[1]; u; 0; 0; 0; 0]
+
+  @test maximum(abs(support.wi.w - wi)) <= ε
+  @test maximum(abs(support.wi.c - ci)) <= ε
+  @test maximum(abs(support.wi.z - zi)) <= ε
+
+  @test support.vj == 1
+  @test support.nj == float(data[:, ij[2]])
+  @test support.uj == [ij[2]; 0; 0; 0; 0; 0]
+
+  @test maximum(abs(support.wj.w - wj)) <= ε
+  @test maximum(abs(support.wj.c - cj)) <= ε
+  @test maximum(abs(support.wj.z - zj)) <= ε
+
+  nothing
 end
 
-cj = [log(sum(exp(mergesupport.wj.w[:, b])))::Float64 for b in 1:m]
+test_mcmc_merge_updatei()
 
-@test mergesupport.vi == 1
-@test mergesupport.ni == float(data[:, ij[1]])
-@test mergesupport.ui == [ij[1]; 0]
+function test_mcmc_merge_updatej()
+  # move the first unit (u) to cluster 2 (test inverse split operator)
+  ifile = "data/proper_aa.fasta"
+  ofile = "../build/test.bin"
 
-@test maximum(abs(mergesupport.wi.w - wi)) <= ε
-@test maximum(abs(mergesupport.wi.c - ci)) <= ε
-@test mergesupport.wi.z == zeros(Float64, 4, m)
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-@test mergesupport.vj == 1
-@test mergesupport.nj == float(data[:, ij[2]])
-@test mergesupport.uj == [ij[2]; 0]
+  data = UInt8[0 0 0 0 0 1;
+               1 1 1 1 1 0;
+               0 0 1 0 1 1;
+               1 1 0 1 0 0;
+               1 1 0 0 0 0;
+               0 0 0 1 1 0;
+               1 1 1 0 0 0;
+               0 0 0 1 1 1;
+               0 0 1 0 0 0;
+               1 0 0 1 0 1;
+               0 1 0 0 1 0;
+               0 0 0 0 0 1;
+               1 1 1 0 0 0;
+               0 0 0 1 1 0;
+               1 1 0 0 1 1;
+               0 0 1 1 0 0;
+               1 1 0 1 0 0;
+               0 0 1 0 1 1]
 
-@test maximum(abs(mergesupport.wj.w - wj)) <= ε
-@test maximum(abs(mergesupport.wj.c - cj)) <= ε
-@test mergesupport.wj.z == zeros(Float64, 4, m)
+  (m, n) = size(data)
 
-# test the move of the first unit (u) to cluster 2 (test inverse split operator)
-mergesupport = KSupport(m, n, 1, 1)
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
+                             maxclust=settings.maxclust)
 
-initsupportsplitmerge!(ij, S, k, data, priorC, settings, mergesupport)
+  R = [13; 13; 13; 42; 42; 76]
+  k = length(unique(R)) - 1
 
-lcp = zeros(Float64, 2)
-for b in 1:m
-  lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, mergesupport)
-  lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, mergesupport)
-end
-updateclusteri!(u, data, mergesupport)
+  ij = [4; 6]
+  S = 1
+  u = 5
 
-wi = zeros(Float64, 4, m)
-for col in 1:m
-  wi[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
-                          priorC.B[1, col]) +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[1, col], priorC.B[1, col])
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
 
-  wi[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
-                          priorC.B[2, col]) +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[2, col], priorC.B[2, col])
+  initsupportmerge!(ij, k, data, priorC, support)
 
-  wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
-                          priorC.B[3, col]) +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[3, col], priorC.B[3, col])
+  lcp = zeros(Float64, 2)
+  for b in 1:m
+    lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, support)
+    lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, support)
+  end
+  updateclusterj!(u, data, support)
 
-  wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
-                          priorC.B[4, col]) +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[4, col], priorC.B[4, col])
-end
+  wi = zeros(Float64, 4, m)
+  zi = zeros(Float64, 4, m)
+  for col in 1:m
+    wi[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
+                            priorC.B[1, col])
 
-zi = copy(wi)
+    wi[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
+                            priorC.B[2, col])
 
-ci = [log(sum(exp(mergesupport.wi.w[:, b])))::Float64 for b in 1:m]
+    wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
+                            priorC.B[3, col])
 
-wj = zeros(Float64, 4, m)
-zj = zeros(Float64, 4, m)
-for col in 1:m
-  wj[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
-                          priorC.B[1, col])
+    wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
+                            priorC.B[4, col])
 
-  wj[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
-                          priorC.B[2, col])
+    zi[1, col] = wi[1, col] +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[1, col], priorC.B[1, col])
 
-  wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
-                          priorC.B[3, col])
+    zi[2, col] = wi[2, col] +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[2, col], priorC.B[2, col])
 
-  wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
-                          priorC.B[4, col])
+    zi[3, col] = wi[3, col] +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[3, col], priorC.B[3, col])
 
-  zj[1, col] = wj[1, col] +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[1, col], priorC.B[1, col])
+    zi[4, col] = wi[4, col] +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[4, col], priorC.B[4, col])
+  end
 
-  zj[2, col] = wj[2, col] +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[2, col], priorC.B[2, col])
+  ci = Float64[log(sum(exp(support.wi.w[:, b]))) for b in 1:m]
 
-  zj[3, col] = wj[3, col] +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[3, col], priorC.B[3, col])
+  wj = zeros(Float64, 4, m)
+  for col in 1:m
+    wj[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
+                            priorC.B[1, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[1, col], priorC.B[1, col])
 
-  zj[4, col] = wj[4, col] +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[4, col], priorC.B[4, col])
+    wj[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
+                            priorC.B[2, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[2, col], priorC.B[2, col])
 
-end
+    wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
+                            priorC.B[3, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[3, col], priorC.B[3, col])
 
-cj = [log(sum(exp(mergesupport.wj.w[:, b])))::Float64 for b in 1:m]
+    wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
+                            priorC.B[4, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[4, col], priorC.B[4, col])
+  end
+  zj = copy(wj)
 
-@test mergesupport.vi == 2
-@test mergesupport.ni == float(data[:, ij[1]]) + float(data[:, u])
-@test mergesupport.ui == [ij[1]; u]
+  cj = Float64[log(sum(exp(support.wj.w[:, b]))) for b in 1:m]
 
-@test maximum(abs(mergesupport.wi.w - wi)) <= ε
-@test maximum(abs(mergesupport.wi.c - ci)) <= ε
-@test maximum(abs(mergesupport.wi.z - zi)) <= ε
+  @test support.vi == 1
+  @test support.ni == float(data[:, ij[1]])
+  @test support.ui == [ij[1]; 0; 0; 0; 0; 0]
 
-@test mergesupport.vj == 1
-@test mergesupport.nj == float(data[:, ij[2]])
-@test mergesupport.uj == [ij[2]; 0]
+  @test maximum(abs(support.wi.w - wi)) <= ε
+  @test maximum(abs(support.wi.c - ci)) <= ε
+  @test maximum(abs(support.wi.z - zi)) <= ε
 
-@test maximum(abs(mergesupport.wj.w - wj)) <= ε
-@test maximum(abs(mergesupport.wj.c - cj)) <= ε
-@test maximum(abs(mergesupport.wj.z - zj)) <= ε
+  @test support.vj == 2
+  @test support.nj == float(data[:, ij[2]]) + float(data[:, u])
+  @test support.uj == [ij[2]; u; 0; 0; 0; 0]
 
-# test the move of the first unit (u) to cluster 3 (test inverse split operator)
-mergesupport = KSupport(m, n, 1, 1)
+  @test maximum(abs(support.wj.w - wj)) <= ε
+  @test maximum(abs(support.wj.c - cj)) <= ε
+  @test maximum(abs(support.wj.z - zj)) <= ε
 
-initsupportsplitmerge!(ij, S, k, data, priorC, settings, mergesupport)
-
-lcp = zeros(Float64, 2)
-for b in 1:m
-  lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, mergesupport)
-  lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, mergesupport)
-end
-updateclusterj!(u, data, mergesupport)
-
-wi = zeros(Float64, 4, m)
-zi = zeros(Float64, 4, m)
-for col in 1:m
-  wi[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
-                          priorC.B[1, col])
-
-  wi[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
-                          priorC.B[2, col])
-
-  wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
-                          priorC.B[3, col])
-
-  wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
-                          priorC.B[4, col])
-
-  zi[1, col] = wi[1, col] +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[1, col], priorC.B[1, col])
-
-  zi[2, col] = wi[2, col] +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[2, col], priorC.B[2, col])
-
-  zi[3, col] = wi[3, col] +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[3, col], priorC.B[3, col])
-
-  zi[4, col] = wi[4, col] +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[4, col], priorC.B[4, col])
+  nothing
 end
 
-ci = [log(sum(exp(mergesupport.wi.w[:, b])))::Float64 for b in 1:m]
+test_mcmc_merge_updatej()
 
-wj = zeros(Float64, 4, m)
-for col in 1:m
-  wj[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
-                          priorC.B[1, col]) +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[1, col], priorC.B[1, col])
+function test_mcmc_split_init()
+  # split cluster 1
+  ifile = "data/proper_aa.fasta"
+  ofile = "../build/test.bin"
 
-  wj[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
-                          priorC.B[2, col]) +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[2, col], priorC.B[2, col])
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-  wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
-                          priorC.B[3, col]) +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[3, col], priorC.B[3, col])
+  data = UInt8[0 0 0 0 0 1;
+               1 1 1 1 1 0;
+               0 0 1 0 1 1;
+               1 1 0 1 0 0;
+               1 1 0 0 0 0;
+               0 0 0 1 1 0;
+               1 1 1 0 0 0;
+               0 0 0 1 1 1;
+               0 0 1 0 0 0;
+               1 0 0 1 0 1;
+               0 1 0 0 1 0;
+               0 0 0 0 0 1;
+               1 1 1 0 0 0;
+               0 0 0 1 1 0;
+               1 1 0 0 1 1;
+               0 0 1 1 0 0;
+               1 1 0 1 0 0;
+               0 0 1 0 1 1]
 
-  wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
-                          priorC.B[4, col]) +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[4, col], priorC.B[4, col])
-end
-zj = copy(wj)
+  (m, n) = size(data)
 
-cj = [log(sum(exp(mergesupport.wj.w[:, b])))::Float64 for b in 1:m]
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
+                             maxclust=settings.maxclust)
 
-@test mergesupport.vi == 1
-@test mergesupport.ni == float(data[:, ij[1]])
-@test mergesupport.ui == [ij[1]; 0]
+  R = [13; 13; 13; 13; 13; 76]
+  k = length(unique(R)) + 1
 
-@test maximum(abs(mergesupport.wi.w - wi)) <= ε
-@test maximum(abs(mergesupport.wi.c - ci)) <= ε
-@test maximum(abs(mergesupport.wi.z - zi)) <= ε
+  ij = [1; 5]
+  S = 3
+  u = 4
 
-@test mergesupport.vj == 2
-@test mergesupport.nj == float(data[:, ij[2]]) + float(data[:, u])
-@test mergesupport.uj == [ij[2]; u]
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
 
-@test maximum(abs(mergesupport.wj.w - wj)) <= ε
-@test maximum(abs(mergesupport.wj.c - cj)) <= ε
-@test maximum(abs(mergesupport.wj.z - zj)) <= ε
+  initsupportsplit!(ij, k, data, priorC, settings, support)
 
-# split
-R = [13; 13; 13; 13; 13; 76]
-k = length(unique(R)) + 1
+  len = k + settings.maxclust - 1
 
-priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=2)
+  logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
+  @test priorC.logω == logω
 
-ij = [1; 5]
-S = 3
-u = 4
+  g = 0
+  lp = zeros(Float64, 4, len, m)
+  for b in 1:m, l in 1:state.k
+    g = state.cl[l]
 
-# test split functions by splitting cluster 1
-# test initialization
-splitsupport = KSupport(m, n, 1, 1)
+    lp[1, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[1, b],
+                             priorC.B[1, b])
+    lp[2, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[2, b],
+                             priorC.B[2, b])
+    lp[3, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[3, b],
+                             priorC.B[3, b])
+    lp[4, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[4, b],
+                             priorC.B[4, b])
+  end
+  @test support.lp == lp
 
-initsupportsplitmerge!(ij, S, k, data, priorC, settings, splitsupport)
+  wi = zeros(Float64, 4, m)
+  for col in 1:m
+    wi[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
+                            priorC.B[1, col])
 
-len = k + settings.maxclust - 1
-logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
-@test priorC.logω == logω
+    wi[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
+                            priorC.B[2, col])
 
-wi = zeros(Float64, 4, m)
-for col in 1:m
-  wi[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
-                          priorC.B[1, col])
+    wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
+                            priorC.B[3, col])
 
-  wi[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
-                          priorC.B[2, col])
+    wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
+                            priorC.B[4, col])
+  end
 
-  wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
-                          priorC.B[3, col])
+  ci = Float64[log(sum(exp(support.wi.w[:, b]))) for b in 1:m]
 
-  wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
-                          priorC.B[4, col])
-end
+  wj = zeros(Float64, 4, m)
+  for col in 1:m
+    wj[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
+                            priorC.B[1, col])
 
-ci = [log(sum(exp(splitsupport.wi.w[:, b])))::Float64 for b in 1:m]
+    wj[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
+                            priorC.B[2, col])
 
-wj = zeros(Float64, 4, m)
-for col in 1:m
-  wj[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
-                          priorC.B[1, col])
+    wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
+                            priorC.B[3, col])
 
-  wj[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
-                          priorC.B[2, col])
+    wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
+                            priorC.B[4, col])
+  end
 
-  wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
-                          priorC.B[3, col])
+  cj = Float64[log(sum(exp(support.wj.w[:, b]))) for b in 1:m]
 
-  wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
-                          priorC.B[4, col])
-end
+  @test support.vi == 1
+  @test support.ni == float(data[:, ij[1]])
+  @test support.ui == [ij[1]; 0; 0; 0; 0; 0]
 
-cj = [log(sum(exp(splitsupport.wj.w[:, b])))::Float64 for b in 1:m]
+  @test maximum(abs(support.wi.w - wi)) <= ε
+  @test maximum(abs(support.wi.c - ci)) <= ε
+  @test support.wi.z == zeros(Float64, 4, m)
 
-@test splitsupport.vi == 1
-@test splitsupport.ni == float(data[:, ij[1]])
-@test splitsupport.ui == [ij[1]; zeros(Int, S)]
+  @test support.vj == 1
+  @test support.nj == float(data[:, ij[2]])
+  @test support.uj == [ij[2]; 0; 0; 0; 0; 0]
 
-@test maximum(abs(splitsupport.wi.w - wi)) <= ε
-@test maximum(abs(splitsupport.wi.c - ci)) <= ε
-@test splitsupport.wi.z == zeros(Float64, 4, m)
+  @test maximum(abs(support.wj.w - wj)) <= ε
+  @test maximum(abs(support.wj.c - cj)) <= ε
+  @test support.wj.z == zeros(Float64, 4, m)
 
-@test splitsupport.vj == 1
-@test splitsupport.nj == float(data[:, ij[2]])
-@test splitsupport.uj == [ij[2]; zeros(Int, S)]
-
-@test maximum(abs(splitsupport.wj.w - wj)) <= ε
-@test maximum(abs(splitsupport.wj.c - cj)) <= ε
-@test splitsupport.wj.z == zeros(Float64, 4, m)
-
-# test the move of the first unit (u) to cluster 1
-priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=2)
-
-splitsupport = KSupport(m, n, 1, 1)
-
-initsupportsplitmerge!(ij, S, k, data, priorC, settings, splitsupport)
-
-len = k + settings.maxclust - 1
-logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
-@test priorC.logω == logω
-
-lcp = zeros(Float64, 2)
-for b in 1:m
-  lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, splitsupport)
-  lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, splitsupport)
-end
-updateclusteri!(u, data, splitsupport)
-
-wi = zeros(Float64, 4, m)
-for col in 1:m
-  wi[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
-                          priorC.B[1, col]) +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[1, col], priorC.B[1, col])
-
-  wi[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
-                          priorC.B[2, col]) +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[2, col], priorC.B[2, col])
-
-  wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
-                          priorC.B[3, col]) +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[3, col], priorC.B[3, col])
-
-  wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
-                          priorC.B[4, col]) +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[4, col], priorC.B[4, col])
-end
-zi = copy(wi)
-
-ci = [log(sum(exp(splitsupport.wi.w[:, b])))::Float64 for b in 1:m]
-
-wj = zeros(Float64, 4, m)
-zj = zeros(Float64, 4, m)
-for col in 1:m
-  wj[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
-                          priorC.B[1, col])
-
-  wj[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
-                          priorC.B[2, col])
-
-  wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
-                          priorC.B[3, col])
-
-  wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
-                          priorC.B[4, col])
-
-  zj[1, col] = wj[1, col] +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[1, col], priorC.B[1, col])
-
-  zj[2, col] = wj[2, col] +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[2, col], priorC.B[2, col])
-
-  zj[3, col] = wj[3, col] +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[3, col], priorC.B[3, col])
-
-  zj[4, col] = wj[4, col] +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[4, col], priorC.B[4, col])
+  nothing
 end
 
-cj = [log(sum(exp(splitsupport.wj.w[:, b])))::Float64 for b in 1:m]
+test_mcmc_split_init()
 
-@test splitsupport.vi == 2
-@test splitsupport.ni == float(data[:, ij[1]]) + float(data[:, u])
-@test splitsupport.ui == [ij[1]; u; 0; 0]
+function test_mcmc_split_updatei()
+  # move the first unit (u) to cluster 1
+  ifile = "data/proper_aa.fasta"
+  ofile = "../build/test.bin"
 
-@test maximum(abs(splitsupport.wi.w - wi)) <= ε
-@test maximum(abs(splitsupport.wi.c - ci)) <= ε
-@test maximum(abs(splitsupport.wi.z - zi)) <= ε
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-@test splitsupport.vj == 1
-@test splitsupport.nj == float(data[:, ij[2]])
-@test splitsupport.uj == [ij[2]; 0; 0; 0]
+  data = UInt8[0 0 0 0 0 1;
+               1 1 1 1 1 0;
+               0 0 1 0 1 1;
+               1 1 0 1 0 0;
+               1 1 0 0 0 0;
+               0 0 0 1 1 0;
+               1 1 1 0 0 0;
+               0 0 0 1 1 1;
+               0 0 1 0 0 0;
+               1 0 0 1 0 1;
+               0 1 0 0 1 0;
+               0 0 0 0 0 1;
+               1 1 1 0 0 0;
+               0 0 0 1 1 0;
+               1 1 0 0 1 1;
+               0 0 1 1 0 0;
+               1 1 0 1 0 0;
+               0 0 1 0 1 1]
 
-@test maximum(abs(splitsupport.wj.w - wj)) <= ε
-@test maximum(abs(splitsupport.wj.c - cj)) <= ε
-@test maximum(abs(splitsupport.wj.z - zj)) <= ε
+  (m, n) = size(data)
 
-# test the move of the first unit (u) to cluster 2
-priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=2)
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
+                             maxclust=settings.maxclust)
 
-splitsupport = KSupport(m, n, 1, 1)
+  R = [13; 13; 13; 13; 13; 76]
+  k = length(unique(R)) + 1
 
-initsupportsplitmerge!(ij, S, k, data, priorC, settings, splitsupport)
+  ij = [1; 5]
+  S = 3
+  u = 4
 
-len = k + settings.maxclust - 1
-logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
-@test priorC.logω == logω
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
 
-lcp = zeros(Float64, 2)
-for b in 1:m
-  lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, splitsupport)
-  lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, splitsupport)
+  initsupportsplit!(ij, k, data, priorC, settings, support)
+
+  len = k + settings.maxclust - 1
+
+  logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
+  @test priorC.logω == logω
+
+  g = 0
+  lp = zeros(Float64, 4, len, m)
+  for b in 1:m, l in 1:state.k
+    g = state.cl[l]
+
+    lp[1, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[1, b],
+                             priorC.B[1, b])
+    lp[2, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[2, b],
+                             priorC.B[2, b])
+    lp[3, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[3, b],
+                             priorC.B[3, b])
+    lp[4, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[4, b],
+                             priorC.B[4, b])
+  end
+  @test support.lp == lp
+
+  lcp = zeros(Float64, 2)
+  for b in 1:m
+    lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, support)
+    lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, support)
+  end
+  updateclusteri!(u, data, support)
+
+  wi = zeros(Float64, 4, m)
+  for col in 1:m
+    wi[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
+                            priorC.B[1, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[1, col], priorC.B[1, col])
+
+    wi[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
+                            priorC.B[2, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[2, col], priorC.B[2, col])
+
+    wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
+                            priorC.B[3, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[3, col], priorC.B[3, col])
+
+    wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
+                            priorC.B[4, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[4, col], priorC.B[4, col])
+  end
+  zi = copy(wi)
+
+  ci = Float64[log(sum(exp(support.wi.w[:, b]))) for b in 1:m]
+
+  wj = zeros(Float64, 4, m)
+  zj = zeros(Float64, 4, m)
+  for col in 1:m
+    wj[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
+                            priorC.B[1, col])
+
+    wj[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
+                            priorC.B[2, col])
+
+    wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
+                            priorC.B[3, col])
+
+    wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
+                            priorC.B[4, col])
+
+    zj[1, col] = wj[1, col] +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[1, col], priorC.B[1, col])
+
+    zj[2, col] = wj[2, col] +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[2, col], priorC.B[2, col])
+
+    zj[3, col] = wj[3, col] +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[3, col], priorC.B[3, col])
+
+    zj[4, col] = wj[4, col] +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[4, col], priorC.B[4, col])
+  end
+
+  cj = Float64[log(sum(exp(support.wj.w[:, b]))) for b in 1:m]
+
+  @test support.vi == 2
+  @test support.ni == float(data[:, ij[1]]) + float(data[:, u])
+  @test support.ui == [ij[1]; u; 0; 0; 0; 0]
+
+  @test maximum(abs(support.wi.w - wi)) <= ε
+  @test maximum(abs(support.wi.c - ci)) <= ε
+  @test maximum(abs(support.wi.z - zi)) <= ε
+
+  @test support.vj == 1
+  @test support.nj == float(data[:, ij[2]])
+  @test support.uj == [ij[2]; 0; 0; 0; 0; 0]
+
+  @test maximum(abs(support.wj.w - wj)) <= ε
+  @test maximum(abs(support.wj.c - cj)) <= ε
+  @test maximum(abs(support.wj.z - zj)) <= ε
+
+  nothing
 end
-updateclusterj!(u, data, splitsupport)
 
-wi = zeros(Float64, 4, m)
-zi = zeros(Float64, 4, m)
-for col in 1:m
-  wi[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
-                          priorC.B[1, col])
+function test_mcmc_split_updatej()
+  # move the first unit (u) to cluster 2
+  ifile = "data/proper_aa.fasta"
+  ofile = "../build/test.bin"
 
-  wi[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
-                          priorC.B[2, col])
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-  wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
-                          priorC.B[3, col])
+  data = UInt8[0 0 0 0 0 1;
+               1 1 1 1 1 0;
+               0 0 1 0 1 1;
+               1 1 0 1 0 0;
+               1 1 0 0 0 0;
+               0 0 0 1 1 0;
+               1 1 1 0 0 0;
+               0 0 0 1 1 1;
+               0 0 1 0 0 0;
+               1 0 0 1 0 1;
+               0 1 0 0 1 0;
+               0 0 0 0 0 1;
+               1 1 1 0 0 0;
+               0 0 0 1 1 0;
+               1 1 0 0 1 1;
+               0 0 1 1 0 0;
+               1 1 0 1 0 0;
+               0 0 1 0 1 1]
 
-  wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
-                          priorC.B[4, col])
+  (m, n) = size(data)
 
-  zi[1, col] = wi[1, col] +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[1, col], priorC.B[1, col])
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
+                             maxclust=settings.maxclust)
 
-  zi[2, col] = wi[2, col] +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[2, col], priorC.B[2, col])
+  R = [13; 13; 13; 13; 13; 76]
+  k = length(unique(R)) + 1
 
-  zi[3, col] = wi[3, col] +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[3, col], priorC.B[3, col])
+  ij = [1; 5]
+  S = 3
+  u = 4
 
-  zi[4, col] = wi[4, col] +
-               logcondmarglik(data[col, u], data[col, ij[1]], 1,
-                              priorC.A[4, col], priorC.B[4, col])
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
+
+  initsupportsplit!(ij, k, data, priorC, settings, support)
+
+  len = k + settings.maxclust - 1
+
+  logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
+  @test priorC.logω == logω
+
+  g = 0
+  lp = zeros(Float64, 4, len, m)
+  for b in 1:m, l in 1:state.k
+    g = state.cl[l]
+
+    lp[1, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[1, b],
+                             priorC.B[1, b])
+    lp[2, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[2, b],
+                             priorC.B[2, b])
+    lp[3, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[3, b],
+                             priorC.B[3, b])
+    lp[4, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[4, b],
+                             priorC.B[4, b])
+  end
+  @test support.lp == lp
+
+  lcp = zeros(Float64, 2)
+  for b in 1:m
+    lcp[1] += computeclusteriseqprobs!(data[b, u], b, priorC, support)
+    lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, support)
+  end
+  updateclusterj!(u, data, support)
+
+  wi = zeros(Float64, 4, m)
+  zi = zeros(Float64, 4, m)
+  for col in 1:m
+    wi[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[1, col],
+                            priorC.B[1, col])
+
+    wi[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[2, col],
+                            priorC.B[2, col])
+
+    wi[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[3, col],
+                            priorC.B[3, col])
+
+    wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[1]], 1, priorC.A[4, col],
+                            priorC.B[4, col])
+
+    zi[1, col] = wi[1, col] +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[1, col], priorC.B[1, col])
+
+    zi[2, col] = wi[2, col] +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[2, col], priorC.B[2, col])
+
+    zi[3, col] = wi[3, col] +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[3, col], priorC.B[3, col])
+
+    zi[4, col] = wi[4, col] +
+                 logcondmarglik(data[col, u], data[col, ij[1]], 1,
+                                priorC.A[4, col], priorC.B[4, col])
+  end
+
+  ci = Float64[log(sum(exp(support.wi.w[:, b]))) for b in 1:m]
+
+  wj = zeros(Float64, 4, m)
+  for col in 1:m
+    wj[1, col] = priorC.logγ[1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
+                            priorC.B[1, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[1, col], priorC.B[1, col])
+
+    wj[2, col] = priorC.logγ[2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
+                            priorC.B[2, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[2, col], priorC.B[2, col])
+
+    wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
+                            priorC.B[3, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[3, col], priorC.B[3, col])
+
+    wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
+                 logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
+                            priorC.B[4, col]) +
+                 logcondmarglik(data[col, u], data[col, ij[2]], 1,
+                                priorC.A[4, col], priorC.B[4, col])
+  end
+  zj = copy(wj)
+
+  cj = Float64[log(sum(exp(support.wj.w[:, b]))) for b in 1:m]
+
+  @test support.vi == 1
+  @test support.ni == float(data[:, ij[1]])
+  @test support.ui == [ij[1]; 0; 0; 0; 0; 0]
+
+  @test maximum(abs(support.wi.w - wi)) <= ε
+  @test maximum(abs(support.wi.c - ci)) <= ε
+  @test maximum(abs(support.wi.z - zi)) <= ε
+
+  @test support.vj == 2
+  @test support.nj == float(data[:, ij[2]]) + float(data[:, u])
+  @test support.uj == [ij[2]; u; 0; 0; 0; 0]
+
+  @test maximum(abs(support.wj.w - wj)) <= ε
+  @test maximum(abs(support.wj.c - cj)) <= ε
+  @test maximum(abs(support.wj.z - zj)) <= ε
+
+  nothing
 end
 
-ci = [log(sum(exp(splitsupport.wi.w[:, b])))::Float64 for b in 1:m]
+test_mcmc_split_updatej()
 
-wj = zeros(Float64, 4, m)
-for col in 1:m
-  wj[1, col] = priorC.logγ[1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[1, col],
-                          priorC.B[1, col]) +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[1, col], priorC.B[1, col])
+function test_mcmc_updatelogmarglik()
+  # move the first unit (u) to cluster 2 (test inverse split operator)
+  ifile = "data/proper_aa.fasta"
+  ofile = "../build/test.bin"
 
-  wj[2, col] = priorC.logγ[2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[2, col],
-                          priorC.B[2, col]) +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[2, col], priorC.B[2, col])
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-  wj[3, col] = priorC.logγ[3] + priorC.logω[k][1] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[3, col],
-                          priorC.B[3, col]) +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[3, col], priorC.B[3, col])
+  data = UInt8[0 0 0 0 0 1;
+               1 1 1 1 1 0;
+               0 0 1 0 1 1;
+               1 1 0 1 0 0;
+               1 1 0 0 0 0;
+               0 0 0 1 1 0;
+               1 1 1 0 0 0;
+               0 0 0 1 1 1;
+               0 0 1 0 0 0;
+               1 0 0 1 0 1;
+               0 1 0 0 1 0;
+               0 0 0 0 0 1;
+               1 1 1 0 0 0;
+               0 0 0 1 1 0;
+               1 1 0 0 1 1;
+               0 0 1 1 0 0;
+               1 1 0 1 0 0;
+               0 0 1 0 1 1]
 
-  wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] +
-               logmarglik(data[col, ij[2]], 1, priorC.A[4, col],
-                          priorC.B[4, col]) +
-               logcondmarglik(data[col, u], data[col, ij[2]], 1,
-                              priorC.A[4, col], priorC.B[4, col])
+  (m, n) = size(data)
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
+                             maxclust=settings.maxclust)
+
+  R = [13; 13; 13; 13; 13; 76]
+  k = length(unique(R)) + 1
+
+  ij = [1; 4]
+  S = 3
+  u = 4
+
+  ni = vec(sum(float(data[:, [1; 2; 3]]), 2))
+  vi = 3
+
+  nj = vec(sum(float(data[:, [4; 5]]), 2))
+  vj = 2
+
+  lpi = zeros(Float64, 4, m)
+  lpj = zeros(Float64, 4, m)
+  for b in 1:m
+    lpi[1, b] = logmarglik(ni[b], vi, priorC.A[1, b], priorC.B[1, b])
+    lpi[2, b] = logmarglik(ni[b], vi, priorC.A[2, b], priorC.B[2, b])
+    lpi[3, b] = logmarglik(ni[b], vi, priorC.A[3, b], priorC.B[3, b])
+    lpi[4, b] = logmarglik(ni[b], vi, priorC.A[4, b], priorC.B[4, b])
+
+    lpj[1, b] = logmarglik(nj[b], vj, priorC.A[1, b], priorC.B[1, b])
+    lpj[2, b] = logmarglik(nj[b], vj, priorC.A[2, b], priorC.B[2, b])
+    lpj[3, b] = logmarglik(nj[b], vj, priorC.A[3, b], priorC.B[3, b])
+    lpj[4, b] = logmarglik(nj[b], vj, priorC.A[4, b], priorC.B[4, b])
+  end
+
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
+
+  initsupportsplit!(ij, k, data, priorC, settings, support)
+
+  support.ni = copy(ni)
+  support.vi = copy(vi)
+
+  support.nj = copy(nj)
+  support.vj = copy(vj)
+
+  updatelogmargliki!(priorC, support)
+  updatelogmarglikj!(priorC, support)
+
+  @test support.lpi == lpi
+  @test support.lpj == lpj
+
+  fill!(support.lpi, 0.0)
+  fill!(support.lpj, 0.0)
+
+  updatelogmargliki!(ni, vi, priorC, support)
+  updatelogmarglikj!(nj, vj, priorC, support)
+
+  @test support.lpi == lpi
+  @test support.lpj == lpj
+
+  nothing
 end
-zj = copy(wj)
 
-cj = [log(sum(exp(splitsupport.wj.w[:, b])))::Float64 for b in 1:m]
+test_mcmc_updatelogmarglik()
 
-@test splitsupport.vi == 1
-@test splitsupport.ni == float(data[:, ij[1]])
-@test splitsupport.ui == [ij[1]; 0; 0; 0]
+function test_mcmc_brw_init()
+  ifile = "data/proper_aa.fasta"
+  ofile = "../build/test.bin"
 
-@test maximum(abs(splitsupport.wi.w - wi)) <= ε
-@test maximum(abs(splitsupport.wi.c - ci)) <= ε
-@test maximum(abs(splitsupport.wi.z - zi)) <= ε
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-@test splitsupport.vj == 2
-@test splitsupport.nj == float(data[:, ij[2]]) + float(data[:, u])
-@test splitsupport.uj == [ij[2]; u; 0; 0]
+  data = UInt8[0 0 0 0 0 1;
+               1 1 1 1 1 0;
+               0 0 1 0 1 1;
+               1 1 0 1 0 0;
+               1 1 0 0 0 0;
+               0 0 0 1 1 0;
+               1 1 1 0 0 0;
+               0 0 0 1 1 1;
+               0 0 1 0 0 0;
+               1 0 0 1 0 1;
+               0 1 0 0 1 0;
+               0 0 0 0 0 1;
+               1 1 1 0 0 0;
+               0 0 0 1 1 0;
+               1 1 0 0 1 1;
+               0 0 1 1 0 0;
+               1 1 0 1 0 0;
+               0 0 1 0 1 1]
 
-@test maximum(abs(splitsupport.wj.w - wj)) <= ε
-@test maximum(abs(splitsupport.wj.c - cj)) <= ε
-@test maximum(abs(splitsupport.wj.z - zj)) <= ε
+  (m, n) = size(data)
 
-# biased random walk
-# move unit 4 into cluster 1
-priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=3)
-brwsupport = KSupport(m, n, 1, 1)
+  # --------------------------
+  # move unit 4 into cluster 1
+  R = [13; 13; 13; 42; 42; 76]
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
+                             maxclust=settings.maxclust)
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
 
-# new_k = 2; i = 4; vi = 1
-initsupportbrw!(2, 4, 1, data, priorC, settings, brwsupport)
+  i = 4
+  hi = 2
+  hj = 1
+  initsupportbrwmove!(i, hi, hj, data, support, state)
 
-@test brwsupport.ni == float(data[:, 4])
-@test brwsupport.vi == 1
+  @test support.vi == 1
+  @test support.ni == float(data[:, 5])
 
-# move unit 3 into its own cluster
-priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=3)
-brwsupport = KSupport(m, n, 1, 1)
+  @test support.vj == 4
+  @test support.nj == vec(sum(data[:, [1; 2; 3; 4]], 2))
 
-# new_k = 3; i = 3; vi = 3
-initsupportbrw!(3, 3, 3, data, priorC, settings, brwsupport)
+  # --------------------------------
+  # move unit 3 into its own cluster
+  R = [13; 13; 13; 42; 42; 76]
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
+                             maxclust=settings.maxclust)
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
 
-@test brwsupport.ni == float(data[:, 3])
-@test brwsupport.vi == 3
+  k = 4
+  i = 3
+  hi = 1
+  initsupportbrwsplit!(k, i, hi, data, priorC, settings, support, state)
 
-# move unit 3 into its own cluster
-priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=2)
-brwsupport = KSupport(m, n, 1, 1)
+  len = 4 + settings.maxclust - 1
 
-# new_k = 3; i = 3; vi = 3
-initsupportbrw!(3, 3, 3, data, priorC, settings, brwsupport)
+  logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
+  @test priorC.logω == logω
 
-len = 3 + settings.maxclust - 1
-logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
-@test priorC.logω == logω
+  g = 0
+  lp = zeros(Float64, 4, len, m)
+  for b in 1:m, l in 1:state.k
+    g = state.cl[l]
 
-@test brwsupport.ni == float(data[:, 3])
-@test brwsupport.vi == 3
+    lp[1, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[1, b],
+                             priorC.B[1, b])
+    lp[2, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[2, b],
+                             priorC.B[2, b])
+    lp[3, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[3, b],
+                            priorC.B[3, b])
+    lp[4, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[4, b],
+                             priorC.B[4, b])
+  end
+  @test support.lp == lp
+
+  @test support.vi == 2
+  @test support.ni == vec(sum(data[:, [1; 2]], 2))
+
+  @test support.vj == 1
+  @test support.nj == float(data[:, 3])
+
+  # --------------------------------
+  # move unit 6 into cluster 2
+  R = [13; 13; 13; 42; 42; 76]
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
+                             maxclust=settings.maxclust)
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
+
+  i = 6
+  hi = 3
+  hj = 2
+  initsupportbrwmerge!(i, hj, data, support, state)
+
+  @test support.vj == 3
+  @test support.nj == vec(sum(data[:, [4; 5; 6]], 2))
+
+  nothing
+end
+
+test_mcmc_brw_init()

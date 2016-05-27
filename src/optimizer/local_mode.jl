@@ -104,9 +104,10 @@ function computelocalmode!(state::State,
   fill!(state.logpC, 0.0)
 
   m = size(state.n1s, 2)
+  k = state.k
 
   tmp1 = zeros(Float64, 4)
-  tmp2 = zeros(Float64, 2, state.k)
+  tmp2 = zeros(Float64, 2, k)
   tmp3 = 0x00
 
   lγ = zeros(Float64, 3)

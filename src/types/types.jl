@@ -4,11 +4,11 @@ include("exceptions.jl")
 
 include("settings.jl")
 
-include("partition_cols.jl")
-include("partition_rows.jl")
+include("prior_col.jl")
+include("prior_row.jl")
 
 include("data.jl")
 
-include("support.jl")
 include("state.jl")
 include("state_list.jl")
+include("support.jl")

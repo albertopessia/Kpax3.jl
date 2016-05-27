@@ -138,15 +138,15 @@ function EwensPitman(α::Real,
                      θ::Float64)
   α = float(α)
 
-  if α == 0
-    if θ > 0
+  if α == zero(Float64)
+    if θ > zero(Float64)
       EwensPitmanZAPT(θ)
     else
       throw(KDomainError(string("When argument α is zero, argument θ must be ",
                                 "positive.")))
     end
-  elseif 0 < α < 1
-    if θ == 0
+  elseif zero(Float64) < α < one(Float64)
+    if θ == zero(Float64)
       EwensPitmanPAZT(α)
     elseif θ > -α
       EwensPitmanPAUT(α, θ)
@@ -154,7 +154,7 @@ function EwensPitman(α::Real,
       throw(KDomainError(string("When argument α is non-negative, argument θ ",
                                 "must be greater than -α.")))
     end
-  elseif α < 0
+  elseif α < zero(Float64)
     throw(KDomainError(string("When argument α is negative, provide an ",
                               "integer L to define parameter θ.")))
   else
@@ -166,8 +166,8 @@ function EwensPitman(α::Real,
                      L::Int)
   α = float(α)
 
-  if α < 0
-    if L > 0
+  if α < zero(Float64)
+    if L > zero(Int)
       EwensPitmanNAPT(α, L)
     else
       throw(KDomainError("Argument L must be positive."))
