@@ -13,8 +13,7 @@ function test_write_results()
   k = maximum(R)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r,
-                             maxclust=max(k, settings.maxclust))
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
 
   state = AminoAcidState(x.data, R, priorR, priorC, settings)
 

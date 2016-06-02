@@ -151,7 +151,7 @@ function kpax3ga(partition,
   maxclust = min(n, max(k, settings.maxclust))
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r, maxclust=maxclust)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
 
   population = AminoAcidStateList(x.data, R, priorR, priorC, settings)
 
@@ -171,7 +171,7 @@ function kpax3ga(x::AminoAcidData,
   maxclust = min(n, max(k, settings.maxclust))
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r, maxclust=maxclust)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
 
   population = AminoAcidStateList(x.data, R, priorR, priorC, settings)
 

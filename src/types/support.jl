@@ -86,7 +86,11 @@ end
 function resizesupport!(support::MCMCSupport,
                         maxclust::Int)
   if size(support.lp, 2) < maxclust
-    lp = zeros(Float64, 4, maxclust, support.m)
+    # we don't want to allocate new resources too often, so allocate double the
+    # previous size. this should guarantee a logarithmic number of allocations
+    newsize = min(support.n, max(maxclust, 2 * size(support.lp, 2)))
+
+    lp = zeros(Float64, 4, newsize, support.m)
 
     for b in 1:support.m, g in 1:size(support.lp, 2)
       lp[1, g, b] = support.lp[1, g, b]

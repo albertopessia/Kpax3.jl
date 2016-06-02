@@ -12,8 +12,7 @@ end
 
 function AminoAcidPriorCol(data::Matrix{UInt8},
                            γ::Vector{Float64},
-                           r::Float64;
-                           maxclust::Int=200)
+                           r::Float64)
   if length(γ) != 3
     throw(KInputError("Argument 'γ' does not have length 3."))
   elseif γ[1] < 0
@@ -28,13 +27,7 @@ function AminoAcidPriorCol(data::Matrix{UInt8},
     throw(KDomainError("Argument 'r' is negative."))
   end
 
-  if maxclust < 1
-    throw(KDomainError("Argument 'maxclust' is less than 1."))
-  end
-
   (m, n) = size(data)
-
-  maxclust = min(n, maxclust)
 
   # probabilities must sum to one
   tot = γ[1] + γ[2] + γ[3]
@@ -48,7 +41,7 @@ function AminoAcidPriorCol(data::Matrix{UInt8},
   # attributes 3 and 4 are both from property 3 -> use γ[3] twice
   logγ = [log(γ[1]); log(γ[2]); log(γ[3])]
 
-  logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:maxclust]
+  logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:n]
 
   n1s = zeros(Float64, m)
   for a in 1:n, b in 1:m
@@ -101,19 +94,4 @@ function AminoAcidPriorCol(data::Matrix{UInt8},
   end
 
   AminoAcidPriorCol(logγ, logω, A, B)
-end
-
-function resizelogω!(priorC::AminoAcidPriorCol,
-                     newlen::Int)
-  oldlen = length(priorC.logω)
-
-  if oldlen < newlen
-    resize!(priorC.logω, newlen)
-
-    for k in (oldlen + 1):newlen
-      priorC.logω[k] = [log(k - 1) - log(k); -log(k)]
-    end
-  end
-
-  nothing
 end

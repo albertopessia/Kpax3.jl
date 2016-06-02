@@ -102,8 +102,8 @@ function test_partition_cols_constructor()
     for γ in ([1.0; 0.0; 0.0], [0.0; 1.0; 0.0], [0.0; 0.0; 1.0],
               [0.4; 0.3; 0.3], [0.5; 0.3; 0.2], [0.7; 0.2; 0.1],
               [0.1; 0.1; 0.1], [0.3; 0.1; 0.1], [0.0; 0.2; 0.1])
-      x1 = AminoAcidPriorCol(data, γ, r1, maxclust=k)
-      x2 = AminoAcidPriorCol(data, γ, r2, maxclust=k)
+      x1 = AminoAcidPriorCol(data, γ, r1)
+      x2 = AminoAcidPriorCol(data, γ, r2)
 
       @test_approx_eq_eps x1.logγ[1] log(γ[1] / sum(γ)) ε
       @test_approx_eq_eps x2.logγ[2] log(γ[2] / sum(γ)) ε

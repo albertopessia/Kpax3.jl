@@ -50,17 +50,11 @@ function test_state_constructor()
   n1s[3, :] = vec(sum(float(data[:, R .== 76]), 2))
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
-
-  # priorC should be resized, test that as well
-  @test length(priorC.logω) == 1
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   state = AminoAcidState(data, R, priorR, priorC, settings)
 
-  @test length(priorC.logω) == k
-
-  @test state.R == [1; 1; 2; 2; 3; 3]
+ @test state.R == [1; 1; 2; 2; 3; 3]
 
   @test isa(state.C, Matrix{UInt8})
   @test size(state.C, 1) == maxclust
@@ -134,21 +128,22 @@ function test_state_resizestate()
 
   (m, n) = size(data)
 
-  # test constructor
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
+  # resizestate!(state, k)
+  # k < 2 * maxclust => len = maxclust
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=n)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   state = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
-  len = 3
+  len = 4
 
   R = copy(state.R)
   k = state.k
 
   C = zeros(UInt8, len, m)
-  C[1, :] = copy(vec(state.C))
+  C[1, :] = copy(vec(state.C[1, :]))
 
   emptycluster = trues(len)
   emptycluster[1] = false
@@ -160,10 +155,10 @@ function test_state_resizestate()
   v[1] = 6
 
   n1s = zeros(Float64, len, m)
-  n1s[1, :] = copy(vec(state.n1s))
+  n1s[1, :] = copy(vec(state.n1s[1, :]))
 
-  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) :
-                     zeros(Int, n) for g in 1:len]
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0]
+                     for g in 1:len]
 
   logpR = state.logpR
   logpC = copy(state.logpC)
@@ -185,7 +180,65 @@ function test_state_resizestate()
   @test state.loglik == loglik
   @test state.logpp == logpp
 
+  # resizestate!(state, k)
+  # k > 2 * maxclust => len = k
   settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+
+  state = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
+
+  len = 5
+
+  R = copy(state.R)
+  k = state.k
+
+  C = zeros(UInt8, len, m)
+  C[1, :] = copy(vec(state.C[1, :]))
+
+  emptycluster = trues(len)
+  emptycluster[1] = false
+
+  cl = zeros(Int, len)
+  cl[1] = 1
+
+  v = zeros(Int, len)
+  v[1] = 6
+
+  n1s = zeros(Float64, len, m)
+  n1s[1, :] = copy(vec(state.n1s[1, :]))
+
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0]
+                     for g in 1:len]
+
+  logpR = state.logpR
+  logpC = copy(state.logpC)
+  loglik = state.loglik
+  logpp = state.logpp
+
+  resizestate!(state, 5)
+
+  @test state.R == R
+  @test state.C == C
+  @test state.emptycluster == emptycluster
+  @test state.cl == cl
+  @test state.k == k
+  @test state.v == v
+  @test state.n1s == n1s
+  @test state.unit == unit
+  @test state.logpR == logpR
+  @test state.logpC == logpC
+  @test state.loglik == loglik
+  @test state.logpp == logpp
+
+  # resizestate!(state, k, settings)
+  # k < 2 * maxclust => len = maxclust
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+
   state = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
   len = 4
@@ -217,6 +270,58 @@ function test_state_resizestate()
   logpp = state.logpp
 
   resizestate!(state, 3, settings)
+
+  @test state.R == R
+  @test state.C == C
+  @test state.emptycluster == emptycluster
+  @test state.cl == cl
+  @test state.k == k
+  @test state.v == v
+  @test state.n1s == n1s
+  @test state.unit == unit
+  @test state.logpR == logpR
+  @test state.logpC == logpC
+  @test state.loglik == loglik
+  @test state.logpp == logpp
+
+  # resizestate!(state, k, settings)
+  # k > 2 * maxclust => len = k
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+
+  state = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
+
+  len = 5
+
+  R = copy(state.R)
+  k = state.k
+
+  C = zeros(UInt8, len, m)
+  C[1, :] = copy(vec(state.C[1, :]))
+
+  emptycluster = trues(len)
+  emptycluster[1] = false
+
+  cl = zeros(Int, len)
+  cl[1] = 1
+
+  v = zeros(Int, len)
+  v[1] = 6
+
+  n1s = zeros(Float64, len, m)
+  n1s[1, :] = copy(vec(state.n1s[1, :]))
+
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0]
+                     for g in 1:len]
+
+  logpR = state.logpR
+  logpC = copy(state.logpC)
+  loglik = state.loglik
+  logpp = state.logpp
+
+  resizestate!(state, 5, settings)
 
   @test state.R == R
   @test state.C == C
@@ -264,7 +369,7 @@ function test_state_copy_basic()
   settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=n)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [3; 3; 1; 1; 5; 5]
   g = sort(unique(R))
@@ -382,7 +487,7 @@ function test_state_copy_with_resize()
   settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=n)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [3; 3; 1; 1; 5; 5]
   g = sort(unique(R))
@@ -512,7 +617,7 @@ function test_state_copy_without_resize()
   settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=n)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [3; 3; 1; 1; 5; 5]
   g = sort(unique(R))
@@ -641,7 +746,7 @@ function test_state_update_with_resize()
   settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=n)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   state1 = AminoAcidState(data, [1; 1; 1; 1; 2; 3], priorR, priorC, settings)
   state2 = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
@@ -696,7 +801,7 @@ function test_state_update_without_resize()
   settings = KSettings(ifile, ofile, maxclust=6, maxunit=6)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=n)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   state1 = AminoAcidState(data, [1; 1; 1; 2; 2; 2], priorR, priorC, settings)
   state2 = AminoAcidState(data, [1; 1; 2; 2; 3; 3], priorR, priorC, settings)
@@ -753,7 +858,7 @@ function test_state_initializestate()
   settings = KSettings(ifile, ofile, maxclust=6, maxunit=6)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r, maxclust=n)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   D = zeros(Float64, n, n)
   for j in 1:(n - 1), i in (j + 1):n
