@@ -109,8 +109,7 @@ function test_likelihoods_loglik()
   (m, n) = size(data)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [1; 1; 1; 4; 6; 6]
 
@@ -144,8 +143,7 @@ function test_likelihoods_loglik()
   support = MCMCSupport(state, priorC);
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   loglik = zeros(Float64, 3)
 
@@ -200,8 +198,7 @@ function test_likelihoods_logmarginal()
   (m, n) = size(data)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [3; 3; 1; 1; 5; 5]
   g = sort(unique(R))

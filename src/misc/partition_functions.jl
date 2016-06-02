@@ -71,7 +71,7 @@ function initializepartition(settings::KSettings;
   (m, n) = size(data1)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data1, settings.γ, settings.r, maxclust=kset[end])
+  priorC = AminoAcidPriorCol(data1, settings.γ, settings.r)
 
   s = initializestate(data1, D, kset, priorR, priorC, settings)
 

@@ -30,9 +30,7 @@ function AminoAcidState(data::Matrix{UInt8},
   R = normalizepartition(partition, n)
   k = maximum(R)
 
-  maxclust = max(k, min(n, settings.maxclust))
-
-  resizelogω!(priorC, maxclust)
+  maxclust = min(n, max(k, settings.maxclust))
 
   C = zeros(UInt8, maxclust, m)
 
@@ -174,8 +172,6 @@ function initializestate(data::Matrix{UInt8},
                          priorR::PriorRowPartition,
                          priorC::PriorColPartition,
                          settings::KSettings)
-  resizelogω!(priorC, kset[end])
-
   n = size(data, 2)
 
   R = ones(Int, n)
@@ -322,7 +318,9 @@ function resizestate!(state::AminoAcidState,
     m = size(state.C, 2)
     n = length(state.R)
 
-    newlen = min(n, k + settings.maxclust - 1)
+    # we don't want to allocate new resources too often, so allocate double the
+    # previous size. this should guarantee a logarithmic number of allocations
+    newlen = min(n, max(k, 2 * oldlen))
 
     resize!(state.emptycluster, newlen)
     resize!(state.cl, newlen)
@@ -355,30 +353,27 @@ function resizestate!(state::AminoAcidState,
 end
 
 function resizestate!(state::AminoAcidState,
-                      newlen::Int)
+                      k::Int)
   oldlen = size(state.C, 1)
 
-  if oldlen < newlen
+  if oldlen < k
     m = size(state.C, 2)
     n = length(state.R)
+
+    # we don't want to allocate new resources too often, so allocate double the
+    # previous size. this should guarantee a logarithmic number of allocations
+    newlen = min(n, max(k, 2 * oldlen))
 
     resize!(state.emptycluster, newlen)
     resize!(state.cl, newlen)
     resize!(state.v, newlen)
     resize!(state.unit, newlen)
 
-    z = 1
-    for l in 1:oldlen
-      if length(state.unit[l]) > z
-        z = length(state.unit[l])
-      end
-    end
-
     for l in (oldlen + 1):newlen
       state.emptycluster[l] = true
       state.cl[l] = 0
       state.v[l] = 0
-      state.unit[l] = zeros(Int, z)
+      state.unit[l] = zeros(Int, 1)
     end
 
     C = zeros(UInt8, newlen, m)

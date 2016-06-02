@@ -29,8 +29,7 @@ function test_mcmc_merge_init()
   (m, n) = size(data)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [13; 13; 13; 42; 42; 76]
   k = length(unique(R)) - 1
@@ -136,8 +135,7 @@ function test_mcmc_merge_updatei()
   (m, n) = size(data)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [13; 13; 13; 42; 42; 76]
   k = length(unique(R)) - 1
@@ -278,8 +276,7 @@ function test_mcmc_merge_updatej()
   (m, n) = size(data)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [13; 13; 13; 42; 42; 76]
   k = length(unique(R)) - 1
@@ -418,8 +415,7 @@ function test_mcmc_split_init()
   (m, n) = size(data)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [13; 13; 13; 13; 13; 76]
   k = length(unique(R)) + 1
@@ -433,10 +429,7 @@ function test_mcmc_split_init()
 
   initsupportsplit!(ij, k, data, priorC, settings, support)
 
-  len = k + settings.maxclust - 1
-
-  logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
-  @test priorC.logω == logω
+  len = 4
 
   g = 0
   lp = zeros(Float64, 4, len, m)
@@ -546,8 +539,7 @@ function test_mcmc_split_updatei()
   (m, n) = size(data)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [13; 13; 13; 13; 13; 76]
   k = length(unique(R)) + 1
@@ -561,10 +553,7 @@ function test_mcmc_split_updatei()
 
   initsupportsplit!(ij, k, data, priorC, settings, support)
 
-  len = k + settings.maxclust - 1
-
-  logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
-  @test priorC.logω == logω
+  len = 4
 
   g = 0
   lp = zeros(Float64, 4, len, m)
@@ -705,8 +694,7 @@ function test_mcmc_split_updatej()
   (m, n) = size(data)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [13; 13; 13; 13; 13; 76]
   k = length(unique(R)) + 1
@@ -720,10 +708,7 @@ function test_mcmc_split_updatej()
 
   initsupportsplit!(ij, k, data, priorC, settings, support)
 
-  len = k + settings.maxclust - 1
-
-  logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
-  @test priorC.logω == logω
+  len = 4
 
   g = 0
   lp = zeros(Float64, 4, len, m)
@@ -866,8 +851,7 @@ function test_mcmc_updatelogmarglik()
   (m, n) = size(data)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [13; 13; 13; 13; 13; 76]
   k = length(unique(R)) + 1
@@ -958,8 +942,7 @@ function test_mcmc_brw_init()
   # move unit 4 into cluster 1
   R = [13; 13; 13; 42; 42; 76]
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
   state = AminoAcidState(data, R, priorR, priorC, settings)
   support = MCMCSupport(state, priorC)
 
@@ -978,8 +961,7 @@ function test_mcmc_brw_init()
   # move unit 3 into its own cluster
   R = [13; 13; 13; 42; 42; 76]
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
   state = AminoAcidState(data, R, priorR, priorC, settings)
   support = MCMCSupport(state, priorC)
 
@@ -988,10 +970,7 @@ function test_mcmc_brw_init()
   hi = 1
   initsupportbrwsplit!(k, i, hi, data, priorC, settings, support, state)
 
-  len = 4 + settings.maxclust - 1
-
-  logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:len]
-  @test priorC.logω == logω
+  len = 6
 
   g = 0
   lp = zeros(Float64, 4, len, m)
@@ -1019,8 +998,7 @@ function test_mcmc_brw_init()
   # move unit 6 into cluster 2
   R = [13; 13; 13; 42; 42; 76]
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r,
-                             maxclust=settings.maxclust)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
   state = AminoAcidState(data, R, priorR, priorC, settings)
   support = MCMCSupport(state, priorC)
 

@@ -244,10 +244,7 @@ function initsupportsplit!(ij::Vector{Int},
                            priorC::AminoAcidPriorCol,
                            settings::KSettings,
                            support::MCMCSupport)
-  len = min(support.n, k + settings.maxclust - 1)
-
-  resizelogω!(priorC, len)
-  resizesupport!(support, len)
+  resizesupport!(support, k)
 
   support.vi = 1
   support.vj = 1
@@ -290,10 +287,7 @@ function initsupportbrwsplit!(k::Int,
                               settings::KSettings,
                               support::MCMCSupport,
                               state::AminoAcidState)
-  len = min(support.n, k + settings.maxclust - 1)
-
-  resizelogω!(priorC, len)
-  resizesupport!(support, len)
+  resizesupport!(support, k)
 
   support.vi = state.v[hi] - 1
   support.vj = 1

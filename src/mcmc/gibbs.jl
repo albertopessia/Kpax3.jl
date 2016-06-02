@@ -13,3 +13,7 @@ function gibbs!(data::Matrix{UInt8},
 
   nothing
 end
+
+function gibbsallocate!(i::Int)
+  nothing
+end

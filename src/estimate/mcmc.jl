@@ -67,7 +67,7 @@ function kpax3estimate(x::AminoAcidData,
   k = maximum(R)
 
   priorR = EwensPitman(α, θ)
-  priorC = AminoAcidPriorCol(x.data, γ, r, maxclust=max(k, settings.maxclust))
+  priorC = AminoAcidPriorCol(x.data, γ, r)
 
   AminoAcidState(x.data, R, priorR, priorC, settings)
 end

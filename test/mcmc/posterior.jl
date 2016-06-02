@@ -67,7 +67,7 @@ function computelognormconst(ck,
                              priorR::PriorRowPartition)
   (m, n) = size(data)
 
-  priorC = AminoAcidPriorCol(data, γ, r, maxclust=k)
+  priorC = AminoAcidPriorCol(data, γ, r)
 
   st = po.index[po.k .== k][1]
   en = any(po.k .== k + 1) ? po.index[po.k .== k + 1][1] - 1 : st
@@ -184,7 +184,7 @@ function computeProbs(cs,
   for k in 1:(n - 1)
     println("k = ", k)
 
-    priorC = AminoAcidPriorCol(data, γ, r, maxclust=k)
+    priorC = AminoAcidPriorCol(data, γ, r)
 
     st = po.index[po.k .== k][1]
     en = po.index[po.k .== k + 1][1] - 1
@@ -242,7 +242,7 @@ function computeProbs(cs,
   k = n
   println("k = ", k)
 
-  priorC = AminoAcidPriorCol(data, γ, r, maxclust=k)
+  priorC = AminoAcidPriorCol(data, γ, r)
 
   v = ones(Float64, k)
   n1s = zeros(Float64, k, m)
