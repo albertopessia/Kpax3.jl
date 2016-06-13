@@ -77,7 +77,75 @@ function biased_random_walk!(data::Matrix{UInt8},
     ratio = exp(support.lograR + support.logmlikcandidate - support.logmlik)
 
     if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
-      performbrwmerge!(i, hi, hj, priorC, settings, support, state)
+      performbrwmerge!(i, hi, hj, settings, support, state)
+    end
+  end
+
+  nothing
+end
+
+function initsupportbrwmerge!(i::Int,
+                              hj::Int,
+                              data::Matrix{UInt8},
+                              support::MCMCSupport,
+                              state::AminoAcidState)
+  support.vj = state.v[hj] + 1
+
+  for b in 1:support.m
+    support.nj[b] = state.n1s[hj, b] + float(data[b, i])
+  end
+
+  nothing
+end
+
+function initsupportbrwmove!(i::Int,
+                             hi::Int,
+                             hj::Int,
+                             data::Matrix{UInt8},
+                             support::MCMCSupport,
+                             state::AminoAcidState)
+  support.vi = state.v[hi] - 1
+  support.vj = state.v[hj] + 1
+
+  for b in 1:support.m
+    support.ni[b] = state.n1s[hi, b] - float(data[b, i])
+    support.nj[b] = state.n1s[hj, b] + float(data[b, i])
+  end
+
+  idx = 0
+  for a in 1:state.v[hi]
+    if state.unit[hi][a] != i
+      idx += 1
+      support.ui[idx] = state.unit[hi][a]
+    end
+  end
+
+  nothing
+end
+
+function initsupportbrwsplit!(k::Int,
+                              i::Int,
+                              hi::Int,
+                              data::Matrix{UInt8},
+                              priorC::AminoAcidPriorCol,
+                              settings::KSettings,
+                              support::MCMCSupport,
+                              state::AminoAcidState)
+  resizesupport!(support, k)
+
+  support.vi = state.v[hi] - 1
+  support.vj = 1
+
+  for b in 1:support.m
+    support.nj[b] = float(data[b, i])
+    support.ni[b] = state.n1s[hi, b] - support.nj[b]
+  end
+
+  idx = 0
+  for a in 1:state.v[hi]
+    if state.unit[hi][a] != i
+      idx += 1
+      support.ui[idx] = state.unit[hi][a]
     end
   end
 
@@ -134,15 +202,15 @@ function performbrwsplit!(i::Int,
 
   state.emptycluster[hj] = false
 
-  h = 0
+  support.k = 0
   for a in 1:length(state.emptycluster)
     if !state.emptycluster[a]
-      h += 1
-      state.cl[h] = a
+      support.k += 1
+      state.cl[support.k] = a
     end
   end
 
-  state.k = h
+  state.k = support.k
 
   state.v[hi] = support.vi
   state.v[hj] = support.vj
@@ -177,7 +245,6 @@ end
 function performbrwmerge!(i::Int,
                           hi::Int,
                           hj::Int,
-                          priorC::PriorColPartition,
                           settings::KSettings,
                           support::MCMCSupport,
                           state::AminoAcidState)
@@ -185,15 +252,15 @@ function performbrwmerge!(i::Int,
 
   state.emptycluster[hi] = true
 
-  h = 0
+  support.k = 0
   for a in 1:length(state.emptycluster)
     if !state.emptycluster[a]
-      h += 1
-      state.cl[h] = a
+      support.k += 1
+      state.cl[support.k] = a
     end
   end
 
-  state.k = h
+  state.k = support.k
 
   state.v[hj] = support.vj
 

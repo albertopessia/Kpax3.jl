@@ -11,7 +11,11 @@ type MCMCSupport
   n::Int
 
   u::Vector{Int}
+  t::Vector{Float64}
+
   lp::Array{Float64, 3}
+  lq::Array{Float64, 3}
+  lr::Array{Float64, 3}
 
   vi::Int
   ni::Vector{Float64}
@@ -42,7 +46,11 @@ function MCMCSupport(state::State,
   (maxclust, m) = size(state.C)
 
   u = Int[a for a in 1:n]
+  t = zeros(Float64, n)
+
   lp = zeros(Float64, 4, maxclust, m)
+  lq = zeros(Float64, 4, maxclust, m)
+  lr = zeros(Float64, 3, maxclust, m)
 
   g = 0
   for b in 1:m, l in 1:state.k
@@ -79,8 +87,8 @@ function MCMCSupport(state::State,
 
   logmlik = logmarglikelihood(state.cl, state.k, lp, priorC)
 
-  MCMCSupport(m, n, u, lp, vi, ni, ui, wi, lpi, vj, nj, uj, wj, lpj, tmp, cl, k,
-              0.0, logmlik, 0.0)
+  MCMCSupport(m, n, u, t, lp, lq, lr, vi, ni, ui, wi, lpi, vj, nj, uj, wj, lpj,
+              tmp, cl, k, 0.0, logmlik, 0.0)
 end
 
 function resizesupport!(support::MCMCSupport,
@@ -100,6 +108,8 @@ function resizesupport!(support::MCMCSupport,
     end
 
     support.lp = lp
+    support.lq = zeros(Float64, 4, newsize, support.m)
+    support.lr = zeros(Float64, 3, newsize, support.m)
   end
 
   nothing

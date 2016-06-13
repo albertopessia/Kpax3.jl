@@ -27,12 +27,6 @@ function test_settings_exceptions()
   @test_throws KDomainError KSettings(ifile, ofile, tstep=-1)
   @test_throws KInputError  KSettings(ifile, ofile, op=[1.0; 0.0; 0.0])
   @test_throws KDomainError KSettings(ifile, ofile, op=[1.0; -1.0])
-  @test_throws KDomainError KSettings(ifile, ofile, λs1=0.0)
-  @test_throws KDomainError KSettings(ifile, ofile, λs1=-1.0)
-  @test_throws KDomainError KSettings(ifile, ofile, λs2=0.0)
-  @test_throws KDomainError KSettings(ifile, ofile, λs2=-1.0)
-  @test_throws KDomainError KSettings(ifile, ofile, parawm=0.0)
-  @test_throws KDomainError KSettings(ifile, ofile, parawm=-1.0)
 
   nothing
 end
@@ -61,17 +55,14 @@ function test_settings_constructor()
   T = 10
   burnin = 100
   tstep = 2
-  op = [0.6; 0.4]
-  λs1 = 1.5
-  λs2 = 1.5
-  parawm = 2.0
+  op = [0.7; 0.3]
 
   settings = KSettings(ifile, ofile, protein=protein, miss=miss, l=l, α=α, θ=θ,
                        γ=γ, r=r, maxclust=maxclust, maxunit=maxunit,
                        verbose=verbose, verbosestep=verbosestep,
                        popsize=popsize, maxiter=maxiter, maxgap=maxgap,
                        xrate=xrate, mrate=mrate, T=T, burnin=burnin,
-                       tstep=tstep, op=op, λs1=λs1, λs2=λs2, parawm=parawm)
+                       tstep=tstep, op=op)
 
   @test settings.ifile == ifile
   @test settings.ofile == ofile
@@ -94,10 +85,6 @@ function test_settings_constructor()
   @test settings.tstep == tstep
   @test isa(settings.op, WeightVec)
   @test values(settings.op) == op
-  @test isa(settings.distws, Beta)
-  @test settings.distws.α == λs1
-  @test settings.distws.β == λs2
-  @test settings.parawm == parawm
 
   settings = KSettings(ifile, ofile, protein=true, miss=zeros(UInt8, 0))
 

@@ -19,8 +19,8 @@ function logcondmarglik(x::Vector{UInt8},
                         n::Real,
                         α::Vector{Float64},
                         β::Vector{Float64})
-  [(x[i] * log(α[i] + y[i]) + (0x01 - x[i]) * log(β[i] + n - y[i]) -
-    log(α[i] + β[i] + n))::Float64 for i in 1:length(x)]
+  Float64[(x[i] * log(α[i] + y[i]) + (1.0 - x[i]) * log(β[i] + n - y[i]) -
+          log(α[i] + β[i] + n)) for i in 1:length(x)]
 end
 
 function logcondmarglik(x::Real,

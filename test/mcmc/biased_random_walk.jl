@@ -1,5 +1,109 @@
 # This file is part of Kpax3. License is MIT.
 
+function test_mcmc_brw_init()
+  ifile = "data/proper_aa.fasta"
+  ofile = "../build/test.bin"
+
+  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
+
+  data = UInt8[0 0 0 0 0 1;
+               1 1 1 1 1 0;
+               0 0 1 0 1 1;
+               1 1 0 1 0 0;
+               1 1 0 0 0 0;
+               0 0 0 1 1 0;
+               1 1 1 0 0 0;
+               0 0 0 1 1 1;
+               0 0 1 0 0 0;
+               1 0 0 1 0 1;
+               0 1 0 0 1 0;
+               0 0 0 0 0 1;
+               1 1 1 0 0 0;
+               0 0 0 1 1 0;
+               1 1 0 0 1 1;
+               0 0 1 1 0 0;
+               1 1 0 1 0 0;
+               0 0 1 0 1 1]
+
+  (m, n) = size(data)
+
+  # --------------------------
+  # move unit 4 into cluster 1
+  R = [13; 13; 13; 42; 42; 76]
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
+
+  i = 4
+  hi = 2
+  hj = 1
+  initsupportbrwmove!(i, hi, hj, data, support, state)
+
+  @test support.vi == 1
+  @test support.ni == float(data[:, 5])
+
+  @test support.vj == 4
+  @test support.nj == vec(sum(data[:, [1; 2; 3; 4]], 2))
+
+  # --------------------------------
+  # move unit 3 into its own cluster
+  R = [13; 13; 13; 42; 42; 76]
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
+
+  k = 4
+  i = 3
+  hi = 1
+  initsupportbrwsplit!(k, i, hi, data, priorC, settings, support, state)
+
+  len = 6
+
+  g = 0
+  lp = zeros(Float64, 4, len, m)
+  for b in 1:m, l in 1:state.k
+    g = state.cl[l]
+
+    lp[1, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[1, b],
+                             priorC.B[1, b])
+    lp[2, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[2, b],
+                             priorC.B[2, b])
+    lp[3, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[3, b],
+                            priorC.B[3, b])
+    lp[4, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[4, b],
+                             priorC.B[4, b])
+  end
+  @test support.lp == lp
+
+  @test support.vi == 2
+  @test support.ni == vec(sum(data[:, [1; 2]], 2))
+
+  @test support.vj == 1
+  @test support.nj == float(data[:, 3])
+
+  # --------------------------------
+  # move unit 6 into cluster 2
+  R = [13; 13; 13; 42; 42; 76]
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  state = AminoAcidState(data, R, priorR, priorC, settings)
+  support = MCMCSupport(state, priorC)
+
+  i = 6
+  hi = 3
+  hj = 2
+  initsupportbrwmerge!(i, hj, data, support, state)
+
+  @test support.vj == 3
+  @test support.nj == vec(sum(data[:, [4; 5; 6]], 2))
+
+  nothing
+end
+
+test_mcmc_brw_init()
+
 function test_mcmc_brw()
   ifile = "data/proper_aa.fasta"
   ofile = "../build/test.bin"
@@ -49,7 +153,7 @@ function test_mcmc_brw()
 
   logmarglikbrwmerge!(state1.cl, state1.k, hi, hj, priorC, support1)
 
-  performbrwmerge!(i, hi, hj, priorC, settings, support1, state1)
+  performbrwmerge!(i, hi, hj, settings, support1, state1)
 
   @test state1.R == state2.R
   @test state1.k == state2.k

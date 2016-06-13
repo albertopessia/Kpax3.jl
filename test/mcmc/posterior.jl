@@ -450,9 +450,9 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test maximum(abs(estimK - trueProbK)) < 0.005
-  @test maximum(abs(estimP - trueProbP)) < 0.005
-  @test maximum(abs(estimS - trueProbS)) < 0.005
+  @test maximum(abs(estimK - trueProbK)) < 0.008
+  @test maximum(abs(estimP - trueProbP)) < 0.008
+  @test maximum(abs(estimS - trueProbS)) < 0.008
 
   # EwensPitmanPAUT
   α = 0.5
@@ -501,9 +501,9 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test maximum(abs(estimK - trueProbK)) < 0.005
-  @test maximum(abs(estimP - trueProbP)) < 0.005
-  @test maximum(abs(estimS - trueProbS)) < 0.005
+  @test maximum(abs(estimK - trueProbK)) < 0.008
+  @test maximum(abs(estimP - trueProbP)) < 0.008
+  @test maximum(abs(estimS - trueProbS)) < 0.008
 
   # EwensPitmanPAZT
   α = 0.5
@@ -552,9 +552,9 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test maximum(abs(estimK - trueProbK)) < 0.005
-  @test maximum(abs(estimP - trueProbP)) < 0.005
-  @test maximum(abs(estimS - trueProbS)) < 0.005
+  @test maximum(abs(estimK - trueProbK)) < 0.008
+  @test maximum(abs(estimP - trueProbP)) < 0.008
+  @test maximum(abs(estimS - trueProbS)) < 0.008
 
   # EwensPitmanNAPT
   α = -1
@@ -603,9 +603,9 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test maximum(abs(estimK - trueProbK)) < 0.005
-  @test maximum(abs(estimP - trueProbP)) < 0.005
-  @test maximum(abs(estimS - trueProbS)) < 0.005
+  @test maximum(abs(estimK - trueProbK)) < 0.008
+  @test maximum(abs(estimP - trueProbP)) < 0.008
+  @test maximum(abs(estimS - trueProbS)) < 0.008
 
   nothing
 end

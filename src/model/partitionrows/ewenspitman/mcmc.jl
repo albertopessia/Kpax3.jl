@@ -1,23 +1,47 @@
 # This file is part of Kpax3. License is MIT.
 
-function splitmergeweight(n::Real,
-                          priorR::EwensPitmanPAUT)
+function clusterweight(n::Real,
+                       priorR::EwensPitmanPAUT)
   log(n - priorR.α)
 end
 
-function splitmergeweight(n::Real,
-                          priorR::EwensPitmanPAZT)
+function clusterweight(n::Real,
+                       priorR::EwensPitmanPAZT)
   log(n - priorR.α)
 end
 
-function splitmergeweight(n::Real,
-                          priorR::EwensPitmanZAPT)
+function clusterweight(n::Real,
+                       priorR::EwensPitmanZAPT)
   log(n)
 end
 
-function splitmergeweight(n::Real,
-                          priorR::EwensPitmanNAPT)
+function clusterweight(n::Real,
+                       priorR::EwensPitmanNAPT)
   log(n - priorR.α)
+end
+
+function clusterweight(n::Real,
+                       k::Real,
+                       priorR::EwensPitmanPAUT)
+  log(priorR.θ + priorR.α * k)
+end
+
+function clusterweight(n::Real,
+                       k::Real,
+                       priorR::EwensPitmanPAZT)
+  log(priorR.α * k)
+end
+
+function clusterweight(n::Real,
+                       k::Real,
+                       priorR::EwensPitmanZAPT)
+  log(priorR.θ)
+end
+
+function clusterweight(n::Real,
+                       k::Real,
+                       priorR::EwensPitmanNAPT)
+  log(priorR.α * (k - priorR.L))
 end
 
 function logratiopriorrowmerge!(k::Real,

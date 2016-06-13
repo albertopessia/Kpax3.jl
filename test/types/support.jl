@@ -37,7 +37,10 @@ function test_support_mcmc_constructor()
   @test support.n == n
 
   @test support.u == Int[a for a in 1:n]
+  @test support.t == zeros(Float64, n)
   @test support.lp == lp
+  @test support.lq == zeros(Float64, 4, 3, m)
+  @test support.lr == zeros(Float64, 3, 3, m)
   @test support.vi == 0
   @test support.ni == zeros(Float64, m)
   @test support.ui == zeros(Int, n)
@@ -128,6 +131,8 @@ function test_support_mcmc_resize()
   resizesupport!(support, 3)
 
   @test support.lp == lp
+  @test support.lq == zeros(Float64, 4, 3, m)
+  @test support.lr == zeros(Float64, 3, 3, m)
 
   resizesupport!(support, 6)
 
@@ -147,6 +152,8 @@ function test_support_mcmc_resize()
   end
 
   @test support.lp == lp
+  @test support.lq == zeros(Float64, 4, 6, m)
+  @test support.lr == zeros(Float64, 3, 6, m)
 
   nothing
 end

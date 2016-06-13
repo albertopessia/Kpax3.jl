@@ -37,8 +37,8 @@ function split!(ij::Vector{Int},
       lcp[2] += computeclusterjseqprobs!(data[b, u], b, priorC, support)
     end
 
-    lw[1] = splitmergeweight(support.vi, priorR)
-    lw[2] = splitmergeweight(support.vj, priorR)
+    lw[1] = clusterweight(support.vi, priorR)
+    lw[2] = clusterweight(support.vj, priorR)
 
     # (w1 * p1) / (w1 * p1 + w2 * p2) = 1 / (1 + (w2 * p2) / (w1 * p1))
     # => e^(-log(1 + e^(log(w2) + log(p2) - log(w1) - log(p1))))
@@ -64,6 +64,28 @@ function split!(ij::Vector{Int},
 
   if ratio >= 1 || ((ratio > 0) && (rand() <= ratio))
     performsplit!(hi, k, priorC, settings, support, state)
+  end
+
+  nothing
+end
+
+function initsupportsplit!(ij::Vector{Int},
+                           k::Int,
+                           data::Matrix{UInt8},
+                           priorC::AminoAcidPriorCol,
+                           settings::KSettings,
+                           support::MCMCSupport)
+  resizesupport!(support, k)
+
+  support.vi = 1
+  support.vj = 1
+
+  support.ui[1] = ij[1]
+  support.uj[1] = ij[2]
+
+  for b in 1:support.m
+    initclusteriweights!(data[b, ij[1]], b, k, priorC, support)
+    initclusterjweights!(data[b, ij[2]], b, k, priorC, support)
   end
 
   nothing
