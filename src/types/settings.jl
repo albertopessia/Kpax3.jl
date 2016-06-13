@@ -34,8 +34,6 @@ immutable KSettings
   burnin::Int
   tstep::Int
   op::WeightVec
-  distws::Beta
-  parawm::Float64
 end
 
 function KSettings(ifile::AbstractString,
@@ -56,13 +54,10 @@ function KSettings(ifile::AbstractString,
                    maxgap::Int=2000,
                    xrate::Float64=0.9,
                    mrate::Float64=0.005,
-                   T::Int=1000000,
-                   burnin::Int=100000,
+                   T::Int=100000,
+                   burnin::Int=10000,
                    tstep::Int=1,
-                   op::Vector{Float64}=[0.3; 0.7],
-                   λs1::Float64=1.0,
-                   λs2::Float64=1.0,
-                   parawm::Float64=5.0)
+                   op::Vector{Float64}=[0.7; 0.3])
   # open files and immediately close them. We do this to throw a proper Julia
   # standard exception if something is wrong
   f = open(ifile, "r")
@@ -180,19 +175,7 @@ function KSettings(ifile::AbstractString,
     throw(KDomainError("Argument 'op[2]' is negative."))
   end
 
-  if λs1 <= 0.0
-    throw(KDomainError("Argument 'λs1' is not positive."))
-  end
-
-  if λs2 <= 0.0
-    throw(KDomainError("Argument 'λs2' is not positive."))
-  end
-
-  if parawm <= 0.0
-    throw(KDomainError("Argument 'parawm' is not positive."))
-  end
-
   KSettings(ifile, ofile, protein, miss, l, α, θ, γ, r, maxclust, maxunit,
             verbose, verbosestep, popsize, maxiter, maxgap, xrate, mrate, T,
-            burnin, tstep, WeightVec(op), Beta(λs1, λs2), parawm)
+            burnin, tstep, WeightVec(op))
 end

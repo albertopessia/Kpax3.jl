@@ -2,6 +2,8 @@
 
 # TODO: refactor test files because it is a mess
 
+# TODO: test all gibbs functions
+
 using Base.Test
 
 include("../src/boot.jl")
@@ -27,11 +29,12 @@ tests = ["data_processing/data_processing";
          "optimizer/selection";
          "optimizer/crossover";
          "optimizer/mutation";
-         "mcmc/functions";
-         "mcmc/weight";
          "mcmc/partition_ratios";
          "mcmc/log_likelihoods";
-         "mcmc/biased_random_walk";
+         "mcmc/merge";
+         "mcmc/split";
+         "mcmc/gibbs";
+         "mcmc/weight";
          "mcmc/posterior";
          "estimate/write"
 ]

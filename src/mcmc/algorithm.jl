@@ -1,63 +1,5 @@
 # This file is part of Kpax3. License is MIT.
 
-function splitmerge!(ij::Vector{Int},
-                     neighbours::Vector{Int},
-                     data::Matrix{UInt8},
-                     priorR::PriorRowPartition,
-                     priorC::PriorColPartition,
-                     settings::KSettings,
-                     support::MCMCSupport,
-                     state::AminoAcidState)
-  # cluster founders (units i and j)
-  sample!(1:support.n, ij, replace=false, ordered=false)
-
-  # clusters of i and j respectively
-  gi = state.R[ij[1]]
-  gj = state.R[ij[2]]
-
-  # total number of neighbours
-  S = 0
-
-  # generic unit
-  u = 0
-
-  if gi == gj
-    for l in 1:state.v[gi]
-      u = state.unit[gi][l]
-      if (u != ij[1]) && (u != ij[2])
-        S += 1
-        neighbours[S] = u
-      end
-    end
-
-    shuffle!(neighbours, S)
-
-    split!(ij, neighbours, S, data, priorR, priorC, settings, support, state)
-  else
-    for l in 1:state.v[gi]
-      u = state.unit[gi][l]
-      if u != ij[1]
-        S += 1
-        neighbours[S] = u
-      end
-    end
-
-    for l in 1:state.v[gj]
-      u = state.unit[gj][l]
-      if u != ij[2]
-        S += 1
-        neighbours[S] = u
-      end
-    end
-
-    shuffle!(neighbours, S)
-
-    merge!(ij, neighbours, S, data, priorR, priorC, settings, support, state)
-  end
-
-  nothing
-end
-
 function kpax3mcmc!(data::Matrix{UInt8},
                     priorR::PriorRowPartition,
                     priorC::PriorColPartition,
@@ -96,7 +38,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
           splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
                       state)
         else
-          biased_random_walk!(data, priorR, priorC, settings, support, state)
+          gibbs!(data, priorR, priorC, settings, support, state)
         end
 
         sampleC!(priorC, state)
@@ -122,7 +64,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
         splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
                     state)
       else
-        biased_random_walk!(data, priorR, priorC, settings, support, state)
+        gibbs!(data, priorR, priorC, settings, support, state)
       end
 
       sampleC!(priorC, state)
@@ -243,6 +185,64 @@ function kpax3mcmc(x::AminoAcidData,
   support = MCMCSupport(state, priorC)
 
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
+
+  nothing
+end
+
+function splitmerge!(ij::Vector{Int},
+                     neighbours::Vector{Int},
+                     data::Matrix{UInt8},
+                     priorR::PriorRowPartition,
+                     priorC::PriorColPartition,
+                     settings::KSettings,
+                     support::MCMCSupport,
+                     state::AminoAcidState)
+  # cluster founders (units i and j)
+  sample!(1:support.n, ij, replace=false, ordered=false)
+
+  # clusters of i and j respectively
+  gi = state.R[ij[1]]
+  gj = state.R[ij[2]]
+
+  # total number of neighbours
+  S = 0
+
+  # generic unit
+  u = 0
+
+  if gi == gj
+    for l in 1:state.v[gi]
+      u = state.unit[gi][l]
+      if (u != ij[1]) && (u != ij[2])
+        S += 1
+        neighbours[S] = u
+      end
+    end
+
+    shuffle!(neighbours, S)
+
+    split!(ij, neighbours, S, data, priorR, priorC, settings, support, state)
+  else
+    for l in 1:state.v[gi]
+      u = state.unit[gi][l]
+      if u != ij[1]
+        S += 1
+        neighbours[S] = u
+      end
+    end
+
+    for l in 1:state.v[gj]
+      u = state.unit[gj][l]
+      if u != ij[2]
+        S += 1
+        neighbours[S] = u
+      end
+    end
+
+    shuffle!(neighbours, S)
+
+    merge!(ij, neighbours, S, data, priorR, priorC, settings, support, state)
+  end
 
   nothing
 end

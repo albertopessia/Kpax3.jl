@@ -6,6 +6,6 @@ include("io.jl")
 
 include("merge.jl")
 include("split.jl")
-include("biased_random_walk.jl")
+include("gibbs.jl")
 
 include("algorithm.jl")
