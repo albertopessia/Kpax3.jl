@@ -66,14 +66,20 @@ function initializepartition(settings::KSettings;
     @printf("Initializing partition...\n")
   end
 
+  missval = if (length(settings.miss) == 1) && (settings.miss[1] == 0x00)
+              0x00
+            else
+              UInt8('?')
+            end
+
   (data1, id1, ref1) = readfasta(settings.ifile, settings.protein,
                                  settings.miss, settings.l, false, 0)
-  (m, n) = size(data1)
+  (bindata, val, key) = categorical2binary(data1, UInt8(127), missval)
 
   priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data1, settings.γ, settings.r)
+  priorC = AminoAcidPriorCol(bindata, settings.γ, settings.r)
 
-  s = initializestate(data1, D, kset, priorR, priorC, settings)
+  s = initializestate(bindata, D, kset, priorR, priorC, settings)
 
   if settings.verbose
     @printf("Initialization done.\n")

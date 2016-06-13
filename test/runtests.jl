@@ -1,9 +1,5 @@
 # This file is part of Kpax3. License is MIT.
 
-# TODO: refactor test files because it is a mess
-
-# TODO: test all gibbs functions
-
 using Base.Test
 
 include("../src/boot.jl")
