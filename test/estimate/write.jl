@@ -5,7 +5,7 @@ function test_write_results()
   ofile = "../build/test.bin"
   partition = "data/proper_aa_partition.csv"
 
-  settings = KSettings(ifile, ofile, γ=[0.4; 0.35; 0.25])
+  settings = KSettings(ifile, ofile, gamma=[0.4; 0.35; 0.25])
 
   x = AminoAcidData(settings)
 

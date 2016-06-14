@@ -108,7 +108,7 @@ function test_mcmc_brw()
   ifile = "data/proper_aa.fasta"
   ofile = "../build/test.bin"
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, op=[0.0; 1.0])
+  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, op=[0.0; 0.0; 1.0])
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -147,7 +147,7 @@ function test_mcmc_brw()
 
   initsupportbrwmerge!(i, hj, data, support1, state1)
 
-  support1.lograR = logratiopriorrowbrwmerge(state2.k, state1.v[hj], priorR)
+  support1.lograR = logratiopriorrowmerge(state2.k, state1.v[hj], priorR)
 
   updatelogmarglikj!(priorC, support1)
 
@@ -189,7 +189,7 @@ function test_mcmc_brw()
 
   initsupportbrwmove!(i, hi, hj, data, support1, state1)
 
-  support1.lograR = logratiopriorrowbrwmove(state1.v[hi], state1.v[hj], priorR)
+  support1.lograR = logratiopriorrowmove(state1.v[hi], state1.v[hj], priorR)
 
   updatelogmargliki!(priorC, support1)
   updatelogmarglikj!(priorC, support1)
@@ -251,7 +251,7 @@ function test_mcmc_brw()
 
   initsupportbrwsplit!(k, i, hi, data, priorC, settings, support1, state1)
 
-  support1.lograR = logratiopriorrowbrwsplit(k, state1.v[hi], priorR)
+  support1.lograR = logratiopriorrowsplit(k, state1.v[hi], priorR)
 
   updatelogmargliki!(priorC, support1)
   updatelogmarglikj!(priorC, support1)
@@ -305,7 +305,7 @@ function test_mcmc_brw()
 
   initsupportbrwsplit!(k, i, hi, data, priorC, settings, support1, state1)
 
-  support1.lograR = logratiopriorrowbrwsplit(k, state1.v[hi], priorR)
+  support1.lograR = logratiopriorrowsplit(k, state1.v[hi], priorR)
 
   updatelogmargliki!(priorC, support1)
   updatelogmarglikj!(priorC, support1)

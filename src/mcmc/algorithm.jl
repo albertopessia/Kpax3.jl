@@ -31,14 +31,16 @@ function kpax3mcmc!(data::Matrix{UInt8},
       end
 
       # sample which operators we are going to use
-      operator = sample(UInt8[1; 2], settings.op, settings.burnin)
+      operator = sample(UInt8[1; 2; 3], settings.op, settings.burnin)
 
       for t in 1:settings.burnin
         if operator[t] == 0x01
           splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
                       state)
-        else
+        elseif operator[t] == 0x02
           gibbs!(data, priorR, priorC, settings, support, state)
+        else
+          biased_random_walk!(data, priorR, priorC, settings, support, state)
         end
 
         sampleC!(priorC, state)
@@ -57,14 +59,16 @@ function kpax3mcmc!(data::Matrix{UInt8},
       println("Starting collecting samples...")
     end
 
-    operator = sample(UInt8[1; 2], settings.op, settings.T)
+    operator = sample(UInt8[1; 2; 3], settings.op, settings.T)
 
     for t in 1:settings.T
       if operator[t] == 0x01
         splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
                     state)
-      else
+      elseif operator[t] == 0x02
         gibbs!(data, priorR, priorC, settings, support, state)
+      else
+        biased_random_walk!(data, priorR, priorC, settings, support, state)
       end
 
       sampleC!(priorC, state)

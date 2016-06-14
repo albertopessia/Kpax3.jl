@@ -38,13 +38,13 @@ function test_mcmc_partition_ratios()
     lr2 = logdPriorRow(50, 6, [22; 14; 7; 5; 1; 1], ep) -
           logdPriorRow(50, 5, [22; 15; 7; 5; 1], ep)
 
-    @test_approx_eq_eps logratiopriorrowbrwsplit(6, 15, ep) lr2 ε
-    @test_approx_eq_eps logratiopriorrowbrwmerge(5, 14, ep) -lr2 ε
+    @test_approx_eq_eps logratiopriorrowsplit(6, 15, ep) lr2 ε
+    @test_approx_eq_eps logratiopriorrowmerge(5, 14, ep) -lr2 ε
 
     lr3 = logdPriorRow(50, 5, [22; 14; 8; 5; 1], ep) -
           logdPriorRow(50, 5, [22; 15; 7; 5; 1], ep)
 
-    @test_approx_eq_eps logratiopriorrowbrwmove(15, 7, ep) lr3 ε
+    @test_approx_eq_eps logratiopriorrowmove(15, 7, ep) lr3 ε
   end
 
   nothing

@@ -41,9 +41,9 @@ function KSettings(ifile::AbstractString,
                    protein::Bool=true,
                    miss::Vector{UInt8}=zeros(UInt8, 0),
                    l::Int=100000000,
-                   α::Real=0.5,
-                   θ::Real=-0.1,
-                   γ::Vector{Float64}=[0.6; 0.35; 0.05],
+                   alpha::Real=0.5,
+                   theta::Real=-0.1,
+                   gamma::Vector{Float64}=[0.6; 0.35; 0.05],
                    r::Float64=log(0.001) / log(0.95),
                    maxclust::Int=500,
                    maxunit::Int=500,
@@ -57,7 +57,7 @@ function KSettings(ifile::AbstractString,
                    T::Int=100000,
                    burnin::Int=10000,
                    tstep::Int=1,
-                   op::Vector{Float64}=[0.7; 0.3])
+                   op::Vector{Float64}=[0.7; 0.3; 0.0])
   # open files and immediately close them. We do this to throw a proper Julia
   # standard exception if something is wrong
   f = open(ifile, "r")
@@ -106,14 +106,14 @@ function KSettings(ifile::AbstractString,
     throw(KDomainError("Argument 'l' is not positive."))
   end
 
-  if length(γ) != 3
-    throw(KInputError("Argument 'γ' does not have length 3."))
-  elseif γ[1] < 0
-    throw(KDomainError("Argument 'γ[1]' is negative."))
-  elseif γ[2] < 0
-    throw(KDomainError("Argument 'γ[2]' is negative."))
-  elseif γ[3] < 0
-    throw(KDomainError("Argument 'γ[3]' is negative."))
+  if length(gamma) != 3
+    throw(KInputError("Argument 'gamma' does not have length 3."))
+  elseif gamma[1] < 0
+    throw(KDomainError("Argument 'gamma[1]' is negative."))
+  elseif gamma[2] < 0
+    throw(KDomainError("Argument 'gamma[2]' is negative."))
+  elseif gamma[3] < 0
+    throw(KDomainError("Argument 'gamma[3]' is negative."))
   end
 
   if r <= 0.0
@@ -167,15 +167,17 @@ function KSettings(ifile::AbstractString,
     throw(KDomainError("Argument 'tstep' is negative."))
   end
 
-  if length(op) != 2
-    throw(KInputError("Argument 'op' does not have length 2."))
+  if length(op) != 3
+    throw(KInputError("Argument 'op' does not have length 3."))
   elseif op[1] < 0
     throw(KDomainError("Argument 'op[1]' is negative."))
   elseif op[2] < 0
     throw(KDomainError("Argument 'op[2]' is negative."))
+  elseif op[3] < 0
+    throw(KDomainError("Argument 'op[3]' is negative."))
   end
 
-  KSettings(ifile, ofile, protein, miss, l, α, θ, γ, r, maxclust, maxunit,
-            verbose, verbosestep, popsize, maxiter, maxgap, xrate, mrate, T,
-            burnin, tstep, WeightVec(op))
+  KSettings(ifile, ofile, protein, miss, l, alpha, theta, gamma, r, maxclust,
+            maxunit, verbose, verbosestep, popsize, maxiter, maxgap, xrate,
+            mrate, T, burnin, tstep, WeightVec(op))
 end

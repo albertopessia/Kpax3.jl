@@ -92,7 +92,7 @@ function test_mutation()
 
   tmp /= N
 
-  @test maximum(abs(tmp - pr)) < 0.005
+  @test isapprox(tmp, pr, rtol=0.01)
 
   nothing
 end
