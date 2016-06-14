@@ -6,8 +6,8 @@ function test_settings_exceptions()
 
   @test_throws KDomainError KSettings(ifile, ofile, miss=UInt8[63; 0])
   @test_throws KDomainError KSettings(ifile, ofile, l=-1)
-  @test_throws KInputError  KSettings(ifile, ofile, γ=[1.0; 0.0])
-  @test_throws KDomainError KSettings(ifile, ofile, γ=[1.0; 0.0; -1.0])
+  @test_throws KInputError  KSettings(ifile, ofile, gamma=[1.0; 0.0])
+  @test_throws KDomainError KSettings(ifile, ofile, gamma=[1.0; 0.0; -1.0])
   @test_throws KDomainError KSettings(ifile, ofile, r=0.0)
   @test_throws KDomainError KSettings(ifile, ofile, r=-1.0)
   @test_throws KDomainError KSettings(ifile, ofile, maxclust=0)
@@ -25,8 +25,8 @@ function test_settings_exceptions()
   @test_throws KDomainError KSettings(ifile, ofile, T=0)
   @test_throws KDomainError KSettings(ifile, ofile, burnin=-1)
   @test_throws KDomainError KSettings(ifile, ofile, tstep=-1)
-  @test_throws KInputError  KSettings(ifile, ofile, op=[1.0; 0.0; 0.0])
-  @test_throws KDomainError KSettings(ifile, ofile, op=[1.0; -1.0])
+  @test_throws KInputError  KSettings(ifile, ofile, op=[1.0; 0.0])
+  @test_throws KDomainError KSettings(ifile, ofile, op=[1.0; -1.0; 0.0])
 
   nothing
 end
@@ -55,14 +55,14 @@ function test_settings_constructor()
   T = 10
   burnin = 100
   tstep = 2
-  op = [0.7; 0.3]
+  op = [0.7; 0.3; 0.0]
 
-  settings = KSettings(ifile, ofile, protein=protein, miss=miss, l=l, α=α, θ=θ,
-                       γ=γ, r=r, maxclust=maxclust, maxunit=maxunit,
-                       verbose=verbose, verbosestep=verbosestep,
-                       popsize=popsize, maxiter=maxiter, maxgap=maxgap,
-                       xrate=xrate, mrate=mrate, T=T, burnin=burnin,
-                       tstep=tstep, op=op)
+  settings = KSettings(ifile, ofile, protein=protein, miss=miss, l=l, alpha=α,
+                       theta=θ, gamma=γ, r=r, maxclust=maxclust,
+                       maxunit=maxunit, verbose=verbose,
+                       verbosestep=verbosestep, popsize=popsize,
+                       maxiter=maxiter, maxgap=maxgap, xrate=xrate, mrate=mrate,
+                       T=T, burnin=burnin, tstep=tstep, op=op)
 
   @test settings.ifile == ifile
   @test settings.ofile == ofile

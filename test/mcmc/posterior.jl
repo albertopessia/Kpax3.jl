@@ -289,7 +289,7 @@ function computeProbs(cs,
   (exp(log(P) - lz), exp(log(S) - lz), exp(log(K) - lz))
 end
 
-settings = KSettings(ifile, ofile, α=α, θ=θ)
+settings = KSettings(ifile, ofile, alpha=α, theta=θ)
 
 x = AminoAcidData(settings)
 
@@ -407,7 +407,8 @@ function test_mcmc_algorithm()
   α = 0.0
   θ = 1.0
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, α=α, θ=θ)
+  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ,
+                       op=[0.6; 0.2; 0.2])
 
   trueProbK = [0.0572011678382854799052026351091626565903425216674804687500000;
                0.3147244396041969372035396190767642110586166381835937500000000;
@@ -450,15 +451,16 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test maximum(abs(estimK - trueProbK)) < 0.008
-  @test maximum(abs(estimP - trueProbP)) < 0.008
-  @test maximum(abs(estimS - trueProbS)) < 0.008
+  @test isapprox(estimK, trueProbK, rtol=0.01)
+  @test isapprox(estimP, trueProbP, rtol=0.01)
+  @test isapprox(estimS, trueProbS, rtol=0.01)
 
   # EwensPitmanPAUT
   α = 0.5
   θ = -0.25
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, α=α, θ=θ)
+  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ,
+                       op=[0.6; 0.2; 0.2])
 
   trueProbK = [0.20304357310850917883726651780307292938232421875000000000;
                0.21850248716493331224697271863988135010004043579101562500;
@@ -501,15 +503,16 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test maximum(abs(estimK - trueProbK)) < 0.008
-  @test maximum(abs(estimP - trueProbP)) < 0.008
-  @test maximum(abs(estimS - trueProbS)) < 0.008
+  @test isapprox(estimK, trueProbK, rtol=0.01)
+  @test isapprox(estimP, trueProbP, rtol=0.01)
+  @test isapprox(estimS, trueProbS, rtol=0.01)
 
   # EwensPitmanPAZT
   α = 0.5
   θ = 0.0
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, α=α, θ=θ)
+  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ,
+                       op=[0.6; 0.2; 0.2])
 
   trueProbK = [0.08297365650265563219445397180606960318982601165771484375;
                0.17858186829001693185503540917125064879655838012695312500;
@@ -552,15 +555,16 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test maximum(abs(estimK - trueProbK)) < 0.008
-  @test maximum(abs(estimP - trueProbP)) < 0.008
-  @test maximum(abs(estimS - trueProbS)) < 0.008
+  @test isapprox(estimK, trueProbK, rtol=0.01)
+  @test isapprox(estimP, trueProbP, rtol=0.01)
+  @test isapprox(estimS, trueProbS, rtol=0.01)
 
   # EwensPitmanNAPT
   α = -1
   θ = 4
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, α=α, θ=θ)
+  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ,
+                       op=[0.6; 0.2; 0.2])
 
   trueProbK = [0.013987232861628222380101504995764116756618022918701171875;
                0.277957780373217555602849415663513354957103729248046875000;
@@ -603,9 +607,9 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test maximum(abs(estimK - trueProbK)) < 0.008
-  @test maximum(abs(estimP - trueProbP)) < 0.008
-  @test maximum(abs(estimS - trueProbS)) < 0.008
+  @test isapprox(estimK, trueProbK, rtol=0.01)
+  @test isapprox(estimP, trueProbP, rtol=0.01)
+  @test isapprox(estimS, trueProbS, rtol=0.01)
 
   nothing
 end

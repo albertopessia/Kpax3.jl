@@ -99,7 +99,7 @@ function test_local_mode()
   ifile = "data/proper_aa.fasta"
   ofile = "../build/test.bin"
 
-  settings = KSettings(ifile, ofile, γ=[0.3; 0.35; 0.35])
+  settings = KSettings(ifile, ofile, gamma=[0.3; 0.35; 0.35])
 
   data = UInt8[1 1 1 1 0 0;
                0 0 1 1 0 0;

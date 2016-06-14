@@ -467,7 +467,7 @@ function gibbsmerge!(i::Int,
 
   state.k = support.k
 
-  state.logpR += logratiopriorrowbrwmerge(state.k, state.v[hj], priorR)
+  state.logpR += logratiopriorrowmerge(state.k, state.v[hj], priorR)
 
   state.v[hj] += 1
 
@@ -497,7 +497,7 @@ function gibbsmove!(i::Int,
                     state::AminoAcidState)
   support.logmlik = support.t[lg] - clusterweight(state.v[hj], priorR)
 
-  state.logpR += logratiopriorrowbrwmove(state.v[hi], state.v[hj], priorR)
+  state.logpR += logratiopriorrowmove(state.v[hi], state.v[hj], priorR)
 
   state.R[i] = hj
 
@@ -570,7 +570,7 @@ function gibbssplit!(i::Int,
     end
   end
 
-  state.logpR += logratiopriorrowbrwsplit(state.k, state.v[hi], priorR)
+  state.logpR += logratiopriorrowsplit(state.k, state.v[hi], priorR)
 
   state.v[hi] = support.vi
   state.v[hj] = 1

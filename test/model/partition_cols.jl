@@ -272,7 +272,7 @@ function test_partition_cols_simulations()
 
   Sp /= N
 
-  @test maximum(abs(Sp - trueSp)) < 0.005
+  @test isapprox(Sp, trueSp, rtol=0.01)
 
   Cp /= N
 

@@ -27,10 +27,11 @@ tests = ["data_processing/data_processing";
          "optimizer/mutation";
          "mcmc/partition_ratios";
          "mcmc/log_likelihoods";
+         "mcmc/weight";
          "mcmc/merge";
          "mcmc/split";
          "mcmc/gibbs";
-         "mcmc/weight";
+         "mcmc/biased_random_walk";
          "mcmc/posterior";
          "estimate/write"
 ]

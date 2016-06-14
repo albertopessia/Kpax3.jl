@@ -36,7 +36,7 @@ function biased_random_walk!(data::Matrix{UInt8},
 
     initsupportbrwmove!(i, hi, hj, data, support, state)
 
-    support.lograR = logratiopriorrowbrwmove(state.v[hi], state.v[hj], priorR)
+    support.lograR = logratiopriorrowmove(state.v[hi], state.v[hj], priorR)
 
     updatelogmargliki!(priorC, support)
     updatelogmarglikj!(priorC, support)
@@ -51,7 +51,7 @@ function biased_random_walk!(data::Matrix{UInt8},
   elseif k > state.k
     initsupportbrwsplit!(k, i, hi, data, priorC, settings, support, state)
 
-    support.lograR = logratiopriorrowbrwsplit(k, state.v[hi], priorR)
+    support.lograR = logratiopriorrowsplit(k, state.v[hi], priorR)
 
     updatelogmargliki!(priorC, support)
     updatelogmarglikj!(priorC, support)
@@ -68,7 +68,7 @@ function biased_random_walk!(data::Matrix{UInt8},
 
     initsupportbrwmerge!(i, hj, data, support, state)
 
-    support.lograR = logratiopriorrowbrwmerge(k, state.v[hj], priorR)
+    support.lograR = logratiopriorrowmerge(k, state.v[hj], priorR)
 
     updatelogmarglikj!(priorC, support)
 
