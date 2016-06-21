@@ -83,7 +83,7 @@ test_likelihoods_marginal()
 
 function test_likelihoods_loglik()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile)
 
@@ -172,7 +172,7 @@ test_likelihoods_loglik()
 
 function test_likelihoods_logmarginal()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile)
 

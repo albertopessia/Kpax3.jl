@@ -6,7 +6,15 @@ function kpax3mcmc!(data::Matrix{UInt8},
                     settings::KSettings,
                     support::MCMCSupport,
                     state::AminoAcidState)
-  fp = open(settings.ofile, "w")
+  fpS = open(string(settings.ofile, "_settings.bin"), "w")
+  fpR = open(string(settings.ofile, "_row_partition.bin"), "w")
+  fpC = open(string(settings.ofile, "_col_partition.bin"), "w")
+
+  # total number of states that will be saved
+  N = fld(settings.T, settings.tstep)
+
+  # effective number of simulations
+  T = settings.tstep * N
 
   # indices of units i and j
   ij = zeros(Int, 2)
@@ -15,15 +23,27 @@ function kpax3mcmc!(data::Matrix{UInt8},
   neighbours = zeros(Int, support.n)
 
   try
-    write(fp, settings.α)
-    write(fp, settings.θ)
-    write(fp, settings.γ[1])
-    write(fp, settings.γ[2])
-    write(fp, settings.γ[3])
-    write(fp, settings.r)
+    write(fpS, support.n)
+    write(fpS, support.m)
+    write(fpS, N)
+    write(fpS, settings.α)
+    write(fpS, settings.θ)
+    write(fpS, settings.γ[1])
+    write(fpS, settings.γ[2])
+    write(fpS, settings.γ[3])
+    write(fpS, settings.r)
+  finally
+    close(fpS)
+  end
 
-    write(fp, support.n)
-    write(fp, support.m)
+  try
+    write(fpR, support.n)
+    write(fpR, support.m)
+    write(fpR, N)
+
+    write(fpC, support.n)
+    write(fpC, support.m)
+    write(fpC, N)
 
     if settings.burnin > 0
       if settings.verbose
@@ -59,9 +79,9 @@ function kpax3mcmc!(data::Matrix{UInt8},
       println("Starting collecting samples...")
     end
 
-    operator = sample(UInt8[1; 2; 3], settings.op, settings.T)
+    operator = sample(UInt8[1; 2; 3], settings.op, T)
 
-    for t in 1:settings.T
+    for t in 1:T
       if operator[t] == 0x01
         splitmerge!(ij, neighbours, data, priorR, priorC, settings, support,
                     state)
@@ -74,7 +94,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
       sampleC!(priorC, state)
 
       if t % settings.tstep == 0
-        savestate!(fp, state)
+        savestate!(fpR, fpC, state)
       end
 
       if settings.verbose && (t % settings.verbosestep == 0)
@@ -86,7 +106,8 @@ function kpax3mcmc!(data::Matrix{UInt8},
       println("Markov Chain simulation complete.")
     end
   finally
-    close(fp)
+    close(fpR)
+    close(fpC)
   end
 
   nothing

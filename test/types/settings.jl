@@ -2,7 +2,7 @@
 
 function test_settings_exceptions()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   @test_throws KDomainError KSettings(ifile, ofile, miss=UInt8[63; 0])
   @test_throws KDomainError KSettings(ifile, ofile, l=-1)
@@ -35,7 +35,7 @@ test_settings_exceptions()
 
 function test_settings_constructor()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
   protein = false
   miss = zeros(UInt8, 0)
   l = 10

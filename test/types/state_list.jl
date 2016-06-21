@@ -2,7 +2,7 @@
 
 function test_state_list_constructor()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile)
 
@@ -89,7 +89,7 @@ test_state_list_constructor()
 
 function test_state_list_copy_basic()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile)
 

@@ -97,7 +97,7 @@ C
 
 function test_local_mode()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, gamma=[0.3; 0.35; 0.35])
 

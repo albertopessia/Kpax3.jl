@@ -4,7 +4,7 @@
 
 function test_state_constructor()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -105,7 +105,7 @@ test_state_constructor()
 
 function test_state_resizestate()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -343,7 +343,7 @@ test_state_resizestate()
 
 function test_state_copy_basic()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -461,7 +461,7 @@ test_state_copy_basic()
 
 function test_state_copy_with_resize()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -591,7 +591,7 @@ test_state_copy_with_resize()
 
 function test_state_copy_without_resize()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -720,7 +720,7 @@ test_state_copy_without_resize()
 
 function test_state_update_with_resize()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -775,7 +775,7 @@ test_state_update_with_resize()
 
 function test_state_update_without_resize()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -832,7 +832,7 @@ test_state_update_without_resize()
 
 function test_state_initializestate()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;

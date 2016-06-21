@@ -129,7 +129,7 @@ test_partition_cols_constructor()
 
 function test_partition_cols_functions()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   data = UInt8[1 1 0 0 1 1;
                0 0 1 1 0 0;
@@ -209,7 +209,7 @@ test_partition_cols_functions()
 
 function test_partition_cols_simulations()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   data = UInt8[1 1 0 0 1 1;
                0 0 1 1 0 0;

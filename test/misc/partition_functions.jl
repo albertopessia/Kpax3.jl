@@ -5,7 +5,7 @@
 
 function test_partition_functions_initializepartition()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile)
 

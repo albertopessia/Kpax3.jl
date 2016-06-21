@@ -2,7 +2,7 @@
 
 function test_mcmc_brw_init()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
@@ -106,7 +106,7 @@ test_mcmc_brw_init()
 
 function test_mcmc_brw()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, op=[0.0; 0.0; 1.0])
 

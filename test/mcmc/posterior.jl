@@ -397,7 +397,7 @@ end
 
 function test_mcmc_algorithm()
   ifile = "data/mcmc_6.fasta"
-  ofile = "../build/mcmc_6.bin"
+  ofile = "../build/mcmc_6"
 
   partition = "data/mcmc_6.csv"
 
@@ -451,9 +451,9 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test isapprox(estimK, trueProbK, rtol=0.01)
-  @test isapprox(estimP, trueProbP, rtol=0.01)
-  @test isapprox(estimS, trueProbS, rtol=0.01)
+  @test isapprox(estimK, trueProbK, rtol=0.02)
+  @test isapprox(estimP, trueProbP, rtol=0.02)
+  @test isapprox(estimS, trueProbS, rtol=0.02)
 
   # EwensPitmanPAUT
   α = 0.5
@@ -503,9 +503,9 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test isapprox(estimK, trueProbK, rtol=0.01)
-  @test isapprox(estimP, trueProbP, rtol=0.01)
-  @test isapprox(estimS, trueProbS, rtol=0.01)
+  @test isapprox(estimK, trueProbK, rtol=0.02)
+  @test isapprox(estimP, trueProbP, rtol=0.02)
+  @test isapprox(estimS, trueProbS, rtol=0.02)
 
   # EwensPitmanPAZT
   α = 0.5
@@ -555,9 +555,9 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test isapprox(estimK, trueProbK, rtol=0.01)
-  @test isapprox(estimP, trueProbP, rtol=0.01)
-  @test isapprox(estimS, trueProbS, rtol=0.01)
+  @test isapprox(estimK, trueProbK, rtol=0.02)
+  @test isapprox(estimP, trueProbP, rtol=0.02)
+  @test isapprox(estimS, trueProbS, rtol=0.02)
 
   # EwensPitmanNAPT
   α = -1
@@ -607,9 +607,9 @@ function test_mcmc_algorithm()
 
   (estimK, estimP, estimS) = processchain(settings.ofile)
 
-  @test isapprox(estimK, trueProbK, rtol=0.01)
-  @test isapprox(estimP, trueProbP, rtol=0.01)
-  @test isapprox(estimS, trueProbS, rtol=0.01)
+  @test isapprox(estimK, trueProbK, rtol=0.02)
+  @test isapprox(estimP, trueProbP, rtol=0.02)
+  @test isapprox(estimS, trueProbS, rtol=0.02)
 
   nothing
 end
