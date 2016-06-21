@@ -3,7 +3,7 @@
 function test_mcmc_merge_init()
   # merge cluster 2 and cluster 3
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
@@ -109,7 +109,7 @@ test_mcmc_merge_init()
 function test_mcmc_merge_updatei()
   # move the first unit (u) to cluster 2 (test inverse split operator)
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
@@ -250,7 +250,7 @@ test_mcmc_merge_updatei()
 function test_mcmc_merge_updatej()
   # move the first unit (u) to cluster 2 (test inverse split operator)
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 

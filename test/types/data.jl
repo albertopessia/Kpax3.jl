@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function test_data_exceptions()
-  f = "../build/test.bin"
+  f = "../build/test"
 
   @test_throws KFASTAError NucleotideData(KSettings("data/empty_file.fasta", f))
   @test_throws KFASTAError NucleotideData(KSettings("data/no_1st_seq.fasta", f))
@@ -25,7 +25,7 @@ end
 test_data_exceptions()
 
 function test_data_blanks()
-  f = "../build/test.bin"
+  f = "../build/test"
 
   nt = NucleotideData(KSettings("data/blanks.fasta", f))
   @test nt.data == UInt8[0 1;
@@ -113,7 +113,7 @@ end
 test_data_blanks()
 
 function test_data_proper_dna_file()
-  f = "../build/test.bin"
+  f = "../build/test"
 
   nt = NucleotideData(KSettings("data/proper_nt.fasta", f))
   @test nt.data == UInt8[0 0 0 0 0 1;
@@ -205,7 +205,7 @@ end
 test_data_proper_dna_file()
 
 function test_data_proper_protein_file()
-  f = "../build/test.bin"
+  f = "../build/test"
 
   aa = AminoAcidData(KSettings("data/proper_aa.fasta", f))
   @test aa.data == UInt8[0 0 0 0 0 1;
@@ -296,7 +296,7 @@ end
 test_data_proper_protein_file()
 
 function test_data_input_output()
-  f = "../build/test.bin"
+  f = "../build/test"
 
   nt = NucleotideData(KSettings("data/proper_nt.fasta", f))
 

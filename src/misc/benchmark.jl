@@ -14,7 +14,7 @@ ProfileView.view(r[1], lidict=r[2])
 function benchmark()
   include("src/boot.jl")
 
-  settings = KSettings("test/data/mcmc_6.fasta", "test/data/mcmc_6.bin",
+  settings = KSettings("test/data/mcmc_6.fasta", "test/data/mcmc_6",
                        α=0.5, θ=-0.25, γ=[0.6; 0.35; 0.05],
                        r=log(0.001)/log(0.95), maxclust=1, maxunit=1,
                        verbose=false, verbosestep=100000, popsize=50,

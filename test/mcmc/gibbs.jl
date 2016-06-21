@@ -2,7 +2,7 @@
 
 function test_mcmc_gibbs_init()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=3, maxunit=1)
 
@@ -53,7 +53,7 @@ test_mcmc_gibbs_init()
 
 function test_mcmc_gibbs_move()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=4, maxunit=1)
 
@@ -271,7 +271,7 @@ test_mcmc_gibbs_move()
 
 function test_mcmc_gibbs_merge()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=3, maxunit=1)
 
@@ -432,7 +432,7 @@ test_mcmc_gibbs_merge()
 
 function test_mcmc_gibbs_sample_cluster()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=4, maxunit=1)
 
@@ -492,7 +492,7 @@ test_mcmc_gibbs_sample_cluster()
 
 function test_mcmc_gibbs_perform_move()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=4, maxunit=1)
 
@@ -619,7 +619,7 @@ test_mcmc_gibbs_perform_move()
 
 function test_mcmc_gibbs_perform_merge()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=3, maxunit=1)
 
@@ -732,7 +732,7 @@ test_mcmc_gibbs_perform_merge()
 
 function test_mcmc_gibbs_perform_split()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   # state should be resized
   settings = KSettings(ifile, ofile, maxclust=3, maxunit=1)

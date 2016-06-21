@@ -3,7 +3,7 @@
 function test_mcmc_split_init()
   # split cluster 1
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
@@ -127,7 +127,7 @@ test_mcmc_split_init()
 function test_mcmc_split_updatei()
   # move the first unit (u) to cluster 1
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
@@ -282,7 +282,7 @@ end
 function test_mcmc_split_updatej()
   # move the first unit (u) to cluster 2
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
@@ -439,7 +439,7 @@ test_mcmc_split_updatej()
 function test_mcmc_updatelogmarglik()
   # move the first unit (u) to cluster 2 (test inverse split operator)
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
 

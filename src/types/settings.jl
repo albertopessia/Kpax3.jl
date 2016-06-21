@@ -63,7 +63,13 @@ function KSettings(ifile::AbstractString,
   f = open(ifile, "r")
   close(f)
 
-  f = open(ofile, "a")
+  f = open(string(ofile, "_settings.bin"), "a")
+  close(f)
+
+  f = open(string(ofile, "_row_partition.bin"), "a")
+  close(f)
+
+  f = open(string(ofile, "_col_partition.bin"), "a")
   close(f)
 
   if length(miss) == 0

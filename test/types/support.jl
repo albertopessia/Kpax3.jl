@@ -2,7 +2,7 @@
 
 function test_support_mcmc_constructor()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
   maxclust = 1
 
   settings = KSettings(ifile, ofile, maxclust=maxclust)
@@ -96,7 +96,7 @@ test_support_mcmc_constructor()
 
 function test_support_mcmc_resize()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
   maxclust = 1
 
   settings = KSettings(ifile, ofile, maxclust=maxclust)

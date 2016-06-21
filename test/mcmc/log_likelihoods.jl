@@ -2,7 +2,7 @@
 
 function test_mcmc_logmarglikmerge()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile)
 
@@ -53,7 +53,7 @@ test_mcmc_logmarglikmerge()
 
 function test_mcmc_logmargliksplit()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
 
   settings = KSettings(ifile, ofile)
 

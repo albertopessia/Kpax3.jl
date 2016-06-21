@@ -108,7 +108,7 @@ function normalizepartition(ifile::AbstractString,
   d = readcsv(ifile, Int)
 
   if size(d, 2) != 1
-    throw(KInputError("Too many columns found in file ", ifile, "."))
+    throw(KInputError(string("Too many columns found in file ", ifile, ".")))
   end
 
   if length(d) != n
@@ -144,7 +144,7 @@ function normalizepartition(ifile::AbstractString,
 
     indexin(partition, sort(unique(partition)))[idx]
   else
-    throw(KInputError("Too many columns found in file ", ifile, "."))
+    throw(KInputError(string("Too many columns found in file ", ifile, ".")))
   end
 end
 

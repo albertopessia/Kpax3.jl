@@ -2,7 +2,7 @@
 
 function test_write_results()
   ifile = "data/proper_aa.fasta"
-  ofile = "../build/test.bin"
+  ofile = "../build/test"
   partition = "data/proper_aa_partition.csv"
 
   settings = KSettings(ifile, ofile, gamma=[0.4; 0.35; 0.25])
