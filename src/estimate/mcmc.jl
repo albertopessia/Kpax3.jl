@@ -42,17 +42,24 @@ function kpax3estimate(x::AminoAcidData,
                        settings::KSettings)
   R = kpax3Restimate(settings.ofile)
 
-  (m, n) = size(x.data)
+  fpS = open(string(settings.ofile, "_settings.bin"), "r")
 
-  fp = open(settings.ofile, "r")
-  tmp = zeros(Float64, 6)
-  read!(fp, tmp)
-  close(fp)
+  tmp1 = zeros(Int, 3)
+  read!(fpS, tmp1)
 
-  α = tmp[1]
-  θ = tmp[2]
-  γ = [tmp[3]; tmp[4]; tmp[5]]
-  r = tmp[6]
+  n = tmp1[1]
+  m = tmp1[2]
+  N = tmp1[3]
+
+  tmp2 = zeros(Float64, 6)
+  read!(fpS, tmp2)
+
+  α = tmp2[1]
+  θ = tmp2[2]
+  γ = [tmp2[3]; tmp2[4]; tmp2[5]]
+  r = tmp2[6]
+
+  close(fpS)
 
   op = copy(values(settings.op))
 
