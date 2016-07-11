@@ -175,7 +175,47 @@ function kpax3mcmc(settings::KSettings)
 end
 
 function kpax3mcmc(x::AminoAcidData,
-                   partition,
+                   partition::Vector{Int},
+                   settings::KSettings)
+  (m, n) = size(x.data)
+
+  R = normalizepartition(partition, n)
+
+  v = zeros(Int, n)
+  g = 0
+  k = 0
+  u = 0
+  for a in 1:n
+    g = R[a]
+
+    if v[g] == 0
+      k += 1
+    end
+
+    v[g] += 1
+
+    if v[g] > u
+      u = v[g]
+    end
+  end
+
+  maxclust = min(n, max(k, settings.maxclust))
+  maxunit = min(n, max(u, settings.maxunit))
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
+
+  state = AminoAcidState(x.data, R, priorR, priorC, settings)
+
+  support = MCMCSupport(state, priorC)
+
+  kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
+
+  nothing
+end
+
+function kpax3mcmc(x::AminoAcidData,
+                   partition::AbstractString,
                    settings::KSettings)
   (m, n) = size(x.data)
 
