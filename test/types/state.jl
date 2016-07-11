@@ -54,7 +54,7 @@ function test_state_constructor()
 
   state = AminoAcidState(data, R, priorR, priorC, settings)
 
- @test state.R == [1; 1; 2; 2; 3; 3]
+  @test state.R == [1; 1; 2; 2; 3; 3]
 
   @test isa(state.C, Matrix{UInt8})
   @test size(state.C, 1) == maxclust

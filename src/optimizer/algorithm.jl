@@ -140,7 +140,47 @@ function kpax3ga!(x::AminoAcidData,
   beststate
 end
 
-function kpax3ga(partition,
+function kpax3ga(partition::Vector{Int},
+                 settings::KSettings)
+  x = AminoAcidData(settings)
+  (m, n) = size(x.data)
+
+  R = normalizepartition(partition, n)
+  k = maximum(R)
+
+  maxclust = min(n, max(k, settings.maxclust))
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
+
+  population = AminoAcidStateList(x.data, R, priorR, priorC, settings)
+
+  support = GASupport(m, n)
+
+  kpax3ga!(x, population, priorR, priorC, settings, support)
+end
+
+function kpax3ga(x::AminoAcidData,
+                 partition::Vector{Int},
+                 settings::KSettings)
+  (m, n) = size(x.data)
+
+  R = normalizepartition(partition, n)
+  k = maximum(R)
+
+  maxclust = min(n, max(k, settings.maxclust))
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
+
+  population = AminoAcidStateList(x.data, R, priorR, priorC, settings)
+
+  support = GASupport(m, n)
+
+  kpax3ga!(x, population, priorR, priorC, settings, support)
+end
+
+function kpax3ga(partition::AbstractString,
                  settings::KSettings)
   x = AminoAcidData(settings)
   (m, n) = size(x.data)
@@ -161,7 +201,7 @@ function kpax3ga(partition,
 end
 
 function kpax3ga(x::AminoAcidData,
-                 partition,
+                 partition::AbstractString,
                  settings::KSettings)
   (m, n) = size(x.data)
 

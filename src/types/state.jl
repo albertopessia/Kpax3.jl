@@ -189,41 +189,28 @@ function initializestate(data::Matrix{UInt8},
   end
 
   niter = 0
-  notupdated = true
   for k in kset
     if settings.verbose && (k % 10 == 0)
       @printf("Total number of clusters = %d.\n", k)
     end
 
     fill!(R, 0)
-    notupdated = true
-    while notupdated
-      try
-        copy!(R, kmedoids(D, k).assignments)
-      catch
-        fill!(R, 0)
-      end
-
-      if R[1] > 0
-        notupdated = false
-      end
+    try
+      copy!(R, kmedoids(D, k).assignments)
+    catch
+      sample!(1:k, R, replace=true)
+      R[sample(1:n, k, replace=false)] = collect(1:k)
     end
 
     updatestate!(t1, data, R, priorR, priorC, settings)
 
     niter = 0
     while niter < 10
-      notupdated = true
-      while notupdated
-        try
-          copy!(R, kmedoids(D, k).assignments)
-        catch
-          fill!(R, 0)
-        end
-
-        if R[1] > 0
-          notupdated = false
-        end
+      try
+        copy!(R, kmedoids(D, k).assignments)
+      catch
+        sample!(1:k, R, replace=true)
+        R[sample(1:n, k, replace=false)] = collect(1:k)
       end
 
       updatestate!(t2, data, R, priorR, priorC, settings)
