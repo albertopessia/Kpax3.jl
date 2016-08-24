@@ -13,15 +13,22 @@ function kpax3Restimate(ifile::AbstractString)
   end
 
   R = zeros(Int, n)
+  estimate = ones(Int, n)
 
   lossold = Inf
   lossnew = Inf
-  tmp = 0
+  niter = 0
   for k in 1:n
     if pk[k] > 0.0
-      estimate = kmedoids(D, k).assignments
-      tmp = 1
-      while tmp <= 100
+      try
+        copy!(estimate, kmedoids(D, k).assignments)
+      catch
+        sample!(1:k, estimate, replace=true)
+        estimate[sample(1:n, k, replace=false)] = collect(1:k)
+      end
+
+      niter = 0
+      while niter < 100
         lossnew = loss_binder(estimate, pR)
 
         if lossnew < lossold
@@ -29,8 +36,14 @@ function kpax3Restimate(ifile::AbstractString)
           copy!(R, estimate)
         end
 
-        estimate = kmedoids(D, k).assignments
-        tmp += 1
+        try
+          copy!(estimate, kmedoids(D, k).assignments)
+        catch
+          sample!(1:k, estimate, replace=true)
+          estimate[sample(1:n, k, replace=false)] = collect(1:k)
+        end
+
+        niter += 1
       end
     end
   end

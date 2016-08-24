@@ -30,6 +30,7 @@ module Kpax3
   kpax3ga,
 
   # estimation
+  processchain,
   kpax3estimate,
   computelocalmode!,
 
