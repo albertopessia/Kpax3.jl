@@ -15,11 +15,40 @@ function test_partition_functions_initializepartition()
   @test minimum(R) >= 1
   @test maximum(R) <= 6
 
-  R = initializepartition(settings, kset=1:6)
+  R = initializepartition(settings, kset=2:3)
+
+  @test isa(R, Vector{Int})
+  @test minimum(R) >= 1
+  @test maximum(R) <= 3
+
+  (data, id, ref) = readfasta(ifile, true,
+                              UInt8['?', '*', '#', 'b', 'j', 'x', 'z'],
+                              100000000, false, 0)
+
+  n = size(data, 2)
+
+  d = distaamtn84(data, ref)
+
+  D = zeros(Float64, n, n)
+  idx = 0
+  for j in 1:(n - 1), i in (j + 1):n
+    idx += 1
+    D[i, j] = D[j, i] = d[idx]
+  end
+
+  x = AminoAcidData(settings)
+
+  R = initializepartition(x.data, D, settings)
 
   @test isa(R, Vector{Int})
   @test minimum(R) >= 1
   @test maximum(R) <= 6
+
+  R = initializepartition(x.data, D, settings, kset=2:3)
+
+  @test isa(R, Vector{Int})
+  @test minimum(R) >= 1
+  @test maximum(R) <= 3
 
   nothing
 end

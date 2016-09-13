@@ -55,8 +55,12 @@ function initializepartition(settings::KSettings;
              else
                kset[1]:n
              end
-           elseif kset[1] == 1
-             2:kset[end]
+           else
+             if kset[1] == 1
+               2:kset[end]
+             else
+               kset[1]:kset[end]
+             end
            end
          else
            throw(KDomainError("First element of 'kset' is less than one."))
@@ -80,6 +84,51 @@ function initializepartition(settings::KSettings;
   priorC = AminoAcidPriorCol(bindata, settings.γ, settings.r)
 
   s = initializestate(bindata, D, kset, priorR, priorC, settings)
+
+  if settings.verbose
+    @printf("Initialization done.\n")
+  end
+
+  normalizepartition(s.R, n)
+end
+
+function initializepartition(data::Matrix{UInt8},
+                             D::Matrix{Float64},
+                             settings::KSettings;
+                             kset::UnitRange{Int}=1:0)
+  n = size(data, 2)
+
+  # expected number of cluster approximately between cbrt(n) and sqrt(n)
+  g = ceil(Int, n^(2 / 5))
+
+  kset = if length(kset) == 0
+           max(1, g - 20):min(n, g + 20)
+         elseif kset[1] > 0
+           if kset[end] > n
+             if kset[1] == 1
+               2:n
+             else
+               kset[1]:n
+             end
+           else
+             if kset[1] == 1
+               2:kset[end]
+             else
+               kset[1]:kset[end]
+             end
+           end
+         else
+           throw(KDomainError("First element of 'kset' is less than one."))
+         end
+
+  if settings.verbose
+    @printf("Initializing partition...\n")
+  end
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+
+  s = initializestate(data, D, kset, priorR, priorC, settings)
 
   if settings.verbose
     @printf("Initialization done.\n")
