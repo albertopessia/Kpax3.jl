@@ -40,7 +40,7 @@ sequence datasets. _Microbial Genomics_ **1**(1).
 """
 immutable NucleotideData <: KData
   data::Matrix{UInt8}
-  id::Vector{ASCIIString}
+  id::Vector{String}
   ref::Vector{UInt8}
   val::Vector{UInt8}
   key::Vector{Int}
@@ -124,7 +124,7 @@ sequence datasets. _Microbial Genomics_ **1**(1).
 """
 immutable AminoAcidData <: KData
   data::Matrix{UInt8}
-  id::Vector{ASCIIString}
+  id::Vector{String}
   ref::Vector{UInt8}
   val::Vector{UInt8}
   key::Vector{Int}

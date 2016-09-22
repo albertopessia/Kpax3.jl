@@ -169,8 +169,8 @@ function normalizepartition(ifile::AbstractString,
 end
 
 function normalizepartition(ifile::AbstractString,
-                            id::Vector{ASCIIString})
-  d = readcsv(ifile, ASCIIString)
+                            id::Vector{String})
+  d = readcsv(ifile, String)
 
   if size(d, 1) != length(id)
     throw(KInputError(string("Partition length is not equal to the sample ",
@@ -182,7 +182,7 @@ function normalizepartition(ifile::AbstractString,
     partition = [parse(Int, x) for x in d[:, 1]]
     indexin(partition, sort(unique(partition)))
   elseif size(d, 2) == 2
-    idx = indexin([x::ASCIIString for x in d[:, 1]], id)
+    idx = indexin([x::String for x in d[:, 1]], id)
     partition = [parse(Int, x) for x in d[:, 2]]
 
     for i in 1:length(idx)
