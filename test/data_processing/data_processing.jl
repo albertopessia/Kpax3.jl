@@ -13,10 +13,10 @@ function test_data_processing_exceptions()
   @test_throws KFASTAError readfasta("data/no_nth_seq.fasta", false, missdna,
                                      100000000, false, 0)
 
-  @test_throws TypeError readfasta("data/utf8_id.fasta", false, missdna,
-                                   100000000, false, 0)
-  @test_throws TypeError readfasta("data/utf8_seq.fasta", false, missdna,
-                                   100000000, false, 0)
+  @test_throws KFASTAError readfasta("data/utf8_id.fasta", false, missdna,
+                                     100000000, false, 0)
+  @test_throws KFASTAError readfasta("data/utf8_seq.fasta", false, missdna,
+                                     100000000, false, 0)
 
   nothing
 end
@@ -35,7 +35,7 @@ function test_data_processing_read_blanks()
                       'c' 'g';
                       'a' 'g';
                       'g' 'c']
-  @test id == ASCIIString["ID1", "ID5"]
+  @test id == String["ID1", "ID5"]
   @test refseq == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
                         'a']
 
@@ -65,7 +65,7 @@ function test_data_processing_read_blanks()
                       'c' 'g';
                       'a' 'g';
                       'g' 'c']
-  @test id == ASCIIString["ID1", "ID5"]
+  @test id == String["ID1", "ID5"]
   @test refseq == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
                         'a']
 
@@ -89,7 +89,7 @@ function test_data_processing_proper_dna_file()
                       'a' 'a' 'a' 'g' 'g' 't';
                       'a' 'a' 't' 't' 'a' 'a';
                       'g' 'c' 'g' 'g' 'c' 'g']
-  @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test refseq == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
                         'a']
 
@@ -128,7 +128,7 @@ function test_data_processing_proper_dna_file()
                       'a' 'a' 'a' 'g' 'g' 't';
                       'a' 'a' 't' 't' 'a' 'a';
                       'g' 'c' 'g' 'g' 'c' 'g']
-  @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test refseq == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
                         'a']
 
@@ -144,7 +144,7 @@ function test_data_processing_proper_dna_file()
                       'a' 'a' 't' 't' 'a' 'a';
                       'g' 'c' 'g' 'g' 'c' 'g';
                       'a' 'x' 'a' 'a' 'a' 'a']
-  @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test refseq == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
                         '.']
 
@@ -195,7 +195,7 @@ function test_data_processing_proper_protein_file()
                       'l' 'l' 'l' 'm' 'm' 'e';
                       'c' 'c' 'y' 'y' 'c' 'c';
                       'a' 'a' 't' 'a' 't' 't']
-  @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test refseq == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
                         'f']
 
@@ -232,7 +232,7 @@ function test_data_processing_proper_protein_file()
                       'l' 'l' 'l' 'm' 'm' 'e';
                       'c' 'c' 'y' 'y' 'c' 'c';
                       'a' 'a' 't' 'a' 't' 't']
-  @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test refseq == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
                         'f']
 
@@ -248,7 +248,7 @@ function test_data_processing_proper_protein_file()
                       'c' 'c' 'y' 'y' 'c' 'c';
                       'a' 'a' 't' 'a' 't' 't';
                       'f' 'x' 'f' 'f' 'f' 'f']
-  @test id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test refseq == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
                         '.']
 

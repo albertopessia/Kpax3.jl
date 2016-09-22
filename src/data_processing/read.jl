@@ -125,7 +125,7 @@ function readfasta(ifile::AbstractString,
   # note: this function has been written with a huge dataset in mind
   f = open(ifile, "r")
 
-  s = strip(readuntil(f, '>'))::ASCIIString
+  s = strip(readuntil(f, '>'))
   if length(s) == 0
     close(f)
     throw(KFASTAError("No sequence has been found."))
@@ -135,11 +135,16 @@ function readfasta(ifile::AbstractString,
   end
 
   # we now know that there is a first sequence to read... but is the ID empty?
-  sid = strip(readuntil(f, '\n'))::ASCIIString
+  sid = strip(readuntil(f, '\n'))
 
   if length(sid) == 0
     close(f)
     throw(KFASTAError("Missing sequence identifier. Sequence: 1."))
+  end
+
+  if !isascii(sid)
+    close(f)
+    throw(KFASTAError("FASTA file is not ASCII encoded."))
   end
 
   seqlen = 0
@@ -154,7 +159,11 @@ function readfasta(ifile::AbstractString,
   # start reading the first sequence
   keepgoing = true
   while keepgoing
-    s = strip(readline(f))::ASCIIString
+    s = strip(readline(f))
+
+    if !isascii(s)
+      throw(KFASTAError("FASTA file is not ASCII encoded."))
+    end
 
     if length(s) > 0
       if s[1] != '>'
@@ -202,7 +211,7 @@ function readfasta(ifile::AbstractString,
 
   if s[1] == '>'
     if length(s) > 1
-      sid = lstrip(s, '>')::ASCIIString
+      sid = lstrip(s, '>')
     else
       # there is only the '>' character
       close(f)
@@ -217,7 +226,11 @@ function readfasta(ifile::AbstractString,
   missseq = falses(seqlen)
 
   for line in eachline(f)
-    s = strip(line)::ASCIIString
+    s = strip(line)
+
+    if !isascii(s)
+      throw(KFASTAError("FASTA file is not ASCII encoded."))
+    end
 
     if length(s) > 0
       if s[1] != '>'
@@ -273,7 +286,7 @@ function readfasta(ifile::AbstractString,
         end
 
         if length(s) > 1
-          sid = lstrip(s, '>')::ASCIIString
+          sid = lstrip(s, '>')
           curlen = 0
         else
           # there is only the '>' character
@@ -321,7 +334,7 @@ function readfasta(ifile::AbstractString,
   end
 
   data = zeros(UInt8, m, n)
-  id = Array(ASCIIString, n)
+  id = Array(String, n)
   enc = zeros(UInt8, 127)
 
   h1 = 0
@@ -350,13 +363,13 @@ function readfasta(ifile::AbstractString,
   # we already checked that the first non-empty element is the id
   i = 1
 
-  s = strip(readuntil(f, '>'))::ASCIIString
-  id[i] = strip(readuntil(f, '\n'))::ASCIIString
+  s = strip(readuntil(f, '>'))
+  id[i] = strip(readuntil(f, '\n'))
 
   i1 = 0
   i2 = 0
   for line in eachline(f)
-    s = strip(line)::ASCIIString
+    s = strip(line)
 
     if length(s) > 0
       if s[1] != '>'
@@ -380,7 +393,7 @@ function readfasta(ifile::AbstractString,
         end
 
         # move on with the next sequence
-        id[i] = lstrip(s, '>')::ASCIIString
+        id[i] = lstrip(s, '>')
 
         i1 = 0
         i2 = 0

@@ -8,16 +8,16 @@ function test_data_exceptions()
   @test_throws KFASTAError NucleotideData(KSettings("data/no_id_char.fasta", f))
   @test_throws KFASTAError NucleotideData(KSettings("data/no_nth_seq.fasta", f))
 
-  @test_throws TypeError NucleotideData(KSettings("data/utf8_id.fasta", f))
-  @test_throws TypeError NucleotideData(KSettings("data/utf8_seq.fasta", f))
+  @test_throws KFASTAError NucleotideData(KSettings("data/utf8_id.fasta", f))
+  @test_throws KFASTAError NucleotideData(KSettings("data/utf8_seq.fasta", f))
 
   @test_throws KFASTAError AminoAcidData(KSettings("data/empty_file.fasta", f))
   @test_throws KFASTAError AminoAcidData(KSettings("data/no_1st_seq.fasta", f))
   @test_throws KFASTAError AminoAcidData(KSettings("data/no_id_char.fasta", f))
   @test_throws KFASTAError AminoAcidData(KSettings("data/no_nth_seq.fasta", f))
 
-  @test_throws TypeError AminoAcidData(KSettings("data/utf8_id.fasta", f))
-  @test_throws TypeError AminoAcidData(KSettings("data/utf8_seq.fasta", f))
+  @test_throws KFASTAError AminoAcidData(KSettings("data/utf8_id.fasta", f))
+  @test_throws KFASTAError AminoAcidData(KSettings("data/utf8_seq.fasta", f))
 
   nothing
 end
@@ -40,7 +40,7 @@ function test_data_blanks()
                          0 1;
                          0 1;
                          1 0]
-  @test nt.id == ASCIIString["ID1", "ID5"]
+  @test nt.id == String["ID1", "ID5"]
   @test nt.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
                         'a']
   @test nt.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c',
@@ -60,7 +60,7 @@ function test_data_blanks()
                          0 1;
                          0 1;
                          1 0]
-  @test nt.id == ASCIIString["ID1", "ID5"]
+  @test nt.id == String["ID1", "ID5"]
   @test nt.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
                         'a']
   @test nt.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c',
@@ -80,7 +80,7 @@ function test_data_blanks()
                          0 1;
                          0 1;
                          1 0]
-  @test aa.id == ASCIIString["ID1", "ID5"]
+  @test aa.id == String["ID1", "ID5"]
   @test aa.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
                         'a']
   @test aa.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c',
@@ -100,7 +100,7 @@ function test_data_blanks()
                          0 1;
                          0 1;
                          1 0]
-  @test aa.id == ASCIIString["ID1", "ID5"]
+  @test aa.id == String["ID1", "ID5"]
   @test aa.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.',
                         'a']
   @test aa.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c',
@@ -134,7 +134,7 @@ function test_data_proper_dna_file()
                          0 0 1 1 0 0;
                          0 1 0 0 1 0;
                          1 0 1 1 0 1]
-  @test nt.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test nt.id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test nt.ref == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
                         'a']
   @test nt.val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g',
@@ -160,7 +160,7 @@ function test_data_proper_dna_file()
                          0 0 1 1 0 0;
                          0 1 0 0 1 0;
                          1 0 1 1 0 1]
-  @test nt.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test nt.id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test nt.ref == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
                         'a']
   @test nt.val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g',
@@ -191,7 +191,7 @@ function test_data_proper_dna_file()
                          1 0 1 1 0 1;
                          1 0 1 1 1 1;
                          0 1 0 0 0 0]
-  @test nt.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test nt.id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test nt.ref == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
                         '.']
   @test nt.val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'x', 'c', 'g', 'a', 'c',
@@ -226,7 +226,7 @@ function test_data_proper_protein_file()
                          0 0 1 1 0 0;
                          1 1 0 1 0 0;
                          0 0 1 0 1 1]
-  @test aa.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test aa.id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test aa.ref == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
                         'f']
   @test aa.val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'l', 'v', 'c', 'l', 't',
@@ -252,7 +252,7 @@ function test_data_proper_protein_file()
                          0 0 1 1 0 0;
                          1 1 0 1 0 0;
                          0 0 1 0 1 1]
-  @test aa.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test aa.id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test aa.ref == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
                         'f']
   @test aa.val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'l', 'v', 'c', 'l', 't',
@@ -282,7 +282,7 @@ function test_data_proper_protein_file()
                          0 0 1 0 1 1;
                          1 0 1 1 1 1;
                          0 1 0 0 0 0]
-  @test aa.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test aa.id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test aa.ref == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
                         '.']
   @test aa.val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'x', 'l', 'v', 'c', 'l',
@@ -327,7 +327,7 @@ function test_data_input_output()
                          0 0 1 1 0 0;
                          0 1 0 0 1 0;
                          1 0 1 1 0 1]
-  @test nt.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test nt.id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test nt.ref == UInt8['a', '.', 'g', '.', '.', '.', 'g', '.', '.', '.', '.',
                         'a']
   @test nt.val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g',
@@ -362,7 +362,7 @@ function test_data_input_output()
                          0 0 1 1 0 0;
                          1 1 0 1 0 0;
                          0 0 1 0 1 1]
-  @test aa.id == ASCIIString["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
+  @test aa.id == String["ID1", "ID2", "ID3", "ID4", "ID5", "ID6"]
   @test aa.ref == UInt8['m', '.', 'a', '.', '.', '.', 'v', '.', '.', '.', '.',
                         'f']
   @test aa.val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'l', 'v', 'c', 'l', 't',
