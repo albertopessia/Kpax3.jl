@@ -42,6 +42,9 @@ module Kpax3
   save,
   loadaa,
   writeresults
+  readposteriork
+  readposteriorR
+  readposteriorC
 
   ##############
   # Load Types #

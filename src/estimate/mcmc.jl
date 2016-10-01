@@ -1,16 +1,12 @@
 # This file is part of Kpax3. License is MIT.
 
 function kpax3Restimate(ifile::AbstractString)
-  (pk, pR, pS) = processchain(ifile)
+  (k, pk) = readposteriork(ifile)
+  (id, pR) = readposteriorR(ifile)
 
-  n = length(pk)
+  n = length(id)
 
-  D = zeros(Float64, n, n)
-  idx = 0
-  for j in 1:(n - 1), i in (j + 1):n
-    idx += 1
-    D[i, j] = D[j, i] = 1.0 - pR[idx]
-  end
+  D = 1.0 - pR
 
   R = zeros(Int, n)
   estimate = ones(Int, n)
@@ -18,33 +14,31 @@ function kpax3Restimate(ifile::AbstractString)
   lossold = Inf
   lossnew = Inf
   niter = 0
-  for k in 1:n
-    if pk[k] > 0.0
+  for g in k
+    try
+      copy!(estimate, kmedoids(D, g).assignments)
+    catch
+      sample!(1:g, estimate, replace=true)
+      estimate[sample(1:n, g, replace=false)] = collect(1:g)
+    end
+
+    niter = 0
+    while niter < 100
+      lossnew = loss_binder(estimate, pR)
+
+      if lossnew < lossold
+        lossold = lossnew
+        copy!(R, estimate)
+      end
+
       try
-        copy!(estimate, kmedoids(D, k).assignments)
+        copy!(estimate, kmedoids(D, g).assignments)
       catch
-        sample!(1:k, estimate, replace=true)
-        estimate[sample(1:n, k, replace=false)] = collect(1:k)
+        sample!(1:g, estimate, replace=true)
+        estimate[sample(1:n, g, replace=false)] = collect(1:g)
       end
 
-      niter = 0
-      while niter < 100
-        lossnew = loss_binder(estimate, pR)
-
-        if lossnew < lossold
-          lossold = lossnew
-          copy!(R, estimate)
-        end
-
-        try
-          copy!(estimate, kmedoids(D, k).assignments)
-        catch
-          sample!(1:k, estimate, replace=true)
-          estimate[sample(1:n, k, replace=false)] = collect(1:k)
-        end
-
-        niter += 1
-      end
+      niter += 1
     end
   end
 
