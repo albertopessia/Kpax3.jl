@@ -171,6 +171,16 @@ function kpax3mcmc(settings::KSettings)
 
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
 
+  if settings.verbose
+    @printf("Processing Markov Chain output... ")
+  end
+
+  processchain(settings.ofile, x)
+
+  if settings.verbose
+    @printf("done.\n")
+  end
+
   nothing
 end
 
@@ -211,6 +221,16 @@ function kpax3mcmc(x::AminoAcidData,
 
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
 
+  if settings.verbose
+    @printf("Processing Markov Chain output... ")
+  end
+
+  processchain(settings.ofile, x)
+
+  if settings.verbose
+    @printf("done.\n")
+  end
+
   nothing
 end
 
@@ -250,6 +270,16 @@ function kpax3mcmc(x::AminoAcidData,
   support = MCMCSupport(state, priorC)
 
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
+
+  if settings.verbose
+    @printf("Processing Markov Chain output... ")
+  end
+
+  processchain(settings.ofile, x)
+
+  if settings.verbose
+    @printf("done.\n")
+  end
 
   nothing
 end
