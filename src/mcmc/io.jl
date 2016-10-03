@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
-function processchain(fileroot::AbstractString,
-                      x::AminoAcidData)
+function processchain(x::AminoAcidData,
+                      fileroot::AbstractString)
   # open and close output files to check writing permissions
   fp = open(string(fileroot, "_posterior_k.csv"), "w")
   close(fp)
