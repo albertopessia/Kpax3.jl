@@ -175,7 +175,7 @@ function kpax3mcmc(settings::KSettings)
     @printf("Processing Markov Chain output... ")
   end
 
-  processchain(settings.ofile, x)
+  processchain(x, settings.ofile)
 
   if settings.verbose
     @printf("done.\n")
@@ -225,7 +225,7 @@ function kpax3mcmc(x::AminoAcidData,
     @printf("Processing Markov Chain output... ")
   end
 
-  processchain(settings.ofile, x)
+  processchain(x, settings.ofile)
 
   if settings.verbose
     @printf("done.\n")
@@ -275,7 +275,7 @@ function kpax3mcmc(x::AminoAcidData,
     @printf("Processing Markov Chain output... ")
   end
 
-  processchain(settings.ofile, x)
+  processchain(x, settings.ofile)
 
   if settings.verbose
     @printf("done.\n")
