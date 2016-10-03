@@ -41,9 +41,9 @@ module Kpax3
   categorical2binary,
   save,
   loadaa,
-  writeresults
-  readposteriork
-  readposteriorR
+  writeresults,
+  readposteriork,
+  readposteriorR,
   readposteriorC
 
   ##############

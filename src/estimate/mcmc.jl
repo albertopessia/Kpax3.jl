@@ -1,8 +1,8 @@
 # This file is part of Kpax3. License is MIT.
 
-function kpax3Restimate(ifile::AbstractString)
-  (k, pk) = readposteriork(ifile)
-  (id, pR) = readposteriorR(ifile)
+function kpax3Restimate(fileroot::AbstractString)
+  (k, pk) = readposteriork(fileroot)
+  (id, pR) = readposteriorR(fileroot)
 
   n = length(id)
 
