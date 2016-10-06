@@ -459,7 +459,7 @@ function test_mcmc_algorithm()
   kpax3mcmc(x, partition, settings)
 
   (k, estimK) = readposteriork(settings.ofile)
-  (id, estimP) = readposteriorR(settings.ofile)
+  (id, estimP) = readposteriorP(settings.ofile)
   (site, aa, freq, estimS) = readposteriorC(settings.ofile)
 
   @test isapprox(estimK, trueProbK, rtol=0.02)
@@ -520,7 +520,7 @@ function test_mcmc_algorithm()
   kpax3mcmc(x, partition, settings)
 
   (k, estimK) = readposteriork(settings.ofile)
-  (id, estimP) = readposteriorR(settings.ofile)
+  (id, estimP) = readposteriorP(settings.ofile)
   (site, aa, freq, estimS) = readposteriorC(settings.ofile)
 
   @test isapprox(estimK, trueProbK, rtol=0.02)
@@ -581,7 +581,7 @@ function test_mcmc_algorithm()
   kpax3mcmc(x, partition, settings)
 
   (k, estimK) = readposteriork(settings.ofile)
-  (id, estimP) = readposteriorR(settings.ofile)
+  (id, estimP) = readposteriorP(settings.ofile)
   (site, aa, freq, estimS) = readposteriorC(settings.ofile)
 
   @test isapprox(estimK, trueProbK, rtol=0.02)
@@ -640,7 +640,7 @@ function test_mcmc_algorithm()
   kpax3mcmc(x, partition, settings)
 
   (k, estimK) = readposteriork(settings.ofile)
-  (id, estimP) = readposteriorR(settings.ofile)
+  (id, estimP) = readposteriorP(settings.ofile)
   (site, aa, freq, estimS) = readposteriorC(settings.ofile)
 
   @test isapprox(estimK, trueProbK, rtol=0.02)
