@@ -2,11 +2,11 @@
 
 function kpax3Restimate(fileroot::AbstractString)
   (k, pk) = readposteriork(fileroot)
-  (id, pR) = readposteriorR(fileroot)
+  (id, P) = readposteriorP(fileroot)
 
   n = length(id)
 
-  D = 1.0 - pR
+  D = 1.0 - P
 
   R = zeros(Int, n)
   estimate = ones(Int, n)
@@ -24,7 +24,7 @@ function kpax3Restimate(fileroot::AbstractString)
 
     niter = 0
     while niter < 100
-      lossnew = loss_binder(estimate, pR)
+      lossnew = loss_binder(estimate, P)
 
       if lossnew < lossold
         lossold = lossnew

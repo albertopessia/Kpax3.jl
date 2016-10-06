@@ -16,7 +16,7 @@ function readposteriork(fileroot::AbstractString)
   (k, pk)
 end
 
-function readposteriorR(fileroot::AbstractString)
+function readposteriorP(fileroot::AbstractString)
   d = readcsv(string(fileroot, "_posterior_R.csv"), String, header=true)
 
   len = size(d[1], 1)
