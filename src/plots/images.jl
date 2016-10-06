@@ -22,7 +22,7 @@ function reorderunits(R::Vector{Int},
 
   neworder = zeros(Int, n)
   midpoint = zeros(Float64, k)
-  seppoint = zeros(Float64, k)
+  seppoint = zeros(Float64, k + 1)
 
   h = 1
   u = 1
@@ -37,6 +37,8 @@ function reorderunits(R::Vector{Int},
 
     h += u
   end
+
+  seppoint[k + 1] = n + 0.5
 
   (neworder, midpoint, seppoint)
 end
@@ -87,8 +89,12 @@ function plotP(R::Vector{Int},
     idx += 1
   end
 
-  plot(layer(yintercept=sep, Geom.hline(color=colorant"black")),
-       layer(xintercept=sep, Geom.vline(color=colorant"black")),
+  plot(layer(x=repeat(sep[1:k], outer=2), y=[sep[1:k]; sep[2:end]],
+             xend=repeat(sep[2:end], outer=2), yend=[sep[1:k]; sep[2:end]],
+             Geom.segment),
+       layer(x=[sep[1:k]; sep[2:end]], y=repeat(sep[1:k], outer=2),
+             xend=[sep[1:k]; sep[2:end]], yend=repeat(sep[2:end], outer=2),
+             Geom.segment),
        layer(x=x, y=y, color=z, Geom.rectbin),
        Coord.cartesian(yflip=true, fixed=true, xmin=0.5, xmax=n + 0.5, ymin=0.5,
                        ymax=n + 0.5),
@@ -100,9 +106,8 @@ function plotP(R::Vector{Int},
                                            "(0.8, 1.0]"]),
        Scale.x_continuous(labels=l -> string(clusterlabel[mid .== l][1])),
        Scale.y_continuous(labels=l -> string(clusterlabel[mid .== l][1])),
-       Theme(background_color=colorant"#FFFFFF", panel_fill=colorant"#FFFFFF",
-             plot_padding=0mm, grid_line_width=0mm,
-             line_style=get_stroke_vector(:dash),
+       Theme(default_color=colorant"black", background_color=colorant"white",
+             panel_fill=colorant"white", grid_line_width=0mm,
              line_width=if linesep 0.3mm else 0mm end),
        Guide.xticks(ticks=mid),
        Guide.yticks(ticks=mid),
