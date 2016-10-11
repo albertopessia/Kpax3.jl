@@ -145,10 +145,22 @@ function processchain(x::AminoAcidData,
   fp = open(string(fileroot, "_posterior_C.csv"), "w")
   write(fp, string("\"Site\",\"AminoAcid\",\"Proportion\",\"p('noise' | x)\",",
                    "\"p('weak signal' | x)\",\"p('strong signal' | x)\"\n"))
-  for b in 1:m[1]
-    write(fp, string(x.key[b], ",\"", uppercase(Char(x.val[b])), "\",",
-                     p[b], ",", pC[1, b], ",", pC[2, b], ",", pC[3, b],
-                     "\n"))
+
+  key = 0
+  b = 1
+  for j in 1:length(x.ref)
+    if x.ref[j] == UInt8('.')
+      key += 1
+
+      while (b <= m[1]) && (x.key[b] == key)
+        write(fp, string(j, ",\"", uppercase(Char(x.val[b])), "\",", p[b], ",",
+                         pC[1, b], ",", pC[2, b], ",", pC[3, b], "\n"))
+        b += 1
+      end
+    else
+      write(fp, string(j, ",\"", uppercase(Char(x.ref[j])), "\",", 1.0, ",",
+                       1.0, ",", 0.0, ",", 0.0, "\n"))
+    end
   end
   close(fp)
 
