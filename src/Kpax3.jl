@@ -50,7 +50,8 @@ module Kpax3
 
   # plot
   plotk,
-  plotP
+  plotP,
+  plotC
 
   ##############
   # Load Types #
