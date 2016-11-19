@@ -1,53 +1,12 @@
 # This file is part of Kpax3. License is MIT.
 
-function reorderunits(R::Vector{Int},
-                      P::Matrix{Float64},
-                      clusterorder::Vector{Int})
-  n = length(R)
-  k = maximum(R)
-
-  M = zeros(Float64, n)
-  v = zeros(Float64, n)
-  for j in 1:(n - 1), i in (j + 1):n
-    if R[i] == R[j]
-      M[i] += P[i, j]
-      v[i] += 1
-
-      M[j] += P[i, j]
-      v[j] += 1
-    end
-  end
-
-  M ./= v
-
-  neworder = zeros(Int, n)
-  midpoint = zeros(Float64, k)
-  seppoint = zeros(Float64, k + 1)
-
-  h = 1
-  u = 1
-  for g in 1:k
-    idx = find(R .== clusterorder[g])
-    u = length(idx)
-    ord = sortperm(M[idx], rev=true)
-
-    copy!(neworder, h, idx[ord], 1, u)
-    midpoint[g] = (2 * h + u - 1) / 2
-    seppoint[g] = h - 0.5
-
-    h += u
-  end
-
-  seppoint[k + 1] = n + 0.5
-
-  (neworder, midpoint, seppoint)
-end
-
 function plotP(R::Vector{Int},
                P::Matrix{Float64};
                clusterorder::Vector{Int}=zeros(Int, 0),
                clusterlabel::Vector{String}=fill("", 0),
-               linesep::Bool=true)
+               linesep::Bool=true,
+               width::Real=89.0,
+               height::Real=89.0)
   n = length(R)
   k = maximum(R)
 
@@ -89,6 +48,11 @@ function plotP(R::Vector{Int},
     idx += 1
   end
 
+  majorfontsize = computefontsize(width, height)
+  minorfontsize = 0.8 * majorfontsize
+  keytitlefontsize = majorfontsize
+  keylabelfontsize = 0.8 * keytitlefontsize
+
   plot(layer(x=repeat(sep[1:k], outer=2), y=[sep[1:k]; sep[2:end]],
              xend=repeat(sep[2:end], outer=2), yend=[sep[1:k]; sep[2:end]],
              Geom.segment),
@@ -108,7 +72,12 @@ function plotP(R::Vector{Int},
        Scale.y_continuous(labels=l -> string(clusterlabel[mid .== l][1])),
        Theme(default_color=colorant"black", background_color=colorant"white",
              panel_fill=colorant"white", grid_line_width=0mm,
-             line_width=if linesep 0.3mm else 0mm end),
+             line_width=if linesep 0.3mm else 0mm end,
+             lowlight_color=c->c, lowlight_opacity=0.0,
+             major_label_font_size=majorfontsize,
+             minor_label_font_size=minorfontsize,
+             key_title_font_size=keytitlefontsize,
+             key_label_font_size=keylabelfontsize),
        Guide.xticks(ticks=mid),
        Guide.yticks(ticks=mid),
        Guide.xlabel(""),
@@ -141,8 +110,7 @@ function plotC(site::Vector{Int},
 
   weak[key] += noise[key]
 
-  # coefficients estimated with a linear model. They can be improved
-  majorfontsize = Measures.Length(:mm, 2 + 0.004 * width + 0.011 * height)
+  majorfontsize = computefontsize(width, height)
   minorfontsize = 0.8 * majorfontsize
   keytitlefontsize = majorfontsize
   keylabelfontsize = 0.8 * keytitlefontsize
