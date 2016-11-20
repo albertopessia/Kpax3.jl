@@ -8,9 +8,9 @@ function save(ofile::AbstractString,
     mkpath(dirpath)
   end
 
-  save(File(format"JLD", ofile),
-       "data", x.data, "id", x.id, "ref", x.ref, "val", x.val, "key", x.key,
-       compress=true)
+  JLD.save(FileIO.File(format"JLD", ofile),
+           "data", x.data, "id", x.id, "ref", x.ref, "val", x.val, "key", x.key,
+           compress=true)
 end
 
 function loadnt(ifile::AbstractString)
@@ -19,7 +19,7 @@ function loadnt(ifile::AbstractString)
   f = open(ifile, "r")
   close(f)
 
-  (data, id, ref, val, key) = load(ifile, "data", "id", "ref", "val", "key")
+  (data, id, ref, val, key) = JLD.load(ifile, "data", "id", "ref", "val", "key")
   NucleotideData(data, id, ref, val, key)
 end
 
@@ -29,6 +29,6 @@ function loadaa(ifile::AbstractString)
   f = open(ifile, "r")
   close(f)
 
-  (data, id, ref, val, key) = load(ifile, "data", "id", "ref", "val", "key")
+  (data, id, ref, val, key) = JLD.load(ifile, "data", "id", "ref", "val", "key")
   AminoAcidData(data, id, ref, val, key)
 end

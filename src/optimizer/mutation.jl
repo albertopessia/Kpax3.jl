@@ -33,7 +33,7 @@ function mutation!(o::KOffspring,
         w[o.R[a]] = 0
       end
 
-      o.R[a] = sample(WeightVec(w, n - t))
+      o.R[a] = StatsBase.sample(StatsBase.WeightVec(w, n - t))
       o.v[o.R[a]] += 1
     end
   end

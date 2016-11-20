@@ -83,8 +83,8 @@ function test_settings_constructor()
   @test settings.T == T
   @test settings.burnin == burnin
   @test settings.tstep == tstep
-  @test isa(settings.op, WeightVec)
-  @test values(settings.op) == op
+  @test isa(settings.op, StatsBase.WeightVec)
+  @test StatsBase.values(settings.op) == op
 
   settings = KSettings(ifile, ofile, protein=true, miss=zeros(UInt8, 0))
 

@@ -33,7 +33,7 @@ immutable KSettings
   T::Int
   burnin::Int
   tstep::Int
-  op::WeightVec
+  op::StatsBase.WeightVec
 end
 
 function KSettings(ifile::AbstractString,
@@ -185,5 +185,5 @@ function KSettings(ifile::AbstractString,
 
   KSettings(ifile, ofile, protein, miss, l, alpha, theta, gamma, r, maxclust,
             maxunit, verbose, verbosestep, popsize, maxiter, maxgap, xrate,
-            mrate, T, burnin, tstep, WeightVec(op))
+            mrate, T, burnin, tstep, StatsBase.WeightVec(op))
 end

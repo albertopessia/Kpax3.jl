@@ -16,10 +16,10 @@ function kpax3Restimate(fileroot::AbstractString)
   niter = 0
   for g in k
     try
-      copy!(estimate, kmedoids(D, g).assignments)
+      copy!(estimate, Clustering.kmedoids(D, g).assignments)
     catch
-      sample!(1:g, estimate, replace=true)
-      estimate[sample(1:n, g, replace=false)] = collect(1:g)
+      StatsBase.sample!(1:g, estimate, replace=true)
+      estimate[StatsBase.sample(1:n, g, replace=false)] = collect(1:g)
     end
 
     niter = 0
@@ -32,10 +32,10 @@ function kpax3Restimate(fileroot::AbstractString)
       end
 
       try
-        copy!(estimate, kmedoids(D, g).assignments)
+        copy!(estimate, Clustering.kmedoids(D, g).assignments)
       catch
-        sample!(1:g, estimate, replace=true)
-        estimate[sample(1:n, g, replace=false)] = collect(1:g)
+        StatsBase.sample!(1:g, estimate, replace=true)
+        estimate[StatsBase.sample(1:n, g, replace=false)] = collect(1:g)
       end
 
       niter += 1
@@ -68,14 +68,14 @@ function kpax3estimate(x::AminoAcidData,
 
   close(fpS)
 
-  op = copy(values(settings.op))
+  op = copy(StatsBase.values(settings.op))
 
   settings = KSettings(settings.ifile, settings.ofile, settings.protein,
                        settings.miss, settings.l, α, θ, γ, r, settings.maxclust,
                        settings.maxunit, settings.verbose, settings.verbosestep,
                        settings.popsize, settings.maxiter, settings.maxgap,
                        settings.xrate, settings.mrate, settings.T,
-                       settings.burnin, settings.tstep, WeightVec(op))
+                       settings.burnin, settings.tstep, StatsBase.WeightVec(op))
 
   k = maximum(R)
 

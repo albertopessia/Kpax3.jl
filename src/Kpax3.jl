@@ -7,8 +7,8 @@ module Kpax3
   # Load packages #
   #################
   import StatsBase: sample, sample!, WeightVec, values
-  import Distributions: Beta, logpdf, params
   import Clustering: kmedoids
+  import Distances: hamming
   import FileIO: File, @format_str
   import JLD: load, save
 
@@ -44,7 +44,11 @@ module Kpax3
   writeresults,
   readposteriork,
   readposteriorR,
-  readposteriorC
+  readposteriorC,
+
+  # diagnostics
+  traceR,
+  traceC
 
   ##############
   # Load Types #
