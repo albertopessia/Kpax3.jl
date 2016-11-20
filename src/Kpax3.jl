@@ -11,6 +11,8 @@ module Kpax3
   import Distances: hamming
   import FileIO: File, @format_str
   import JLD: load, save
+  import Gadfly: plot, layer, get_stroke_vector, Coord, Geom, Guide, Scale,
+                 Theme, mm, @colorant_str, draw, SVG, SVGJS, PNG, PDF, PS, PGF
 
   ####################
   # Export functions #
@@ -43,12 +45,17 @@ module Kpax3
   loadaa,
   writeresults,
   readposteriork,
-  readposteriorR,
+  readposteriorP,
   readposteriorC,
 
   # diagnostics
   traceR,
-  traceC
+  traceC,
+
+  # plot
+  plotk,
+  plotP,
+  plotC
 
   ##############
   # Load Types #
@@ -69,4 +76,5 @@ module Kpax3
   include("optimizer/optimizer.jl")
   include("mcmc/mcmc.jl")
   include("estimate/estimate.jl")
+  include("plots/plots.jl")
 end
