@@ -8,6 +8,7 @@ include("../src/boot.jl")
 srand(1427371200)
 
 tests = ["data_processing/data_processing";
+         "distances/simovici_jaroszewicz";
          "misc/basic_functions";
          "misc/partition_functions";
          "types/settings";
@@ -33,6 +34,7 @@ tests = ["data_processing/data_processing";
          "mcmc/gibbs";
          "mcmc/biased_random_walk";
          "mcmc/posterior";
+         "mcmc/diagnostics";
          "estimate/write"
 ]
 

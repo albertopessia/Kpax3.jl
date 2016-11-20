@@ -196,10 +196,10 @@ function initializestate(data::Matrix{UInt8},
 
     fill!(R, 0)
     try
-      copy!(R, kmedoids(D, k).assignments)
+      copy!(R, Clustering.kmedoids(D, k).assignments)
     catch
-      sample!(1:k, R, replace=true)
-      R[sample(1:n, k, replace=false)] = collect(1:k)
+      StatsBase.sample!(1:k, R, replace=true)
+      R[StatsBase.sample(1:n, k, replace=false)] = collect(1:k)
     end
 
     updatestate!(t1, data, R, priorR, priorC, settings)
@@ -207,10 +207,10 @@ function initializestate(data::Matrix{UInt8},
     niter = 0
     while niter < 10
       try
-        copy!(R, kmedoids(D, k).assignments)
+        copy!(R, Clustering.kmedoids(D, k).assignments)
       catch
-        sample!(1:k, R, replace=true)
-        R[sample(1:n, k, replace=false)] = collect(1:k)
+        StatsBase.sample!(1:k, R, replace=true)
+        R[StatsBase.sample(1:n, k, replace=false)] = collect(1:k)
       end
 
       updatestate!(t2, data, R, priorR, priorC, settings)

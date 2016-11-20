@@ -50,7 +50,7 @@ function processchain(x::AminoAcidData,
   close(fpR)
 
   if T != N[1]
-    throw(KInputError(string("Expecting ", N[1], " simulations but found ", T)))
+    warn(string("Expecting ", N[1], " simulations but instead found ", T, "."))
   end
 
   pk /= T
@@ -86,7 +86,6 @@ function processchain(x::AminoAcidData,
 
   T = 0
   while !eof(fpC)
-    read!(fpC, k)
     readbytes!(fpC, C, m[1])
 
     for b in 1:m[1]
@@ -99,7 +98,7 @@ function processchain(x::AminoAcidData,
   close(fpC)
 
   if T != N[1]
-    throw(KInputError(string("Expecting ", N[1], " simulations but found ", T)))
+    warn(string("Expecting ", N[1], " simulations but instead found ", T, "."))
   end
 
   pC /= T
@@ -107,8 +106,9 @@ function processchain(x::AminoAcidData,
   # estimate the probabilities of amino acids at each site
   #
   # Use a Dirichlet(1/J, ..., 1/J) as the prior distibution for the vector of
-  # probabilities, where J is the total number of amino acids observed at the
-  # current site. If y[j] is the count of amino acid j, then a[j] = y[j] + 1 / J
+  # probabilities, where J is the total number of unique amino acids observed
+  # at the current site. If y[j] is the count of amino acid j, then
+  # a[j] = y[j] + 1 / J
   # is the corresponding parameter of the posterior probability.
   #
   # Posterior expected value is p = a / sum(a) = (y + 1 / J) / (n + 1)
@@ -173,7 +173,6 @@ function savestate!(fpR::IOStream,
   write(fpR, state.k)
   write(fpR, state.R)
 
-  write(fpC, state.k)
   for b in 1:size(state.C, 2)
     write(fpC, state.C[state.cl[1], b] < 0x03 ? state.C[state.cl[1], b] : 0x03)
   end
