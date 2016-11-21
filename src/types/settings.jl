@@ -33,7 +33,7 @@ immutable KSettings
   T::Int
   burnin::Int
   tstep::Int
-  op::StatsBase.WeightVec
+  op::WeightVec
 end
 
 function KSettings(ifile::AbstractString,

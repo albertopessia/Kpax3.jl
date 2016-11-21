@@ -3,7 +3,7 @@
 #################
 # Load packages #
 #################
-import StatsBase: sample, sample!, WeightVec, values
+import StatsBase: sample, sample!, WeightVec, values, autocov
 import Clustering: kmedoids
 import Distances: hamming
 import FileIO: File, @format_str

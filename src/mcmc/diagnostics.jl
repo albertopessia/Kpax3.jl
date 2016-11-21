@@ -274,3 +274,43 @@ function traceC(fileroot::AbstractString;
 
   (entropy, avgd)
 end
+
+# Initial monotone sequence estimator (IMSE) of Monte Carlo variance
+# Geyer C. J. (1992) Practical Markov Chain Monte Carlo.
+# Statistical Science, 7 (4), pp 473-483
+function imsevar(ac::Vector{Float64},
+                 N::Int)
+  if length(ac) < 2
+    throw(KInputError("'maxlag' value is less than 1."))
+  end
+
+  u = div(length(ac), 2)
+
+  s = ac[1] + ac[2]
+  old = s
+  cur = 0.0
+  m = 0
+  for m in 1:u
+    cur = ac[2 * m + 1] + ac[2 * m + 2]
+
+    if cur <= 0.0
+      break
+    end
+
+    s += (cur <= old) ? cur : old
+    old = cur
+  end
+
+  if m == u
+    warn("'maxlag' value of ", length(ac) - 1, " might not be enough for ",
+         "estimating MCMC variance. Try increasing its value.")
+  end
+
+  (-ac[1] + 2 * s) / N
+end
+
+function ess(variid::Float64,
+             varmcmc::Float64,
+             N::Int)
+  floor(Int, N * variid / varmcmc)
+end
