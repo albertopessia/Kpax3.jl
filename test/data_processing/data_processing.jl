@@ -27,8 +27,8 @@ function test_data_processing_read_blanks()
   missdna = UInt8['?', '*', '#', '-', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's',
                   'v', 'w', 'x', 'y', 'j', 'z']
 
-  (data, id, refseq) = readfasta("data/blanks.fasta", false, missdna, 100000000,
-                                 false, 0)
+  (data, id, refseq) = readfasta("data/blanks.fasta", false, missdna,
+                                 100000000, false, 0)
   @test data == UInt8['g' 'a';
                       'a' 'g';
                       'g' 'c';
@@ -54,7 +54,8 @@ function test_data_processing_read_blanks()
                          0 1;
                          0 1;
                          1 0]
-  @test val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c', 'g']
+  @test val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c',
+                     'g']
   @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
   (data, id, refseq) = readfasta("data/blanks.fasta", false, missdna, 1, false,
@@ -114,8 +115,8 @@ function test_data_processing_proper_dna_file()
                          0 0 1 1 0 0;
                          0 1 0 0 1 0;
                          1 0 1 1 0 1]
-  @test val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g', 'a',
-                     'g', 't', 'a', 't', 'c', 'g']
+  @test val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g',
+                     'a', 'g', 't', 'a', 't', 'c', 'g']
   @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
   (data, id, refseq) = readfasta("data/proper_nt.fasta", false, missdna, 1,
@@ -133,8 +134,8 @@ function test_data_processing_proper_dna_file()
                         'a']
 
   # consider all characters
-  (data, id, refseq) = readfasta("data/proper_nt.fasta", false, zeros(UInt8, 1),
-                                 100000000, false, 0)
+  (data, id, refseq) = readfasta("data/proper_nt.fasta", false,
+                                 zeros(UInt8, 1), 100000000, false, 0)
   @test data == UInt8['t' 't' 't' 't' 't' 'c';
                       'g' 'g' 'a' 'g' 'a' 'a';
                       'a' 'a' 'x' 'g' 'g' 'x';
@@ -172,8 +173,8 @@ function test_data_processing_proper_dna_file()
                          1 0 1 1 0 1;
                          1 0 1 1 1 1;
                          0 1 0 0 0 0]
-  @test val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'x', 'c', 'g', 'a', 'c', 'g',
-                     'a', 'g', 't', 'a', 't', 'c', 'g', 'a', 'x']
+  @test val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'x', 'c', 'g', 'a', 'c',
+                     'g', 'a', 'g', 't', 'a', 't', 'c', 'g', 'a', 'x']
   @test key == [1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9, 9]
 
   nothing
@@ -218,8 +219,8 @@ function test_data_processing_proper_protein_file()
                          0 0 1 1 0 0;
                          1 1 0 1 0 0;
                          0 0 1 0 1 1]
-  @test val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'l', 'v', 'c', 'l', 't', 'e',
-                     'l', 'm', 'c', 'y', 'a', 't']
+  @test val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'l', 'v', 'c', 'l', 't',
+                     'e', 'l', 'm', 'c', 'y', 'a', 't']
   @test key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
   (data, id, refseq) = readfasta("data/proper_aa.fasta", true, misspro, 1,
@@ -274,8 +275,8 @@ function test_data_processing_proper_protein_file()
                          0 0 1 0 1 1;
                          1 0 1 1 1 1;
                          0 1 0 0 0 0]
-  @test val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'x', 'l', 'v', 'c', 'l', 't',
-                     'e', 'l', 'm', 'c', 'y', 'a', 't', 'f', 'x']
+  @test val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'x', 'l', 'v', 'c', 'l',
+                     't', 'e', 'l', 'm', 'c', 'y', 'a', 't', 'f', 'x']
   @test key == [1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9, 9]
 
   nothing

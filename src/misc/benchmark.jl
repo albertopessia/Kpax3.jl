@@ -18,8 +18,9 @@ function benchmark()
                        α=0.5, θ=-0.25, γ=[0.6; 0.35; 0.05],
                        r=log(0.001)/log(0.95), maxclust=1, maxunit=1,
                        verbose=false, verbosestep=100000, popsize=50,
-                       xrate=0.9, mrate=0.05, T=1000000, burnin=500000, tstep=1,
-                       op=[0.6; 0.3; 0.1], λs1=1.0, λs2=1.0, parawm=5.0)
+                       xrate=0.9, mrate=0.05, T=1000000, burnin=500000,
+                       tstep=1, op=[0.6; 0.3; 0.1], λs1=1.0, λs2=1.0,
+                       parawm=5.0)
 
   x = AminoAcidData(settings)
 

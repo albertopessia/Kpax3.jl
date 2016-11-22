@@ -3,13 +3,12 @@
 #################
 # Load packages #
 #################
-import StatsBase: sample, sample!, WeightVec, values, autocov
-import Clustering: kmedoids
-import Distances: hamming
-import FileIO: File, @format_str
-import JLD: load, save
-import Gadfly: plot, layer, get_stroke_vector, Coord, Geom, Guide, Scale,
-               Theme, mm, @colorant_str, draw, SVG, SVGJS, PNG, PDF, PS, PGF
+import StatsBase
+import Clustering
+import Distances
+import FileIO
+import JLD
+import Gadfly
 
 ##############
 # Load Types #
