@@ -54,7 +54,11 @@ module Kpax3
   # plot
   plotk,
   plotP,
-  plotC
+  plotC,
+  plottrace,
+  plotdensity,
+  plotjump,
+  plotdgn
 
   ##############
   # Load Types #
