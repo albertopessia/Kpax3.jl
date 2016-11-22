@@ -3,3 +3,4 @@
 include("functions.jl")
 include("histograms.jl")
 include("images.jl")
+include("diagnostics.jl")
