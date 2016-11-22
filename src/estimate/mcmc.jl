@@ -71,11 +71,12 @@ function kpax3estimate(x::AminoAcidData,
   op = copy(StatsBase.values(settings.op))
 
   settings = KSettings(settings.ifile, settings.ofile, settings.protein,
-                       settings.miss, settings.l, α, θ, γ, r, settings.maxclust,
-                       settings.maxunit, settings.verbose, settings.verbosestep,
-                       settings.popsize, settings.maxiter, settings.maxgap,
-                       settings.xrate, settings.mrate, settings.T,
-                       settings.burnin, settings.tstep, StatsBase.WeightVec(op))
+                       settings.miss, settings.l, α, θ, γ, r,
+                       settings.maxclust, settings.maxunit, settings.verbose,
+                       settings.verbosestep, settings.popsize,
+                       settings.maxiter, settings.maxgap, settings.xrate,
+                       settings.mrate, settings.T, settings.burnin,
+                       settings.tstep, StatsBase.WeightVec(op))
 
   k = maximum(R)
 

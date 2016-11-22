@@ -44,7 +44,8 @@ function kpax3ga!(x::AminoAcidData,
   if settings.verbose
     @printf("done.\n")
     @printf("Current number of clusters: %d.\n", beststate.k)
-    @printf("Current log-posterior (plus a constant): %.4f.\n", beststate.logpp)
+    @printf("Current log-posterior (plus a constant): %.4f.\n",
+            beststate.logpp)
     @printf("Stochastic optimization is now running...\n")
   end
 
@@ -88,8 +89,8 @@ function kpax3ga!(x::AminoAcidData,
       mutation!(support.oi, settings.mrate)
       mutation!(support.oj, settings.mrate)
 
-      updatestate!(newpopulation.state[i], x.data, support.oi.R, priorR, priorC,
-                   settings)
+      updatestate!(newpopulation.state[i], x.data, support.oi.R, priorR,
+                   priorC, settings)
       updatestate!(newpopulation.state[i + 1], x.data, support.oj.R, priorR,
                    priorC, settings)
 

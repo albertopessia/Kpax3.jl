@@ -184,7 +184,8 @@ function initializestate(data::Matrix{UInt8},
   # TODO: remove the hack once kmedoids is fixed
 
   if settings.verbose
-    @printf("Log-posterior (plus a constant) for one cluster: %.4f.\n", s.logpp)
+    @printf("Log-posterior (plus a constant) for one cluster: %.4f.\n",
+            s.logpp)
     @printf("Now scanning %d to %d clusters.\n", kset[1], kset[end])
   end
 
@@ -285,8 +286,8 @@ function updatestate!(state::AminoAcidState,
 
   state.logpR = logdPriorRow(n, state.k, state.v, priorR)
 
-  computelocalmode!(state.v, state.n1s, state.C, state.cl, state.k, state.logpC,
-                    priorC)
+  computelocalmode!(state.v, state.n1s, state.C, state.cl, state.k,
+                    state.logpC, priorC)
 
   state.loglik = loglikelihood(state.C, state.cl, state.k, state.v, state.n1s,
                                priorC)
