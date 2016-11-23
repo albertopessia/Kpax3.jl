@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-using Base.Test
+importall Base.Test
 
 include("../src/boot.jl")
 

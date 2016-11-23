@@ -6,12 +6,13 @@ module Kpax3
   #################
   # Load packages #
   #################
-  import StatsBase
   import Clustering
   import Distances
   import FileIO
   import JLD
   import Gadfly
+  import Measures
+  import StatsBase
 
   ####################
   # Export functions #
@@ -31,9 +32,8 @@ module Kpax3
   kpax3ga,
 
   # estimation
-  processchain,
   kpax3estimate,
-  computelocalmode!,
+  optimumstate,
 
   # i/o
   initializepartition,
