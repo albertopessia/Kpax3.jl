@@ -98,6 +98,79 @@ function test_state_constructor()
                                    logpriorC(state.C, state.cl, state.k,
                                              priorC) + ll) ε
 
+  settings = KSettings("data/mcmc_6.fasta", "../build/test",
+                       maxclust=1, maxunit=1)
+  x = AminoAcidData(settings)
+  state = optimumstate(x, "data/mcmc_6.csv", settings)
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
+
+  n = 6
+  R = [1; 1; 2; 2; 3; 4]
+
+  maxclust = 4
+  m = 4
+
+  emptycluster = falses(4)
+  cl = [1; 2; 3; 4]
+  k = 4
+
+  v = [2; 2; 1; 1]
+  n1s = zeros(Float64, maxclust, m)
+  n1s[1, :] = vec(sum(float(x.data[:, R .== 1]), 2))
+  n1s[2, :] = vec(sum(float(x.data[:, R .== 2]), 2))
+  n1s[3, :] = vec(sum(float(x.data[:, R .== 3]), 2))
+  n1s[4, :] = vec(sum(float(x.data[:, R .== 4]), 2))
+
+  @test state.R == R
+
+  @test isa(state.C, Matrix{UInt8})
+  @test size(state.C, 1) == maxclust
+  @test size(state.C, 2) == m
+
+  @test state.emptycluster == emptycluster
+  @test state.cl == cl
+  @test state.k == k
+
+  @test state.v == v
+  @test state.n1s == n1s
+  @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ?
+                                  find(state.R .== g) :
+                                  [0] for g in 1:maxclust]
+
+  @test state.logpR == logdPriorRow(n, k, v, priorR)
+  @test_approx_eq_eps state.logpC[1] logpriorC(state.C, state.cl, state.k,
+                                               priorC) ε
+  @test_approx_eq_eps state.logpC[2] logcondpostC(state.C, state.cl,
+                                                  state.k, state.v,
+                                                  state.n1s, priorC) ε
+
+  loglik = zeros(Float64, 4)
+
+  linearidx = Int[state.C[cl[1], b] + 4 * (b - 1) for b in 1:m]
+  loglik[1] = sum(logmarglik(vec(state.n1s[cl[1], :]), state.v[cl[1]],
+                             priorC.A[linearidx], priorC.B[linearidx]))
+
+  linearidx = Int[state.C[cl[2], b] + 4 * (b - 1) for b in 1:m]
+  loglik[2] = sum(logmarglik(vec(state.n1s[cl[2], :]), state.v[cl[2]],
+                             priorC.A[linearidx], priorC.B[linearidx]))
+
+  linearidx = Int[state.C[cl[3], b] + 4 * (b - 1) for b in 1:m]
+  loglik[3] = sum(logmarglik(vec(state.n1s[cl[3], :]), state.v[cl[3]],
+                             priorC.A[linearidx], priorC.B[linearidx]))
+
+  linearidx = Int[state.C[cl[4], b] + 4 * (b - 1) for b in 1:m]
+  loglik[4] = sum(logmarglik(vec(state.n1s[cl[4], :]), state.v[cl[4]],
+                             priorC.A[linearidx], priorC.B[linearidx]))
+
+  ll = loglik[1] + loglik[2] + loglik[3] + loglik[4]
+  @test_approx_eq_eps state.loglik ll ε
+
+  @test_approx_eq_eps state.logpp (logdPriorRow(n, k, v, priorR) +
+                                   logpriorC(state.C, state.cl, state.k,
+                                             priorC) + ll) ε
+
   nothing
 end
 

@@ -3,12 +3,13 @@
 #################
 # Load packages #
 #################
-import StatsBase
 import Clustering
 import Distances
 import FileIO
 import JLD
 import Gadfly
+import Measures
+import StatsBase
 
 ##############
 # Load Types #

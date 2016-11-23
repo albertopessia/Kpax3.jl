@@ -279,12 +279,12 @@ end
 # Geyer C. J. (1992) Practical Markov Chain Monte Carlo.
 # Statistical Science, 7 (4), pp 473-483
 function imsevar(ac::Vector{Float64},
-                 N::Int)
+                 nsim::Int)
   if length(ac) < 2
     throw(KInputError("'maxlag' value is less than 1."))
   end
 
-  u = div(length(ac), 2)
+  u = div(length(ac) - 2, 2)
 
   s = ac[1] + ac[2]
   old = s
@@ -306,11 +306,11 @@ function imsevar(ac::Vector{Float64},
          "estimating MCMC variance. Try increasing its value.")
   end
 
-  (-ac[1] + 2 * s) / N
+  (-ac[1] + 2 * s) / nsim
 end
 
 function ess(variid::Float64,
              varmcmc::Float64,
-             N::Int)
-  floor(Int, N * variid / varmcmc)
+             nsim::Int)
+  floor(Int, nsim * variid / varmcmc)
 end

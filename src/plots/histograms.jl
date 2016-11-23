@@ -43,9 +43,9 @@ function plotk(k::Vector{Int},
   M = ceil(M * multiplier) / multiplier
 
   ticks = if length(xticks) == 0
-    Guide.xticks(ticks=:auto)
+    Gadfly.Guide.xticks(ticks=:auto)
   else
-    Guide.xticks(ticks=xticks)
+    Gadfly.Guide.xticks(ticks=xticks)
   end
 
   majorfontsize = computefontsize(width, height)
@@ -56,23 +56,24 @@ function plotk(k::Vector{Int},
   padding = 1.0 * majorfontsize
   gridwidth = 0.1 * majorfontsize
 
-  plot(x=x, y=y, Geom.bar,
-       Coord.cartesian(xmin=x[1] - 0.5, xmax=x[end] + 0.5, ymin=0, ymax=M),
-       Theme(default_color=Gadfly.@colorant_str("black"),
-             background_color=Gadfly.@colorant_str("white"),
-             panel_fill=Gadfly.@colorant_str("white"),
-             bar_spacing=1mm,
-             plot_padding=0mm,
-             lowlight_color=c->c,
-             lowlight_opacity=0.0,
-             major_label_font_size=majorfontsize,
-             minor_label_font_size=minorfontsize,
-             key_title_font_size=keytitlefontsize,
-             key_label_font_size=keylabelfontsize,
-             plot_padding=padding,
-             grid_line_width=gridwidth),
-       Guide.xlabel("k", orientation=:horizontal),
-       Guide.ylabel("p(k | x)", orientation=:vertical),
-       Guide.title(""),
-       ticks)
+  Gadfly.plot(Gadfly.layer(x=x, y=y, Gadfly.Geom.bar),
+              Gadfly.Coord.cartesian(xmin=x[1] - 0.5, xmax=x[end] + 0.5,
+                                     ymin=0, ymax=M),
+              Gadfly.Theme(default_color=Gadfly.@colorant_str("black"),
+                           background_color=Gadfly.@colorant_str("white"),
+                           panel_fill=Gadfly.@colorant_str("white"),
+                           bar_spacing=1Measures.mm,
+                           plot_padding=0Measures.mm,
+                           lowlight_color=c->c,
+                           lowlight_opacity=0.0,
+                           major_label_font_size=majorfontsize,
+                           minor_label_font_size=minorfontsize,
+                           key_title_font_size=keytitlefontsize,
+                           key_label_font_size=keylabelfontsize,
+                           plot_padding=padding,
+                           grid_line_width=gridwidth),
+              Gadfly.Guide.xlabel("k", orientation=:horizontal),
+              Gadfly.Guide.ylabel("p(k | x)", orientation=:vertical),
+              Gadfly.Guide.title(""),
+              ticks)
 end

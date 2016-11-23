@@ -54,21 +54,21 @@ function plottrace(entropy::Vector{Float64};
     ""
   end
 
-  plot(layer(x=xtr, y=ytr, Geom.line),
-       Coord.cartesian(ymin=0.0),
-       Theme(default_color=Gadfly.@colorant_str("black"),
-             background_color=Gadfly.@colorant_str("white"),
-             panel_fill=Gadfly.@colorant_str("white"),
-             major_label_font_size=majorfontsize,
-             minor_label_font_size=minorfontsize,
-             key_title_font_size=keytitlefontsize,
-             key_label_font_size=keylabelfontsize,
-             plot_padding=padding,
-             line_width=linewidth,
-             grid_line_width=gridwidth),
-       Guide.xlabel("Iteration"),
-       Guide.ylabel("Entropy"),
-       Guide.title(title))
+  Gadfly.plot(Gadfly.layer(x=xtr, y=ytr, Gadfly.Geom.line),
+              Gadfly.Coord.cartesian(ymin=max(0.0, minimum(ytr) - 0.05)),
+              Gadfly.Theme(default_color=Gadfly.@colorant_str("black"),
+                           background_color=Gadfly.@colorant_str("white"),
+                           panel_fill=Gadfly.@colorant_str("white"),
+                           major_label_font_size=majorfontsize,
+                           minor_label_font_size=minorfontsize,
+                           key_title_font_size=keytitlefontsize,
+                           key_label_font_size=keylabelfontsize,
+                           plot_padding=padding,
+                           line_width=linewidth,
+                           grid_line_width=gridwidth),
+              Gadfly.Guide.xlabel("Iteration"),
+              Gadfly.Guide.ylabel("Entropy"),
+              Gadfly.Guide.title(title))
 end
 
 function plotdensity(entropy::Vector{Float64};
@@ -116,21 +116,21 @@ function plotdensity(entropy::Vector{Float64};
     ""
   end
 
-  plot(layer(x=entropy, Geom.density),
-       Coord.cartesian(xmin=0.0),
-       Theme(default_color=Gadfly.@colorant_str("black"),
-             background_color=Gadfly.@colorant_str("white"),
-             panel_fill=Gadfly.@colorant_str("white"),
-             major_label_font_size=majorfontsize,
-             minor_label_font_size=minorfontsize,
-             key_title_font_size=keytitlefontsize,
-             key_label_font_size=keylabelfontsize,
-             plot_padding=padding,
-             line_width=linewidth,
-             grid_line_width=gridwidth),
-       Guide.xlabel("Entropy"),
-       Guide.ylabel("Density"),
-       Guide.title(title))
+  Gadfly.plot(Gadfly.layer(x=entropy, Gadfly.Geom.density),
+              Gadfly.Coord.cartesian(xmin=0.0),
+              Gadfly.Theme(default_color=Gadfly.@colorant_str("black"),
+                           background_color=Gadfly.@colorant_str("white"),
+                           panel_fill=Gadfly.@colorant_str("white"),
+                           major_label_font_size=majorfontsize,
+                           minor_label_font_size=minorfontsize,
+                           key_title_font_size=keytitlefontsize,
+                           key_label_font_size=keylabelfontsize,
+                           plot_padding=padding,
+                           line_width=linewidth,
+                           grid_line_width=gridwidth),
+              Gadfly.Guide.xlabel("Entropy"),
+              Gadfly.Guide.ylabel("Density"),
+              Gadfly.Guide.title(title))
 end
 
 function plotjump(avgd::Vector{Float64};
@@ -151,27 +151,28 @@ function plotjump(avgd::Vector{Float64};
 
   asy = avgd[1]
   for t in 2:maxlag
-    asy = 0.3 * asy + 0.7 * avgd[t]
+    asy = 0.6 * asy + 0.4 * avgd[t]
   end
 
-  plot(layer(x=1:maxlag, y=avgd, Geom.point),
-       layer(yintercept=[asy], Geom.hline(size=linewidth)),
-       Coord.cartesian(xmin=0, xmax=maxlag + 1),
-       Theme(default_color=Gadfly.@colorant_str("black"),
-             background_color=Gadfly.@colorant_str("white"),
-             panel_fill=Gadfly.@colorant_str("white"),
-             major_label_font_size=majorfontsize,
-             minor_label_font_size=minorfontsize,
-             key_title_font_size=keytitlefontsize,
-             key_label_font_size=keylabelfontsize,
-             default_point_size=pointsize,
-             plot_padding=padding,
-             line_width=linewidth,
-             grid_line_width=gridwidth),
-       Guide.xticks(ticks=[1; collect(5:5:maxlag)]),
-       Guide.xlabel("Lag"),
-       Guide.ylabel("Average distance"),
-       Guide.title(main))
+  Gadfly.plot(Gadfly.layer(x=1:maxlag, y=avgd, Gadfly.Geom.point),
+              Gadfly.layer(yintercept=[asy],
+                           Gadfly.Geom.hline(size=linewidth)),
+              Gadfly.Coord.cartesian(xmin=0, xmax=maxlag + 1),
+              Gadfly.Theme(default_color=Gadfly.@colorant_str("black"),
+                           background_color=Gadfly.@colorant_str("white"),
+                           panel_fill=Gadfly.@colorant_str("white"),
+                           major_label_font_size=majorfontsize,
+                           minor_label_font_size=minorfontsize,
+                           key_title_font_size=keytitlefontsize,
+                           key_label_font_size=keylabelfontsize,
+                           default_point_size=pointsize,
+                           plot_padding=padding,
+                           line_width=linewidth,
+                           grid_line_width=gridwidth),
+              Gadfly.Guide.xticks(ticks=[1; collect(5:5:maxlag)]),
+              Gadfly.Guide.xlabel("Lag"),
+              Gadfly.Guide.ylabel("Average distance"),
+              Gadfly.Guide.title(main))
 end
 
 function plotdgn(entropy::Vector{Float64},
@@ -188,5 +189,5 @@ function plotdgn(entropy::Vector{Float64},
                    height=height)
   p3 = plotjump(avgd, main="", width=width, height=height)
 
-  vstack(p1, p2, p3)
+  Gadfly.vstack(p1, p2, p3)
 end

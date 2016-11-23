@@ -381,3 +381,14 @@ function resizestate!(state::AminoAcidState,
 
   nothing
 end
+
+function optimumstate(x::AminoAcidData,
+                      partition::AbstractString,
+                      settings::KSettings)
+  R = normalizepartition(partition, x.id)
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
+
+  AminoAcidState(x.data, R, priorR, priorC, settings)
+end
