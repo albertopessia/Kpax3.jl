@@ -55,7 +55,7 @@ function test_traceR()
   l = 1
   z = zeros(Float64, N - l)
   for t in 1:(N - l)
-    z[t] = distsj(R[:, t], v[:, t], k[t], R[:, t+l], v[:, t+l], k[t+l], n)
+    z[t] = jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
   @test_approx_eq_eps avgd[l] mean(z) ε
 
@@ -63,7 +63,7 @@ function test_traceR()
   l = 5
   z = zeros(Float64, N - l)
   for t in 1:(N - l)
-    z[t] = distsj(R[:, t], v[:, t], k[t], R[:, t+l], v[:, t+l], k[t+l], n)
+    z[t] = jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
   @test_approx_eq_eps avgd[l] mean(z) ε
 
@@ -71,7 +71,7 @@ function test_traceR()
   l = 13
   z = zeros(Float64, N - l)
   for t in 1:(N - l)
-    z[t] = distsj(R[:, t], v[:, t], k[t], R[:, t+l], v[:, t+l], k[t+l], n)
+    z[t] = jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
   @test_approx_eq_eps avgd[l] mean(z) ε
 

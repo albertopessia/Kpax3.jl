@@ -9,6 +9,7 @@ srand(1427371200)
 
 tests = ["data_processing/data_processing";
          "distances/simovici_jaroszewicz";
+         "distances/jaccard";
          "misc/basic_functions";
          "misc/partition_functions";
          "types/settings";

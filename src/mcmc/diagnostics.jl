@@ -23,7 +23,6 @@ function traceR(fileroot::AbstractString;
   # at any given point we store maxlag + 1 partitions
   kset = zeros(Int, maxlag + 1)
   pset = zeros(Int, n, maxlag + 1)
-  nset = zeros(Int, n, maxlag + 1)
 
   # read partitions into these variables
   k = zeros(Int, 1)
@@ -63,15 +62,14 @@ function traceR(fileroot::AbstractString;
 
     kset[t] = k[1]
     copy!(pset, 1 + n * (t - 1), p, 1, n)
-    copy!(nset, 1 + n * (t - 1), v, 1, kset[t])
 
     # compute all the lags starting from this point going backward
     l = 1
     s = t - l
     while s > 0
       nl[l] += 1
-      avgd[l] += (distsj(pset[:, t], nset[:, t], kset[t],
-                         pset[:, s], nset[:, s], kset[s], n) - avgd[l]) / nl[l]
+      avgd[l] += (jaccard(pset[:, t], kset[t],
+                          pset[:, s], kset[s], n) - avgd[l]) / nl[l]
       l += 1
       s -= 1
     end
@@ -100,15 +98,14 @@ function traceR(fileroot::AbstractString;
 
     kset[t] = k[1]
     copy!(pset, 1 + n * (t - 1), p, 1, n)
-    copy!(nset, 1 + n * (t - 1), v, 1, kset[t])
 
     # compute all the lags starting from this point going backward
     l = 1
     s = t - l
     while s > 0
       nl[l] += 1
-      avgd[l] += (distsj(pset[:, t], nset[:, t], kset[t],
-                         pset[:, s], nset[:, s], kset[s], n) - avgd[l]) / nl[l]
+      avgd[l] += (jaccard(pset[:, t], kset[t],
+                          pset[:, s], kset[s], n) - avgd[l]) / nl[l]
       l += 1
       s -= 1
     end
@@ -116,8 +113,8 @@ function traceR(fileroot::AbstractString;
     s = maxlag + 1
     while s > t
       nl[l] += 1
-      avgd[l] += (distsj(pset[:, t], nset[:, t], kset[t],
-                         pset[:, s], nset[:, s], kset[s], n) - avgd[l]) / nl[l]
+      avgd[l] += (jaccard(pset[:, t], kset[t],
+                          pset[:, s], kset[s], n) - avgd[l]) / nl[l]
       l += 1
       s -= 1
     end
