@@ -6,3 +6,4 @@ include("nucleotides/tn84.jl")
 include("nucleotides/tn93.jl")
 
 include("partitions/simovici_jaroszewicz.jl")
+include("partitions/jaccard.jl")
