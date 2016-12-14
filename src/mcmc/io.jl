@@ -3,13 +3,16 @@
 function processchain(x::AminoAcidData,
                       fileroot::AbstractString)
   # open and close output files to check writing permissions
-  fp = open(string(fileroot, "_posterior_k.csv"), "w")
+  # fail early if we can't write, saving the computational time required to
+  # process the chain
+  # use "append" for a non destructive operation
+  fp = open(string(fileroot, "_posterior_k.csv"), "a")
   close(fp)
 
-  fp = open(string(fileroot, "_posterior_R.csv"), "w")
+  fp = open(string(fileroot, "_posterior_R.csv"), "a")
   close(fp)
 
-  fp = open(string(fileroot, "_posterior_C.csv"), "w")
+  fp = open(string(fileroot, "_posterior_C.csv"), "a")
   close(fp)
 
   n = zeros(Int, 1)
@@ -32,22 +35,24 @@ function processchain(x::AminoAcidData,
   pR = zeros(Float64, div(n[1] * (n[1] - 1), 2))
 
   T = 0
-  while !eof(fpR)
-    read!(fpR, k)
-    read!(fpR, R)
+  try
+    while !eof(fpR)
+      read!(fpR, k)
+      read!(fpR, R)
 
-    pk[k[1]] += 1
+      pk[k[1]] += 1
 
-    h = 0
-    for i in 1:(n[1] - 1), j in (i + 1):n[1]
-      h += 1
-      pR[h] += float(R[i] == R[j])
+      h = 0
+      for i in 1:(n[1] - 1), j in (i + 1):n[1]
+        h += 1
+        pR[h] += float(R[i] == R[j])
+      end
+
+      T += 1
     end
-
-    T += 1
+  finally
+    close(fpR)
   end
-
-  close(fpR)
 
   if T != N[1]
     warn(string("Expecting ", N[1], " simulations but instead found ", T, "."))
@@ -85,17 +90,19 @@ function processchain(x::AminoAcidData,
   pC = zeros(Float64, 3, m[1])
 
   T = 0
-  while !eof(fpC)
-    readbytes!(fpC, C, m[1])
+  try
+    while !eof(fpC)
+      readbytes!(fpC, C, m[1])
 
-    for b in 1:m[1]
-      pC[C[b], b] += 1
+      for b in 1:m[1]
+        pC[C[b], b] += 1
+      end
+
+      T += 1
     end
-
-    T += 1
+  finally
+    close(fpC)
   end
-
-  close(fpC)
 
   if T != N[1]
     warn(string("Expecting ", N[1], " simulations but instead found ", T, "."))
