@@ -98,6 +98,8 @@ function kpax3mcmc!(data::Matrix{UInt8},
       end
 
       if settings.verbose && (t % settings.verbosestep == 0)
+        flush(fpR)
+        flush(fpC)
         println("Step ", t, " done.")
       end
     end

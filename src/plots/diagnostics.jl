@@ -2,8 +2,8 @@
 
 function plottrace(entropy::Vector{Float64};
                    ac::Vector{Float64}=zeros(Float64, 0),
-                   maxlag::Int=50,
-                   M::Int=10000,
+                   maxlag::Int=200,
+                   M::Int=20000,
                    main::String="",
                    width::Real=183.0,
                    height::Real=92.0)
@@ -73,8 +73,7 @@ end
 
 function plotdensity(entropy::Vector{Float64};
                      ac::Vector{Float64}=zeros(Float64, 0),
-                     maxlag::Int=50,
-                     M::Int=10000,
+                     maxlag::Int=200,
                      main::String="",
                      width::Real=183.0,
                      height::Real=92.0)
@@ -117,7 +116,7 @@ function plotdensity(entropy::Vector{Float64};
   end
 
   Gadfly.plot(Gadfly.layer(x=entropy, Gadfly.Geom.density),
-              Gadfly.Coord.cartesian(xmin=0.0),
+              Gadfly.Coord.cartesian(xmin=max(0.0, minimum(entropy) - 0.1)),
               Gadfly.Theme(default_color=Gadfly.@colorant_str("black"),
                            background_color=Gadfly.@colorant_str("white"),
                            panel_fill=Gadfly.@colorant_str("white"),
@@ -154,6 +153,17 @@ function plotjump(avgd::Vector{Float64};
     asy = 0.6 * asy + 0.4 * avgd[t]
   end
 
+  xticks = Gadfly.optimize_ticks(1, maxlag, strict_span=true)[1]
+  if xticks[1] == 0.0
+    xticks[1] = 1.0
+  end
+
+  if xticks[end] > maxlag
+    xticks[end] = maxlag
+  elseif xticks[end] < maxlag
+    push!(xticks, maxlag)
+  end
+
   Gadfly.plot(Gadfly.layer(x=1:maxlag, y=avgd, Gadfly.Geom.point),
               Gadfly.layer(yintercept=[asy],
                            Gadfly.Geom.hline(size=linewidth)),
@@ -169,7 +179,7 @@ function plotjump(avgd::Vector{Float64};
                            plot_padding=padding,
                            line_width=linewidth,
                            grid_line_width=gridwidth),
-              Gadfly.Guide.xticks(ticks=[1; collect(5:5:maxlag)]),
+              Gadfly.Guide.xticks(ticks=xticks),
               Gadfly.Guide.xlabel("Lag"),
               Gadfly.Guide.ylabel("Average distance"),
               Gadfly.Guide.title(main))
@@ -178,14 +188,14 @@ end
 function plotdgn(entropy::Vector{Float64},
                  avgd::Vector{Float64};
                  ac::Vector{Float64}=zeros(Float64, 0),
-                 maxlag::Int=50,
-                 M::Int=10000,
+                 maxlag::Int=200,
+                 M::Int=20000,
                  main::String="",
                  width::Real=183.0,
                  height::Real=92.0)
   p1 = plottrace(entropy, ac=ac, maxlag=maxlag, M=M, main=main, width=width,
                  height=height)
-  p2 = plotdensity(entropy, ac=ac, maxlag=maxlag, M=M, main="", width=width,
+  p2 = plotdensity(entropy, ac=ac, maxlag=maxlag, main="", width=width,
                    height=height)
   p3 = plotjump(avgd, main="", width=width, height=height)
 
