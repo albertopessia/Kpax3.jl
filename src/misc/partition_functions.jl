@@ -182,7 +182,7 @@ function normalizepartition(ifile::AbstractString,
     partition = [parse(Int, x) for x in d[:, 1]]
     indexin(partition, sort(unique(partition)))
   elseif size(d, 2) == 2
-    idx = indexin([x::String for x in d[:, 1]], id)
+    idx = indexin(id, [x::String for x in d[:, 1]])
     partition = [parse(Int, x) for x in d[:, 2]]
 
     for i in 1:length(idx)
