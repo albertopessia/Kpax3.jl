@@ -5,6 +5,11 @@ function writeresults(x::KData,
                       file::AbstractString;
                       what::Int=1,
                       verbose::Bool=false)
+  dirpath = dirname(file)
+  if !isdir(dirpath)
+    mkpath(dirpath)
+  end
+
   fp = open("$(file)_partition.csv", "w")
   for i in 1:size(x.data, 2)
     write(fp, "\"$(x.id[i])\",$(state.R[i])\n")

@@ -62,7 +62,13 @@ function KSettings(ifile::AbstractString,
   # standard exception if something is wrong
   f = open(ifile, "r")
   close(f)
-#=
+
+  dirpath = dirname(ofile)
+  if !isdir(dirpath)
+    mkpath(dirpath)
+  end
+
+  #=
   f = open(string(ofile, "_settings.bin"), "a")
   close(f)
 
@@ -71,7 +77,8 @@ function KSettings(ifile::AbstractString,
 
   f = open(string(ofile, "_col_partition.bin"), "a")
   close(f)
-=#
+  =#
+
   if length(miss) == 0
     miss = if protein
              UInt8['?', '*', '#', '-', 'b', 'j', 'x', 'z']

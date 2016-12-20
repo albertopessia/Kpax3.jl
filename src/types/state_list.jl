@@ -35,7 +35,7 @@ function AminoAcidStateList(data::Matrix{UInt8},
   sortperm!(rank, logpp, rev=true, initialized=true)
 
   if settings.verbose
-    @printf("done.\n")
+    @printf("done\n")
   end
 
   AminoAcidStateList(state, logpp, rank)

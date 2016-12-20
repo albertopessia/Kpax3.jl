@@ -42,10 +42,9 @@ function kpax3ga!(x::AminoAcidData,
   newpopulation = AminoAcidStateList(settings.popsize, population.state[idx])
 
   if settings.verbose
-    @printf("done.\n")
-    @printf("Current number of clusters: %d.\n", beststate.k)
-    @printf("Current log-posterior (plus a constant): %.4f.\n",
-            beststate.logpp)
+    @printf("done\n")
+    @printf("Current number of clusters: %d\n", beststate.k)
+    @printf("Current log-posterior (plus a constant): %.4f\n", beststate.logpp)
     @printf("Stochastic optimization is now running...\n")
   end
 
@@ -111,7 +110,7 @@ function kpax3ga!(x::AminoAcidData,
 
       if settings.verbose
         @printf("Found a better solution! ")
-        @printf("Log-posterior (plus a constant) for %d clusters: %.4f.\n",
+        @printf("Log-posterior (plus a constant) for %d clusters: %.4f\n",
                 beststate.k, beststate.logpp)
       end
     else
@@ -122,7 +121,7 @@ function kpax3ga!(x::AminoAcidData,
     iter += 1
 
     if iter < settings.maxiter
-      if (iter % settings.verbosestep == 0)
+      if iter % settings.verbosestep == 0
         fp = open(settings.ofile, "w")
         for i in 1:support.n
           write(fp, "\"$(x.id[i])\",$(beststate.R[i])\n")
@@ -130,7 +129,7 @@ function kpax3ga!(x::AminoAcidData,
         close(fp)
 
         if settings.verbose
-          println("Step ", iter, " done.")
+          println("Step ", iter, " done")
         end
       end
     else
