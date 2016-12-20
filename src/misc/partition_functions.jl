@@ -40,7 +40,7 @@ function initializepartition(settings::KSettings;
   end
 
   if settings.verbose
-    @printf("done.\n")
+    @printf("done\n")
   end
 
   # expected number of cluster approximately between cbrt(n) and sqrt(n)

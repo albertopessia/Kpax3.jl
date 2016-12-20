@@ -159,7 +159,7 @@ function plotC(site::Vector{Int},
                            key_title_font_size=keytitlefontsize,
                            key_label_font_size=keylabelfontsize,
                            plot_padding=padding),
-              Gadfly.Guide.xlabel(""),
+              Gadfly.Guide.xlabel("Site"),
               Gadfly.Guide.ylabel("Posterior probability"),
               Gadfly.Guide.title(""),
               Gadfly.Guide.colorkey("Signal"))
