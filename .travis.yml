@@ -9,7 +9,7 @@ notifications:
   email: false
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.clone(pwd()); Pkg.build("$name");'
-  - julia --check-bounds=yes -e 'Pkg.test("$name", coverage=true);'
+  - julia -e 'Pkg.clone(pwd()); Pkg.build("Kpax3");'
+  - julia --check-bounds=yes -e 'Pkg.test("Kpax3", coverage=true);'
 after_success:
-  - julia -e 'cd(Pkg.dir("$name")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder());'
+  - julia -e 'cd(Pkg.dir("Kpax3")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder());'
