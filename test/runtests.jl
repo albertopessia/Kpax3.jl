@@ -1,11 +1,12 @@
 # This file is part of Kpax3. License is MIT.
 
-importall Base.Test
+importall Base.Test;
 
-include("../src/boot.jl")
+cd(joinpath(Pkg.dir("Kpax3"), "test"));
+include(realpath(joinpath("..", "src", "boot.jl")));
 
-ε = 1.0e-13
-srand(1427371200)
+ε = 1.0e-13;
+srand(1427371200);
 
 tests = ["data_processing/data_processing";
          "distances/simovici_jaroszewicz";
@@ -37,11 +38,11 @@ tests = ["data_processing/data_processing";
          "mcmc/posterior";
          "mcmc/diagnostics";
          "estimate/write"
-]
+];
 
 for t in tests
-  f = string(t, ".jl")
-  @printf("Going through tests in '%s'... ", f)
-  include(f)
-  @printf("PASSED!\n")
+  f = string(t, ".jl");
+  @printf("Going through tests in '%s'... ", f);
+  include(f);
+  @printf("PASSED!\n");
 end
