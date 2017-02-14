@@ -51,7 +51,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
       end
 
       # sample which operators we are going to use
-      operator = sample(UInt8[1; 2; 3], settings.op, settings.burnin)
+      operator = StatsBase.sample(UInt8[1; 2; 3], settings.op, settings.burnin)
 
       for t in 1:settings.burnin
         if operator[t] == 0x01
@@ -79,7 +79,7 @@ function kpax3mcmc!(data::Matrix{UInt8},
       println("Starting collecting samples...")
     end
 
-    operator = sample(UInt8[1; 2; 3], settings.op, T)
+    operator = StatsBase.sample(UInt8[1; 2; 3], settings.op, T)
 
     for t in 1:T
       if operator[t] == 0x01
@@ -98,6 +98,8 @@ function kpax3mcmc!(data::Matrix{UInt8},
       end
 
       if settings.verbose && (t % settings.verbosestep == 0)
+        flush(fpR)
+        flush(fpC)
         println("Step ", t, " done.")
       end
     end
@@ -171,6 +173,16 @@ function kpax3mcmc(settings::KSettings)
 
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
 
+  if settings.verbose
+    @printf("Processing Markov Chain output... ")
+  end
+
+  processchain(x, settings.ofile)
+
+  if settings.verbose
+    @printf("done.\n")
+  end
+
   nothing
 end
 
@@ -210,6 +222,16 @@ function kpax3mcmc(x::AminoAcidData,
   support = MCMCSupport(state, priorC)
 
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
+
+  if settings.verbose
+    @printf("Processing Markov Chain output... ")
+  end
+
+  processchain(x, settings.ofile)
+
+  if settings.verbose
+    @printf("done.\n")
+  end
 
   nothing
 end
@@ -251,6 +273,16 @@ function kpax3mcmc(x::AminoAcidData,
 
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
 
+  if settings.verbose
+    @printf("Processing Markov Chain output... ")
+  end
+
+  processchain(x, settings.ofile)
+
+  if settings.verbose
+    @printf("done.\n")
+  end
+
   nothing
 end
 
@@ -263,7 +295,7 @@ function splitmerge!(ij::Vector{Int},
                      support::MCMCSupport,
                      state::AminoAcidState)
   # cluster founders (units i and j)
-  sample!(1:support.n, ij, replace=false, ordered=false)
+  StatsBase.sample!(1:support.n, ij, replace=false, ordered=false)
 
   # clusters of i and j respectively
   gi = state.R[ij[1]]

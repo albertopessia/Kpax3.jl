@@ -1,17 +1,25 @@
-# Kpax3 - Bayesian Cluster Analysis of Categorical Data
+# Kpax3 - Bayesian cluster analysis of categorical data
+[![Build Status](https://travis-ci.org/albertopessia/Kpax3.jl.svg?branch=master)](https://travis-ci.org/albertopessia/Kpax3.jl) [![Coverage](https://codecov.io/gh/albertopessia/Kpax3.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/albertopessia/Kpax3.jl)
+
 ## About
-Kpax3 is a Julia package, written with the purpose of clustering (big) genetic datasets such as DNA/Protein Multiple Sequence Alignments (MSA). Kpax3 output consists of a classification of both the rows (statistical units) and columns (statistical variables) of the provided data matrix. It is an improved version of [K-Pax2](https://github.com/albertopessia/kpax2/), based on a novel MCMC algorithm.
+Kpax3 is a [Julia](http://julialang.org/) package for inferring the population structure of proteins. Output consists of a clustering of both the rows (statistical units) and columns (statistical variables) of the provided data matrix. It is an improved version of [K-Pax2](https://github.com/albertopessia/kpax2/), providing an MCMC algorithm for a proper Bayesian approach and a genetic algorithm for MAP estimation.
 
 ## Reference
-Kpax3 novel MCMC algorithm has not yet been properly described. To know more about the underlying method and how to properly setup the parameters, refer to the original K-Pax2 paper:
+To know more about the underlying statistical model, refer to the following publications (the first is the primary citation if you use the package):
 
-Pessia A., Grad Y., Cobey S., Puranen J. S. and Corander J. (2015). K-Pax2: Bayesian identification of cluster-defining amino acid positions in large sequence datasets. _Microbial Genomics_ **1**(1). [http://dx.doi.org/10.1099/mgen.0.000025](http://dx.doi.org/10.1099/mgen.0.000025).
+Pessia, A. and Corander, J. (2017). "Bayesian cluster analysis of categorical data with supervised feature selection". _Submitted_
 
-## Download
-Kpax3 is currently under development and a stable version is not yet ready.
+Pessia, A., Grad, Y., Cobey, S., Puranen, J. S., and Corander, J. (2015). "K-Pax2: Bayesian identification of cluster-defining amino acid positions in large sequence datasets". _Microbial Genomics_ **1**(1). [http://dx.doi.org/10.1099/mgen.0.000025](http://dx.doi.org/10.1099/mgen.0.000025)
+
+## Installation
+Kpax3 can be installed from within julia by typing
+
+```julia
+Pkg.clone("https://github.com/albertopessia/Kpax3.jl.git")
+```
 
 ## Usage
-A tutorial will be available once the first stable version is released.
+The best way to learn how to use Kpax3 is by following the instructions in the [tutorial](tutorial/Kpax3_tutorial.jl). Full documentation of Kpax3 functions will be available in the near future.
 
 ## License
 See [LICENSE.md](LICENSE.md)

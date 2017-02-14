@@ -3,10 +3,10 @@
 function test_data_exceptions()
   f = "../build/test"
 
-  @test_throws KFASTAError NucleotideData(KSettings("data/empty_file.fasta", f))
-  @test_throws KFASTAError NucleotideData(KSettings("data/no_1st_seq.fasta", f))
-  @test_throws KFASTAError NucleotideData(KSettings("data/no_id_char.fasta", f))
-  @test_throws KFASTAError NucleotideData(KSettings("data/no_nth_seq.fasta", f))
+  @test_throws KFASTAError NucleotideData(KSettings("data/empty_file.fasta",f))
+  @test_throws KFASTAError NucleotideData(KSettings("data/no_1st_seq.fasta",f))
+  @test_throws KFASTAError NucleotideData(KSettings("data/no_id_char.fasta",f))
+  @test_throws KFASTAError NucleotideData(KSettings("data/no_nth_seq.fasta",f))
 
   @test_throws KFASTAError NucleotideData(KSettings("data/utf8_id.fasta", f))
   @test_throws KFASTAError NucleotideData(KSettings("data/utf8_seq.fasta", f))
@@ -260,7 +260,7 @@ function test_data_proper_protein_file()
   @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
   # consider all characters
-  aa = AminoAcidData(KSettings("data/proper_aa.fasta", f, miss=zeros(UInt8, 1)))
+  aa = AminoAcidData(KSettings("data/proper_aa.fasta", f, miss=zeros(UInt8,1)))
   @test aa.data == UInt8[0 0 0 0 0 1;
                          1 1 1 1 1 0;
                          0 0 1 0 1 1;

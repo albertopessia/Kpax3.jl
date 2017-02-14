@@ -34,8 +34,8 @@ datasets
 ## Details
 
 When computing evolutionary distances, don't put the gap symbol `-` among the
-missing values. Indeed, indels are an important piece of information for genetic
-distances.
+missing values. Indeed, indels are an important piece of information for
+genetic distances.
 
 FASTA data is encoded as standard 7-bit ASCII codes. The only exception is
 Uracil which is given the same value 84 of Thymidine, i.e. each 'u' is silently
@@ -270,8 +270,8 @@ function readfasta(ifile::AbstractString,
         for b in 1:seqlen
           if !missseq[b]
             if missseqref[b]
-              # this sequence has a non-missing value where it is missing in the
-              # reference sequence
+              # this sequence has a non-missing value where it is missing in
+              # the reference sequence
               seqref[b] = seq[b]
               missseqref[b] = false
             else

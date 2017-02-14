@@ -10,3 +10,5 @@ include("gibbs.jl")
 include("biased_random_walk.jl")
 
 include("algorithm.jl")
+
+include("diagnostics.jl")

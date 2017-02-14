@@ -33,7 +33,7 @@ immutable KSettings
   T::Int
   burnin::Int
   tstep::Int
-  op::WeightVec
+  op::StatsBase.WeightVec
 end
 
 function KSettings(ifile::AbstractString,
@@ -42,27 +42,33 @@ function KSettings(ifile::AbstractString,
                    miss::Vector{UInt8}=zeros(UInt8, 0),
                    l::Int=100000000,
                    alpha::Real=0.5,
-                   theta::Real=-0.1,
+                   theta::Real=-0.25,
                    gamma::Vector{Float64}=[0.6; 0.35; 0.05],
                    r::Float64=log(0.001) / log(0.95),
                    maxclust::Int=500,
                    maxunit::Int=500,
                    verbose::Bool=false,
-                   verbosestep::Int=500,
+                   verbosestep::Int=1000,
                    popsize::Int=20,
-                   maxiter::Int=10000,
-                   maxgap::Int=2000,
+                   maxiter::Int=20000,
+                   maxgap::Int=5000,
                    xrate::Float64=0.9,
                    mrate::Float64=0.005,
                    T::Int=100000,
                    burnin::Int=10000,
                    tstep::Int=1,
-                   op::Vector{Float64}=[0.7; 0.3; 0.0])
+                   op::Vector{Float64}=[0.5; 0.0; 0.5])
   # open files and immediately close them. We do this to throw a proper Julia
   # standard exception if something is wrong
   f = open(ifile, "r")
   close(f)
-#=
+
+  dirpath = dirname(ofile)
+  if !isdir(dirpath)
+    mkpath(dirpath)
+  end
+
+  #=
   f = open(string(ofile, "_settings.bin"), "a")
   close(f)
 
@@ -71,7 +77,8 @@ function KSettings(ifile::AbstractString,
 
   f = open(string(ofile, "_col_partition.bin"), "a")
   close(f)
-=#
+  =#
+
   if length(miss) == 0
     miss = if protein
              UInt8['?', '*', '#', '-', 'b', 'j', 'x', 'z']
@@ -185,5 +192,5 @@ function KSettings(ifile::AbstractString,
 
   KSettings(ifile, ofile, protein, miss, l, alpha, theta, gamma, r, maxclust,
             maxunit, verbose, verbosestep, popsize, maxiter, maxgap, xrate,
-            mrate, T, burnin, tstep, WeightVec(op))
+            mrate, T, burnin, tstep, StatsBase.WeightVec(op))
 end

@@ -61,8 +61,8 @@ function test_settings_constructor()
                        theta=θ, gamma=γ, r=r, maxclust=maxclust,
                        maxunit=maxunit, verbose=verbose,
                        verbosestep=verbosestep, popsize=popsize,
-                       maxiter=maxiter, maxgap=maxgap, xrate=xrate, mrate=mrate,
-                       T=T, burnin=burnin, tstep=tstep, op=op)
+                       maxiter=maxiter, maxgap=maxgap, xrate=xrate,
+                       mrate=mrate, T=T, burnin=burnin, tstep=tstep, op=op)
 
   @test settings.ifile == ifile
   @test settings.ofile == ofile
@@ -83,8 +83,8 @@ function test_settings_constructor()
   @test settings.T == T
   @test settings.burnin == burnin
   @test settings.tstep == tstep
-  @test isa(settings.op, WeightVec)
-  @test values(settings.op) == op
+  @test isa(settings.op, StatsBase.WeightVec)
+  @test StatsBase.values(settings.op) == op
 
   settings = KSettings(ifile, ofile, protein=true, miss=zeros(UInt8, 0))
 
@@ -100,16 +100,16 @@ function test_settings_constructor()
   settings = KSettings(ifile, ofile, protein=false, miss=zeros(UInt8, 0))
 
   @test !settings.protein
-  @test settings.miss == UInt8['?', '*', '#', '-', 'b', 'd', 'h', 'k', 'm', 'n',
-                               'r', 's', 'v', 'w', 'x', 'y', 'j', 'z']
+  @test settings.miss == UInt8['?', '*', '#', '-', 'b', 'd', 'h', 'k', 'm',
+                               'n', 'r', 's', 'v', 'w', 'x', 'y', 'j', 'z']
 
   settings = KSettings(ifile, ofile, protein=false,
                        miss=UInt8['?', '*', '#', 'b', 'd', 'h', 'k', 'm', 'n',
                                   'r', 's', 'v', 'w', 'x', 'y', 'j', 'z'])
 
   @test !settings.protein
-  @test settings.miss == UInt8['?', '*', '#', 'b', 'd', 'h', 'k', 'm', 'n', 'r',
-                               's', 'v', 'w', 'x', 'y', 'j', 'z']
+  @test settings.miss == UInt8['?', '*', '#', 'b', 'd', 'h', 'k', 'm', 'n',
+                               'r', 's', 'v', 'w', 'x', 'y', 'j', 'z']
 
   nothing
 end

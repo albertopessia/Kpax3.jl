@@ -8,9 +8,6 @@ function test_loss_binder()
        0.442 0.442 0.357 0.357 1.000 0.426;
        0.357 0.357 0.442 0.442 0.426 1.000]
 
-  p = [0.571; 0.458; 0.458; 0.442; 0.357; 0.458; 0.458; 0.442; 0.357; 0.571;
-       0.357; 0.442; 0.357; 0.442; 0.426]
-
   # k = 1
   R = Int[1; 1; 1; 1; 1; 1]
   A = Float64[1 1 1 1 1 1;
@@ -21,7 +18,7 @@ function test_loss_binder()
               1 1 1 1 1 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, p)
+  lossfunction = loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -35,7 +32,7 @@ function test_loss_binder()
               0 0 1 1 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, p)
+  lossfunction = loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -48,7 +45,7 @@ function test_loss_binder()
               0 1 0 1 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, p)
+  lossfunction = loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -62,7 +59,7 @@ function test_loss_binder()
               0 0 1 1 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, p)
+  lossfunction = loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -75,7 +72,7 @@ function test_loss_binder()
               0 0 1 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, p)
+  lossfunction = loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -89,7 +86,7 @@ function test_loss_binder()
               0 0 0 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, p)
+  lossfunction = loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -102,7 +99,7 @@ function test_loss_binder()
               0 1 0 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, p)
+  lossfunction = loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -116,7 +113,7 @@ function test_loss_binder()
               0 0 0 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, p)
+  lossfunction = loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -129,7 +126,7 @@ function test_loss_binder()
               0 0 0 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, p)
+  lossfunction = loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -143,7 +140,7 @@ function test_loss_binder()
               0 0 0 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, p)
+  lossfunction = loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 

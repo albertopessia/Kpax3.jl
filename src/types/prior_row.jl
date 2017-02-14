@@ -29,8 +29,9 @@ The special case α = 0 and θ > 0 corresponds to the Ewens sampling formula.
 ## References
 
 Aldous, D. J. (1985) Exchangeability and related topics. In *École d'Été de
-Probabilités de Saint-Flour XIII — 1983*. Lecture Notes in Mathematics **1117**,
-1-198. Springer Berlin Heidelberg. <http://dx.doi.org/10.1007/BFb0099421>.
+Probabilités de Saint-Flour XIII — 1983*. Lecture Notes in Mathematics
+**1117**, 1-198. Springer Berlin Heidelberg.
+<http://dx.doi.org/10.1007/BFb0099421>.
 
 Gnedin, A. and Pitman, J. (2006) Exchangeable Gibbs partitions and Stirling
 triangles. *Journal of Mathematical Sciences* **138**(3), 5674-5685.

@@ -8,14 +8,14 @@ function biased_random_walk!(data::Matrix{UInt8},
                              state::AminoAcidState)
   k = state.k
 
-  i = sample(1:support.n)
+  i = StatsBase.sample(1:support.n)
   hi = state.R[i]
   hj = 0
 
   v = 0
   if state.v[hi] > 1
     if k > 1
-      v = sample(1:k)
+      v = StatsBase.sample(1:k)
 
       if v == k
         # move i to a new cluster
@@ -28,7 +28,7 @@ function biased_random_walk!(data::Matrix{UInt8},
   else
     # move i to another cluster
     k -= 1
-    v = sample(1:k)
+    v = StatsBase.sample(1:k)
   end
 
   if k == state.k
