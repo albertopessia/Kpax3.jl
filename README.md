@@ -1,4 +1,6 @@
 # Kpax3 - Bayesian cluster analysis of categorical data
+[![Build Status](https://travis-ci.org/albertopessia/Kpax3.jl.svg?branch=master)](https://travis-ci.org/albertopessia/Kpax3.jl) [![Coverage](https://codecov.io/gh/albertopessia/Kpax3.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/albertopessia/Kpax3.jl)
+
 ## About
 Kpax3 is a [Julia](http://julialang.org/) package for inferring the population structure of proteins. Output consists of a clustering of both the rows (statistical units) and columns (statistical variables) of the provided data matrix. It is an improved version of [K-Pax2](https://github.com/albertopessia/kpax2/), providing an MCMC algorithm for a proper Bayesian approach and a genetic algorithm for MAP estimation.
 
