@@ -54,9 +54,9 @@ function AminoAcidPriorCol(data::Matrix{UInt8},
   if n > r
     for b in 1:m
       # uninformative attributes
-      # If n > r, these two parameters sum to (r+1), i.e. the theoretical sample
-      # size for the characteristic hyperparameters. This is done so because we
-      # don't want them to be overwhelmed by the data.
+      # If n > r, these two parameters sum to (r+1), i.e. the theoretical
+      # sample size for the characteristic hyperparameters. This is done so
+      # because we don't want them to be overwhelmed by the data.
       # The mean is the same to the one obtained with a Jeffreys prior
       A[1, b] = (r + 1) * (n1s[b] + 0.5) / (n + 1)
       B[1, b] = (r + 1) - A[1, b]

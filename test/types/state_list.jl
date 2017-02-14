@@ -40,7 +40,7 @@ function test_state_list_constructor()
     @test slist.state[i].v == t.v
     @test slist.state[i].n1s == t.n1s
     for g in l
-      @test slist.state[i].unit[g][1:slist.state[i].v[g]] == t.unit[g][1:t.v[g]]
+      @test slist.state[i].unit[g][1:slist.state[i].v[g]]==t.unit[g][1:t.v[g]]
     end
     @test slist.state[i].logpR == t.logpR
     @test slist.state[i].logpC == t.logpC

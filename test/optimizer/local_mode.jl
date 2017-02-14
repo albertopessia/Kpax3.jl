@@ -84,7 +84,8 @@ for c1 in cs[state.k], c2 in cs[state.k], c3 in cs[state.k], c4 in cs[state.k]
     state.C[state.cl[l], :] = tmp[l, :]
   end
 
-  logpnew = logcondpostC(state.C, state.cl, state.k, state.v, state.n1s, priorC)
+  logpnew = logcondpostC(state.C, state.cl, state.k, state.v, state.n1s,
+                         priorC)
 
   if logpnew > logpold
     logpold = logpnew

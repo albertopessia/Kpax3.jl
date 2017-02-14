@@ -184,7 +184,8 @@ function initializestate(data::Matrix{UInt8},
   # TODO: remove the hack once kmedoids is fixed
 
   if settings.verbose
-    @printf("Log-posterior (plus a constant) for one cluster: %.4f.\n", s.logpp)
+    @printf("Log-posterior (plus a constant) for one cluster: %.4f.\n",
+            s.logpp)
     @printf("Now scanning %d to %d clusters.\n", kset[1], kset[end])
   end
 
@@ -196,10 +197,10 @@ function initializestate(data::Matrix{UInt8},
 
     fill!(R, 0)
     try
-      copy!(R, kmedoids(D, k).assignments)
+      copy!(R, Clustering.kmedoids(D, k).assignments)
     catch
-      sample!(1:k, R, replace=true)
-      R[sample(1:n, k, replace=false)] = collect(1:k)
+      StatsBase.sample!(1:k, R, replace=true)
+      R[StatsBase.sample(1:n, k, replace=false)] = collect(1:k)
     end
 
     updatestate!(t1, data, R, priorR, priorC, settings)
@@ -207,10 +208,10 @@ function initializestate(data::Matrix{UInt8},
     niter = 0
     while niter < 10
       try
-        copy!(R, kmedoids(D, k).assignments)
+        copy!(R, Clustering.kmedoids(D, k).assignments)
       catch
-        sample!(1:k, R, replace=true)
-        R[sample(1:n, k, replace=false)] = collect(1:k)
+        StatsBase.sample!(1:k, R, replace=true)
+        R[StatsBase.sample(1:n, k, replace=false)] = collect(1:k)
       end
 
       updatestate!(t2, data, R, priorR, priorC, settings)
@@ -285,8 +286,8 @@ function updatestate!(state::AminoAcidState,
 
   state.logpR = logdPriorRow(n, state.k, state.v, priorR)
 
-  computelocalmode!(state.v, state.n1s, state.C, state.cl, state.k, state.logpC,
-                    priorC)
+  computelocalmode!(state.v, state.n1s, state.C, state.cl, state.k,
+                    state.logpC, priorC)
 
   state.loglik = loglikelihood(state.C, state.cl, state.k, state.v, state.n1s,
                                priorC)
@@ -379,4 +380,15 @@ function resizestate!(state::AminoAcidState,
   end
 
   nothing
+end
+
+function optimumstate(x::AminoAcidData,
+                      partition::AbstractString,
+                      settings::KSettings)
+  R = normalizepartition(partition, x.id)
+
+  priorR = EwensPitman(settings.α, settings.θ)
+  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
+
+  AminoAcidState(x.data, R, priorR, priorC, settings)
 end

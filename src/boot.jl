@@ -3,11 +3,13 @@
 #################
 # Load packages #
 #################
-import StatsBase: sample, sample!, WeightVec, values
-import Distributions: Beta, logpdf, params
-import Clustering: kmedoids
-import FileIO: File, @format_str
-import JLD: load, save
+import Clustering
+import Distances
+import FileIO
+import JLD
+import Gadfly
+import Measures
+import StatsBase
 
 ##############
 # Load Types #
@@ -28,3 +30,4 @@ include("model/model.jl")
 include("optimizer/optimizer.jl")
 include("mcmc/mcmc.jl")
 include("estimate/estimate.jl")
+include("plots/plots.jl")

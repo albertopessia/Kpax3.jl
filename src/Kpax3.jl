@@ -6,11 +6,13 @@ module Kpax3
   #################
   # Load packages #
   #################
-  import StatsBase: sample, sample!, WeightVec, values
-  import Distributions: Beta, logpdf, params
-  import Clustering: kmedoids
-  import FileIO: File, @format_str
-  import JLD: load, save
+  import Clustering
+  import Distances
+  import FileIO
+  import JLD
+  import Gadfly
+  import Measures
+  import StatsBase
 
   ####################
   # Export functions #
@@ -30,9 +32,8 @@ module Kpax3
   kpax3ga,
 
   # estimation
-  processchain,
   kpax3estimate,
-  computelocalmode!,
+  optimumstate,
 
   # i/o
   initializepartition,
@@ -41,7 +42,23 @@ module Kpax3
   categorical2binary,
   save,
   loadaa,
-  writeresults
+  writeresults,
+  readposteriork,
+  readposteriorP,
+  readposteriorC,
+
+  # diagnostics
+  traceR,
+  traceC,
+
+  # plot
+  plotk,
+  plotP,
+  plotC,
+  plottrace,
+  plotdensity,
+  plotjump,
+  plotdgn
 
   ##############
   # Load Types #
@@ -62,4 +79,5 @@ module Kpax3
   include("optimizer/optimizer.jl")
   include("mcmc/mcmc.jl")
   include("estimate/estimate.jl")
+  include("plots/plots.jl")
 end

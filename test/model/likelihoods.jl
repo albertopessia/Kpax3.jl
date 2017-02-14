@@ -49,7 +49,8 @@ function test_likelihoods_marginal()
       logq1 = logcondmarglik(fill(0x01, m), y, n, a, b)
 
       qx = condmarglik([fill(0x01, n1s); fill(0x00, m - n1s)], y, n, a, b)
-      logqx = logcondmarglik([fill(0x01, n1s); fill(0x00, m - n1s)], y, n, a, b)
+      logqx = logcondmarglik([fill(0x01, n1s); fill(0x00, m - n1s)],
+                             y, n, a, b)
 
       logp = lgamma(a + y) + lgamma(b + n - y) - lgamma(a + b + n) +
              lgamma(a + b) - lgamma(a) - lgamma(b)
@@ -57,8 +58,8 @@ function test_likelihoods_marginal()
       logcp0 = log(b + n - y) - log(a + b + n)
       logcp1 = log(a + y) - log(a + b + n)
 
-      logcpx = log([a[1:n1s] + y[1:n1s]; b[(n1s + 1):m] + n - y[(n1s + 1):m]]) -
-               log(a + b + n)
+      logcpx = log([a[1:n1s] + y[1:n1s];
+                    b[(n1s + 1):m] + n - y[(n1s + 1):m]]) - log(a + b + n)
 
       for i in 1:m
         @test_approx_eq_eps q[i] exp(logp[i]) ε
