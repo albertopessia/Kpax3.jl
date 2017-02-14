@@ -48,16 +48,16 @@ function KSettings(ifile::AbstractString,
                    maxclust::Int=500,
                    maxunit::Int=500,
                    verbose::Bool=false,
-                   verbosestep::Int=500,
+                   verbosestep::Int=1000,
                    popsize::Int=20,
-                   maxiter::Int=10000,
-                   maxgap::Int=2000,
+                   maxiter::Int=20000,
+                   maxgap::Int=5000,
                    xrate::Float64=0.9,
                    mrate::Float64=0.005,
                    T::Int=100000,
                    burnin::Int=10000,
                    tstep::Int=1,
-                   op::Vector{Float64}=[0.7; 0.3; 0.0])
+                   op::Vector{Float64}=[0.5; 0.0; 0.5])
   # open files and immediately close them. We do this to throw a proper Julia
   # standard exception if something is wrong
   f = open(ifile, "r")
