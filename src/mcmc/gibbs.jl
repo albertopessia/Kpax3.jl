@@ -6,7 +6,7 @@ function gibbs!(data::Matrix{UInt8},
                 settings::KSettings,
                 support::MCMCSupport,
                 state::AminoAcidState)
-  shuffle!(support.u)
+  shuffleunits!(support.u)
 
   for a in support.u
     resizesupport!(support, state.k + 1)
