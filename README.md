@@ -15,7 +15,7 @@ Pessia, A., Grad, Y., Cobey, S., Puranen, J. S., and Corander, J. (2015). "K-Pax
 Kpax3 can be installed from within julia by typing
 
 ```julia
-Pkg.clone("https://github.com/albertopessia/Kpax3.jl.git")
+Pkg.add("Kpax3")
 ```
 
 ## Usage
