@@ -316,7 +316,7 @@ function splitmerge!(ij::Vector{Int},
       end
     end
 
-    shuffle!(neighbours, S)
+    shuffleunits!(neighbours, S)
 
     split!(ij, neighbours, S, data, priorR, priorC, settings, support, state)
   else
@@ -336,7 +336,7 @@ function splitmerge!(ij::Vector{Int},
       end
     end
 
-    shuffle!(neighbours, S)
+    shuffleunits!(neighbours, S)
 
     merge!(ij, neighbours, S, data, priorR, priorC, settings, support, state)
   end
