@@ -1,20 +1,19 @@
 # This file is part of Kpax3. License is MIT.
 
-
 #=
 R = [1; 1; 2; 2; 3; 1]
 k = length(unique(R))
 
-priorR = EwensPitman(settings.α, settings.θ)
-priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
 ss = UInt8[1; 2; 3]
-obj = AminoAcidState(data, R, priorR, priorC, settings)
+obj = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
 
 M = -Inf
 for s1 in ss, s2 in ss, s3 in ss, s4 in ss
   S = [s1; s2; s3; s4]
-  lp = logcondpostS(S, obj.cl, obj.k, obj.v, obj.n1s, priorC)
+  lp = Kpax3.logcondpostS(S, obj.cl, obj.k, obj.v, obj.n1s, priorC)
 
   if lp > M
     M = lp
@@ -24,7 +23,7 @@ end
 trueSp = zeros(Float64, 3, 4)
 for s1 in ss, s2 in ss, s3 in ss, s4 in ss
   S = [s1; s2; s3; s4]
-  lp = logcondpostS(S, obj.cl, obj.k, obj.v, obj.n1s, priorC)
+  lp = Kpax3.logcondpostS(S, obj.cl, obj.k, obj.v, obj.n1s, priorC)
 
   trueSp[s1, 1] += exp(lp - M)
   trueSp[s2, 2] += exp(lp - M)
@@ -38,12 +37,12 @@ for i in 1:12
   @printf("%.100f\n", trueSp[i])
 end
 
-rpostpartitioncols!(obj.C, obj.cl, obj.k, obj.v, obj.n1s, priorC);
+Kpax3.rpostpartitioncols!(obj.C, obj.cl, obj.k, obj.v, obj.n1s, priorC);
 obj.C[obj.cl[1:obj.k], :]
 
 obj.C[obj.cl[1:obj.k], :] = Ctest1
 
-p = exp(logcondpostC(obj.C, obj.cl, obj.k, obj.v, obj.n1s, priorC))
+p = exp(Kpax3.logcondpostC(obj.C, obj.cl, obj.k, obj.v, obj.n1s, priorC))
 @printf("%.100f\n", p)
 =#
 
@@ -99,11 +98,9 @@ function test_partition_cols_constructor()
   B2[4, :] = 1.0
 
   for k in 1:n
-    for γ in ([1.0; 0.0; 0.0], [0.0; 1.0; 0.0], [0.0; 0.0; 1.0],
-              [0.4; 0.3; 0.3], [0.5; 0.3; 0.2], [0.7; 0.2; 0.1],
-              [0.1; 0.1; 0.1], [0.3; 0.1; 0.1], [0.0; 0.2; 0.1])
-      x1 = AminoAcidPriorCol(data, γ, r1)
-      x2 = AminoAcidPriorCol(data, γ, r2)
+    for γ in ([1.0; 0.0; 0.0], [0.0; 1.0; 0.0], [0.0; 0.0; 1.0], [0.4; 0.3; 0.3], [0.5; 0.3; 0.2], [0.7; 0.2; 0.1], [0.1; 0.1; 0.1], [0.3; 0.1; 0.1], [0.0; 0.2; 0.1])
+      x1 = Kpax3.AminoAcidPriorCol(data, γ, r1)
+      x2 = Kpax3.AminoAcidPriorCol(data, γ, r2)
 
       @test_approx_eq_eps x1.logγ[1] log(γ[1] / sum(γ)) ε
       @test_approx_eq_eps x2.logγ[2] log(γ[2] / sum(γ)) ε
@@ -138,21 +135,19 @@ function test_partition_cols_functions()
 
   (m, n) = size(data)
 
-  settings = KSettings(ifile, ofile, maxclust=6, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=6, maxunit=1)
 
   R = [1; 1; 2; 2; 3; 1]
   k = length(unique(R))
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-  state = AminoAcidState(data, R, priorR, priorC, settings)
+  state = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
 
   C = zeros(UInt8, settings.maxclust, m)
 
-  cs = (UInt8[1; 1; 1], UInt8[2; 2; 2], UInt8[3; 3; 3], UInt8[3; 3; 4],
-        UInt8[3; 4; 3], UInt8[4; 3; 3], UInt8[3; 4; 4], UInt8[4; 3; 4],
-        UInt8[4; 4; 3], UInt8[4; 4; 4])
+  cs = (UInt8[1; 1; 1], UInt8[2; 2; 2], UInt8[3; 3; 3], UInt8[3; 3; 4], UInt8[3; 4; 3], UInt8[4; 3; 3], UInt8[3; 4; 4], UInt8[4; 3; 4], UInt8[4; 4; 3], UInt8[4; 4; 4])
 
   logp1 = zeros(Float64, (2 + 2^k)^m)
   logp2 = zeros(Float64, (2 + 2^k)^m)
@@ -169,9 +164,9 @@ function test_partition_cols_functions()
     state.C[state.cl[2], :] = C[2, :] = tmp[2, :]
     state.C[state.cl[3], :] = C[3, :] = tmp[3, :]
 
-    logp1[l] = logpriorC(state.C, state.cl, k, priorC)
-    logp2[l] = logpriorC(C, k, priorC)
-    logp3[l] = logcondpostC(state.C, state.cl, k, state.v, state.n1s, priorC)
+    logp1[l] = Kpax3.logpriorC(state.C, state.cl, k, priorC)
+    logp2[l] = Kpax3.logpriorC(C, k, priorC)
+    logp3[l] = Kpax3.logcondpostC(state.C, state.cl, k, state.v, state.n1s, priorC)
   end
 
   M = maximum(logp1)
@@ -194,7 +189,7 @@ function test_partition_cols_functions()
   for s1 in ss, s2 in ss, s3 in ss, s4 in ss
     l += 1
     S = [s1; s2; s3; s4]
-    logp4[l] = logcondpostS(S, state.cl, k, state.v, state.n1s, priorC)
+    logp4[l] = Kpax3.logcondpostS(S, state.cl, k, state.v, state.n1s, priorC)
   end
 
   M = maximum(logp4)
@@ -218,12 +213,12 @@ function test_partition_cols_simulations()
 
   (m, n) = size(data)
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-  state = AminoAcidState(data, [1; 1; 2; 2; 3; 1], priorR, priorC, settings)
+  state = Kpax3.AminoAcidState(data, [1; 1; 2; 2; 3; 1], priorR, priorC, settings)
 
   N = 1000000
 
@@ -247,7 +242,7 @@ function test_partition_cols_simulations()
   trueCp = 0.023444249569984754177909280770109035074710845947265625
 
   for t in 1:N
-    rpostpartitioncols!(state.C, state.cl, state.k, state.v, state.n1s, priorC)
+    Kpax3.rpostpartitioncols!(state.C, state.cl, state.k, state.v, state.n1s, priorC)
 
     for b in 1:m
       if state.C[state.cl[1], b] == 0x01

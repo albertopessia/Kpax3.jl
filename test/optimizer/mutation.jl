@@ -28,14 +28,13 @@ function test_mutation()
   R = [1; 1; 1]
   v = [3; 0; 0]
 
-  o = KOffspring(copy(R), copy(v))
+  o = Kpax3.KOffspring(copy(R), copy(v))
 
   mrate = 1 / 5
 
   N = 1000000
 
-  pr = [64 / 125; 16 / 125; 16 / 125; 2 / 125; 2 / 125; 16 / 125; 2 / 125;
-         2 / 125;  2 / 125;  1 / 500; 1 / 500; 2 / 125;  1 / 500; 1 / 500]
+  pr = [64 / 125; 16 / 125; 16 / 125; 2 / 125; 2 / 125; 16 / 125; 2 / 125; 2 / 125;  2 / 125;  1 / 500; 1 / 500; 2 / 125;  1 / 500; 1 / 500]
 
   tmp = zeros(Float64, length(pr))
 
@@ -43,7 +42,7 @@ function test_mutation()
     copy!(o.R, R)
     copy!(o.v, v)
 
-    mutation!(o, mrate)
+    Kpax3.mutation!(o, mrate)
 
     if o.R == [1; 1; 1]
       @test o.v == [3; 0; 0]

@@ -5,7 +5,7 @@ function test_traceR()
   fileroot = "../build/mcmc_6"
   maxlag = 20
 
-  (entropy, avgd) = traceR(fileroot, maxlag=maxlag)
+  (entropy, avgd) = Kpax3.traceR(fileroot, maxlag=maxlag)
 
   fpR = open(string(fileroot, "_row_partition.bin"), "r")
 
@@ -33,7 +33,7 @@ function test_traceR()
     read!(fpR, R0)
 
     k[T] = k0[1]
-    copy!(R, 1 + n * (T - 1), normalizepartition(R0, n), 1, n)
+    copy!(R, 1 + n * (T - 1), Kpax3.normalizepartition(R0, n), 1, n)
 
     for i in 1:n
       v[R[i, T], T] += 1
@@ -55,7 +55,7 @@ function test_traceR()
   l = 1
   z = zeros(Float64, N - l)
   for t in 1:(N - l)
-    z[t] = jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
+    z[t] = Kpax3.jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
   @test_approx_eq_eps avgd[l] mean(z) ε
 
@@ -63,7 +63,7 @@ function test_traceR()
   l = 5
   z = zeros(Float64, N - l)
   for t in 1:(N - l)
-    z[t] = jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
+    z[t] = Kpax3.jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
   @test_approx_eq_eps avgd[l] mean(z) ε
 
@@ -71,7 +71,7 @@ function test_traceR()
   l = 13
   z = zeros(Float64, N - l)
   for t in 1:(N - l)
-    z[t] = jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
+    z[t] = Kpax3.jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
   @test_approx_eq_eps avgd[l] mean(z) ε
 
@@ -84,7 +84,7 @@ function test_traceC()
   fileroot = "../build/mcmc_6"
   maxlag = 20
 
-  (entropy, avgd) = traceC(fileroot, maxlag=maxlag)
+  (entropy, avgd) = Kpax3.traceC(fileroot, maxlag=maxlag)
 
   fpC = open(string(fileroot, "_col_partition.bin"), "r")
 
@@ -196,7 +196,7 @@ function test_imsevar()
 
   z = 0.0306296450517703523763746176200584159232676029205322265625
 
-  @test_approx_eq_eps imsevar(ac, N) z ε
+  @test_approx_eq_eps Kpax3.imsevar(ac, N) z ε
 
   nothing
 end
@@ -204,20 +204,20 @@ end
 test_imsevar()
 
 function test_ess()
-  @test ess(1.0, 1.0, 10) == 10
-  @test ess(2.0, 2.0, 100) == 100
+  @test Kpax3.ess(1.0, 1.0, 10) == 10
+  @test Kpax3.ess(2.0, 2.0, 100) == 100
 
-  @test ess(2.0, 4.0, 10) == 5
-  @test ess(2.0, 4.0, 100) == 50
+  @test Kpax3.ess(2.0, 4.0, 10) == 5
+  @test Kpax3.ess(2.0, 4.0, 100) == 50
 
-  @test ess(4.0, 2.0, 10) == 20
-  @test ess(4.0, 2.0, 100) == 200
+  @test Kpax3.ess(4.0, 2.0, 10) == 20
+  @test Kpax3.ess(4.0, 2.0, 100) == 200
 
-  @test ess(4.0, 12.0, 10) == 3
-  @test ess(4.0, 12.0, 100) == 33
+  @test Kpax3.ess(4.0, 12.0, 10) == 3
+  @test Kpax3.ess(4.0, 12.0, 100) == 33
 
-  @test ess(4.0, 16.0, 10) == 2
-  @test ess(4.0, 16.0, 100) == 25
+  @test Kpax3.ess(4.0, 16.0, 10) == 2
+  @test Kpax3.ess(4.0, 16.0, 100) == 25
 
   nothing
 end

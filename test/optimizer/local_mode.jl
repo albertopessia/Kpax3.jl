@@ -7,10 +7,10 @@
 #R = [1; 3; 2; 2; 1; 4]
 k = length(unique(R))
 
-priorR = EwensPitman(settings.α, settings.θ)
-priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-state = AminoAcidState(data, R, priorR, priorC, settings)
+state = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
 
 C = zeros(UInt8, n, m)
 
@@ -84,8 +84,7 @@ for c1 in cs[state.k], c2 in cs[state.k], c3 in cs[state.k], c4 in cs[state.k]
     state.C[state.cl[l], :] = tmp[l, :]
   end
 
-  logpnew = logcondpostC(state.C, state.cl, state.k, state.v, state.n1s,
-                         priorC)
+  logpnew = Kpax3.logcondpostC(state.C, state.cl, state.k, state.v, state.n1s, priorC)
 
   if logpnew > logpold
     logpold = logpnew
@@ -100,7 +99,7 @@ function test_local_mode()
   ifile = "data/proper_aa.fasta"
   ofile = "../build/test"
 
-  settings = KSettings(ifile, ofile, gamma=[0.3; 0.35; 0.35])
+  settings = Kpax3.KSettings(ifile, ofile, gamma=[0.3; 0.35; 0.35])
 
   data = UInt8[1 1 1 1 0 0;
                0 0 1 1 0 0;
@@ -109,8 +108,8 @@ function test_local_mode()
 
   (m, n) = size(data)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
   # k = 1
   R = [1; 1; 1; 1; 1; 1]
@@ -122,19 +121,19 @@ function test_local_mode()
   n1s = zeros(Float64, 6, 4)
   n1s[1, :] = sum(float(data), 2)'
 
-  s = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
+  s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
 
   @test s.C == C
-  @test_approx_eq_eps s.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps s.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps s.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps s.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
-  t = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(t, priorC)
+  t = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(t, priorC)
 
   @test t.C == C
-  @test_approx_eq_eps t.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps t.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps t.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps t.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
   # k = 2
   R = [1; 1; 1; 1; 2; 2]
@@ -144,22 +143,21 @@ function test_local_mode()
   cl = [1; 2; 0; 0; 0; 0]
   v = [4; 2; 0; 0; 0; 0]
   n1s = zeros(Float64, 6, 4)
-  n1s[1:2, :] = hcat(sum(float(data[:, R .== 1]), 2),
-                     sum(float(data[:, R .== 2]), 2))'
+  n1s[1:2, :] = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2))'
 
-  s = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
+  s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
 
   @test s.C == C
-  @test_approx_eq_eps s.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps s.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps s.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps s.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
-  t = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(t, priorC)
+  t = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(t, priorC)
 
   @test t.C == C
-  @test_approx_eq_eps t.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps t.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps t.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps t.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
   # k = 3
   R = [1; 1; 2; 2; 3; 3]
@@ -169,23 +167,21 @@ function test_local_mode()
   cl = [1; 2; 3; 0; 0; 0]
   v = [2; 2; 2; 0; 0; 0]
   n1s = zeros(Float64, 6, 4)
-  n1s[1:3, :] = hcat(sum(float(data[:, R .== 1]), 2),
-                     sum(float(data[:, R .== 2]), 2),
-                     sum(float(data[:, R .== 3]), 2))'
+  n1s[1:3, :] = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2), sum(float(data[:, R .== 3]), 2))'
 
-  s = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
+  s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
 
   @test s.C == C
-  @test_approx_eq_eps s.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps s.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps s.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps s.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
-  t = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(t, priorC)
+  t = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(t, priorC)
 
   @test t.C == C
-  @test_approx_eq_eps t.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps t.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps t.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps t.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
   # k = 4
   R = [1; 3; 2; 2; 1; 4]
@@ -195,24 +191,21 @@ function test_local_mode()
   cl = [1; 2; 3; 4; 0; 0]
   v = [2; 2; 1; 1; 0; 0]
   n1s = zeros(Float64, 6, 4)
-  n1s[1:4, :] = hcat(sum(float(data[:, R .== 1]), 2),
-                     sum(float(data[:, R .== 2]), 2),
-                     sum(float(data[:, R .== 3]), 2),
-                     sum(float(data[:, R .== 4]), 2))'
+  n1s[1:4, :] = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2), sum(float(data[:, R .== 3]), 2), sum(float(data[:, R .== 4]), 2))'
 
-  s = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
+  s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
 
   @test s.C == C
-  @test_approx_eq_eps s.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps s.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps s.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps s.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
-  t = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(t, priorC)
+  t = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(t, priorC)
 
   @test t.C == C
-  @test_approx_eq_eps t.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps t.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps t.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps t.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
   # k = 5
   R = [1; 2; 3; 3; 4; 5]
@@ -222,25 +215,21 @@ function test_local_mode()
   cl = [1; 2; 3; 4; 5; 0]
   v = [1; 1; 2; 1; 1; 0]
   n1s = zeros(Float64, 6, 4)
-  n1s[1:5, :] = hcat(sum(float(data[:, R .== 1]), 2),
-                     sum(float(data[:, R .== 2]), 2),
-                     sum(float(data[:, R .== 3]), 2),
-                     sum(float(data[:, R .== 4]), 2),
-                     sum(float(data[:, R .== 5]), 2))'
+  n1s[1:5, :] = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2), sum(float(data[:, R .== 3]), 2), sum(float(data[:, R .== 4]), 2), sum(float(data[:, R .== 5]), 2))'
 
-  s = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
+  s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
 
   @test s.C == C
-  @test_approx_eq_eps s.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps s.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps s.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps s.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
-  t = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(t, priorC)
+  t = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(t, priorC)
 
   @test t.C == C
-  @test_approx_eq_eps t.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps t.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps t.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps t.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
   # k = 6
   R = [1; 2; 3; 4; 5; 6]
@@ -250,19 +239,19 @@ function test_local_mode()
   v = [1; 1; 1; 1; 1; 1]
   n1s = float(data)'
 
-  s = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
+  s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
 
   @test s.C == C
-  @test_approx_eq_eps s.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps s.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps s.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps s.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
-  t = AminoAcidState(data, R, priorR, priorC, settings)
-  computelocalmode!(t, priorC)
+  t = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  Kpax3.computelocalmode!(t, priorC)
 
   @test t.C == C
-  @test_approx_eq_eps t.logpC[1] logpriorC(C, cl, k, priorC) ε
-  @test_approx_eq_eps t.logpC[2] logcondpostC(C, cl, k, v, n1s, priorC) ε
+  @test_approx_eq_eps t.logpC[1] Kpax3.logpriorC(C, cl, k, priorC) ε
+  @test_approx_eq_eps t.logpC[2] Kpax3.logcondpostC(C, cl, k, v, n1s, priorC) ε
 
   nothing
 end

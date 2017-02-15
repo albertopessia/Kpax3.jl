@@ -25,13 +25,13 @@ function test_prior_col_exceptions()
   γ = [0.6; 0.35; 0.05]
   r = log(0.001) / log(0.95)
 
-  @test_throws KInputError AminoAcidPriorCol(data, [1.0; 1.0; 1.0; 1.0], r)
+  @test_throws Kpax3.KInputError Kpax3.AminoAcidPriorCol(data, [1.0; 1.0; 1.0; 1.0], r)
 
-  @test_throws KDomainError AminoAcidPriorCol(data, [-1.0; 1.0; 1.0], r)
-  @test_throws KDomainError AminoAcidPriorCol(data, [1.0; -1.0; 1.0], r)
-  @test_throws KDomainError AminoAcidPriorCol(data, [1.0; 1.0; -1.0], r)
-  @test_throws KDomainError AminoAcidPriorCol(data, γ, 0.0)
-  @test_throws KDomainError AminoAcidPriorCol(data, γ, -1.0)
+  @test_throws Kpax3.KDomainError Kpax3.AminoAcidPriorCol(data, [-1.0; 1.0; 1.0], r)
+  @test_throws Kpax3.KDomainError Kpax3.AminoAcidPriorCol(data, [1.0; -1.0; 1.0], r)
+  @test_throws Kpax3.KDomainError Kpax3.AminoAcidPriorCol(data, [1.0; 1.0; -1.0], r)
+  @test_throws Kpax3.KDomainError Kpax3.AminoAcidPriorCol(data, γ, 0.0)
+  @test_throws Kpax3.KDomainError Kpax3.AminoAcidPriorCol(data, γ, -1.0)
 
   nothing
 end
@@ -63,7 +63,7 @@ function test_prior_col_constructor()
   γ = [0.6; 0.35; 0.05]
   r = log(0.001) / log(0.95)
 
-  priorC = AminoAcidPriorCol(data, γ, r)
+  priorC = Kpax3.AminoAcidPriorCol(data, γ, r)
 
   logγ = [log(γ[1]); log(γ[2]); log(γ[3])]
   logω = Vector{Float64}[[log(k - 1) - log(k); -log(k)] for k in 1:n]
