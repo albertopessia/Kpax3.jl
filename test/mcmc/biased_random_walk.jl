@@ -4,7 +4,7 @@ function test_mcmc_brw_init()
   ifile = "data/proper_aa.fasta"
   ofile = "../build/test"
 
-  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -30,15 +30,15 @@ function test_mcmc_brw_init()
   # --------------------------
   # move unit 4 into cluster 1
   R = [13; 13; 13; 42; 42; 76]
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
-  state = AminoAcidState(data, R, priorR, priorC, settings)
-  support = MCMCSupport(state, priorC)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
+  state = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  support = Kpax3.MCMCSupport(state, priorC)
 
   i = 4
   hi = 2
   hj = 1
-  initsupportbrwmove!(i, hi, hj, data, support, state)
+  Kpax3.initsupportbrwmove!(i, hi, hj, data, support, state)
 
   @test support.vi == 1
   @test support.ni == float(data[:, 5])
@@ -49,15 +49,15 @@ function test_mcmc_brw_init()
   # --------------------------------
   # move unit 3 into its own cluster
   R = [13; 13; 13; 42; 42; 76]
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
-  state = AminoAcidState(data, R, priorR, priorC, settings)
-  support = MCMCSupport(state, priorC)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
+  state = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  support = Kpax3.MCMCSupport(state, priorC)
 
   k = 4
   i = 3
   hi = 1
-  initsupportbrwsplit!(k, i, hi, data, priorC, settings, support, state)
+  Kpax3.initsupportbrwsplit!(k, i, hi, data, priorC, settings, support, state)
 
   len = 6
 
@@ -66,14 +66,10 @@ function test_mcmc_brw_init()
   for b in 1:m, l in 1:state.k
     g = state.cl[l]
 
-    lp[1, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[1, b],
-                             priorC.B[1, b])
-    lp[2, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[2, b],
-                             priorC.B[2, b])
-    lp[3, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[3, b],
-                            priorC.B[3, b])
-    lp[4, g, b] = logmarglik(state.n1s[g, b], state.v[g], priorC.A[4, b],
-                             priorC.B[4, b])
+    lp[1, g, b] = Kpax3.logmarglik(state.n1s[g, b], state.v[g], priorC.A[1, b], priorC.B[1, b])
+    lp[2, g, b] = Kpax3.logmarglik(state.n1s[g, b], state.v[g], priorC.A[2, b], priorC.B[2, b])
+    lp[3, g, b] = Kpax3.logmarglik(state.n1s[g, b], state.v[g], priorC.A[3, b], priorC.B[3, b])
+    lp[4, g, b] = Kpax3.logmarglik(state.n1s[g, b], state.v[g], priorC.A[4, b], priorC.B[4, b])
   end
   @test support.lp == lp
 
@@ -86,15 +82,15 @@ function test_mcmc_brw_init()
   # --------------------------------
   # move unit 6 into cluster 2
   R = [13; 13; 13; 42; 42; 76]
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
-  state = AminoAcidState(data, R, priorR, priorC, settings)
-  support = MCMCSupport(state, priorC)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
+  state = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
+  support = Kpax3.MCMCSupport(state, priorC)
 
   i = 6
   hi = 3
   hj = 2
-  initsupportbrwmerge!(i, hj, data, support, state)
+  Kpax3.initsupportbrwmerge!(i, hj, data, support, state)
 
   @test support.vj == 3
   @test support.nj == vec(sum(data[:, [4; 5; 6]], 2))
@@ -108,7 +104,7 @@ function test_mcmc_brw()
   ifile = "data/proper_aa.fasta"
   ofile = "../build/test"
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, op=[0.0; 0.0; 1.0])
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1, op=[0.0; 0.0; 1.0])
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -131,29 +127,29 @@ function test_mcmc_brw()
 
   (m, n) = size(data)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
   # [2; 2; 2; 1; 1; 3] => [2; 2; 2; 1; 1; 1]
-  state1 = AminoAcidState(data, [2; 2; 2; 1; 1; 3], priorR, priorC, settings)
-  support1 = MCMCSupport(state1, priorC)
+  state1 = Kpax3.AminoAcidState(data, [2; 2; 2; 1; 1; 3], priorR, priorC, settings)
+  support1 = Kpax3.MCMCSupport(state1, priorC)
 
-  state2 = AminoAcidState(data, [2; 2; 2; 1; 1; 1], priorR, priorC, settings)
-  support2 = MCMCSupport(state2, priorC)
+  state2 = Kpax3.AminoAcidState(data, [2; 2; 2; 1; 1; 1], priorR, priorC, settings)
+  support2 = Kpax3.MCMCSupport(state2, priorC)
 
   i = 6
   hi = state1.R[i]
   hj = state1.R[5]
 
-  initsupportbrwmerge!(i, hj, data, support1, state1)
+  Kpax3.initsupportbrwmerge!(i, hj, data, support1, state1)
 
-  support1.lograR = logratiopriorrowmerge(state2.k, state1.v[hj], priorR)
+  support1.lograR = Kpax3.logratiopriorrowmerge(state2.k, state1.v[hj], priorR)
 
-  updatelogmarglikj!(priorC, support1)
+  Kpax3.updatelogmarglikj!(priorC, support1)
 
-  logmarglikbrwmerge!(state1.cl, state1.k, hi, hj, priorC, support1)
+  Kpax3.logmarglikbrwmerge!(state1.cl, state1.k, hi, hj, priorC, support1)
 
-  performbrwmerge!(i, hi, hj, settings, support1, state1)
+  Kpax3.performbrwmerge!(i, hi, hj, settings, support1, state1)
 
   @test state1.R == state2.R
   @test state1.k == state2.k
@@ -177,26 +173,26 @@ function test_mcmc_brw()
   @test_approx_eq_eps support1.logmlik support2.logmlik ε
 
   # [2; 2; 2; 1; 1; 3] => [2; 2; 3; 1; 1; 3]
-  state1 = AminoAcidState(data, [2; 2; 2; 1; 1; 3], priorR, priorC, settings)
-  support1 = MCMCSupport(state1, priorC)
+  state1 = Kpax3.AminoAcidState(data, [2; 2; 2; 1; 1; 3], priorR, priorC, settings)
+  support1 = Kpax3.MCMCSupport(state1, priorC)
 
-  state2 = AminoAcidState(data, [2; 2; 3; 1; 1; 3], priorR, priorC, settings)
-  support2 = MCMCSupport(state2, priorC)
+  state2 = Kpax3.AminoAcidState(data, [2; 2; 3; 1; 1; 3], priorR, priorC, settings)
+  support2 = Kpax3.MCMCSupport(state2, priorC)
 
   i = 3
   hi = state1.R[i]
   hj = state1.R[6]
 
-  initsupportbrwmove!(i, hi, hj, data, support1, state1)
+  Kpax3.initsupportbrwmove!(i, hi, hj, data, support1, state1)
 
-  support1.lograR = logratiopriorrowmove(state1.v[hi], state1.v[hj], priorR)
+  support1.lograR = Kpax3.logratiopriorrowmove(state1.v[hi], state1.v[hj], priorR)
 
-  updatelogmargliki!(priorC, support1)
-  updatelogmarglikj!(priorC, support1)
+  Kpax3.updatelogmargliki!(priorC, support1)
+  Kpax3.updatelogmarglikj!(priorC, support1)
 
-  logmarglikbrwmove!(state1.cl, state1.k, hi, hj, priorC, support1)
+  Kpax3.logmarglikbrwmove!(state1.cl, state1.k, hi, hj, priorC, support1)
 
-  performbrwmove!(i, hi, hj, support1, state1)
+  Kpax3.performbrwmove!(i, hi, hj, support1, state1)
 
   @test state1.R == state2.R
   @test state1.k == state2.k
@@ -224,8 +220,8 @@ function test_mcmc_brw()
   @test_approx_eq_eps support1.logmlik support2.logmlik ε
 
   # [3; 3; 3; 2; 2; 4] => [3; 3; 1; 2; 2; 4]
-  state1 = AminoAcidState(data, [3; 3; 3; 2; 2; 4], priorR, priorC, settings)
-  resizestate!(state1, 4, settings)
+  state1 = Kpax3.AminoAcidState(data, [3; 3; 3; 2; 2; 4], priorR, priorC, settings)
+  Kpax3.resizestate!(state1, 4, settings)
 
   state1.R = [3; 3; 3; 2; 2; 4]
 
@@ -240,25 +236,25 @@ function test_mcmc_brw()
   state1.unit[3] = copy(state1.unit[2])
   state1.unit[2] = copy(state1.unit[1])
 
-  support1 = MCMCSupport(state1, priorC)
+  support1 = Kpax3.MCMCSupport(state1, priorC)
 
-  state2 = AminoAcidState(data, [3; 3; 1; 2; 2; 4], priorR, priorC, settings)
-  support2 = MCMCSupport(state2, priorC)
+  state2 = Kpax3.AminoAcidState(data, [3; 3; 1; 2; 2; 4], priorR, priorC, settings)
+  support2 = Kpax3.MCMCSupport(state2, priorC)
 
   k = state2.k
   i = 3
   hi = state1.R[i]
 
-  initsupportbrwsplit!(k, i, hi, data, priorC, settings, support1, state1)
+  Kpax3.initsupportbrwsplit!(k, i, hi, data, priorC, settings, support1, state1)
 
-  support1.lograR = logratiopriorrowsplit(k, state1.v[hi], priorR)
+  support1.lograR = Kpax3.logratiopriorrowsplit(k, state1.v[hi], priorR)
 
-  updatelogmargliki!(priorC, support1)
-  updatelogmarglikj!(priorC, support1)
+  Kpax3.updatelogmargliki!(priorC, support1)
+  Kpax3.updatelogmarglikj!(priorC, support1)
 
-  logmarglikbrwsplit!(state1.cl, state1.k, hi, priorC, support1)
+  Kpax3.logmarglikbrwsplit!(state1.cl, state1.k, hi, priorC, support1)
 
-  performbrwsplit!(i, hi, settings, support1, state1)
+  Kpax3.performbrwsplit!(i, hi, settings, support1, state1)
 
   @test state1.R == state2.R
   @test state1.k == state2.k
@@ -293,26 +289,26 @@ function test_mcmc_brw()
 
   # [2; 2; 2; 1; 1; 3] => [2; 2; 4; 1; 1; 3]
   # allocate new resources
-  state1 = AminoAcidState(data, [2; 2; 2; 1; 1; 3], priorR, priorC, settings)
-  support1 = MCMCSupport(state1, priorC)
+  state1 = Kpax3.AminoAcidState(data, [2; 2; 2; 1; 1; 3], priorR, priorC, settings)
+  support1 = Kpax3.MCMCSupport(state1, priorC)
 
-  state2 = AminoAcidState(data, [2; 2; 4; 1; 1; 3], priorR, priorC, settings)
-  support2 = MCMCSupport(state2, priorC)
+  state2 = Kpax3.AminoAcidState(data, [2; 2; 4; 1; 1; 3], priorR, priorC, settings)
+  support2 = Kpax3.MCMCSupport(state2, priorC)
 
   k = state2.k
   i = 3
   hi = state1.R[i]
 
-  initsupportbrwsplit!(k, i, hi, data, priorC, settings, support1, state1)
+  Kpax3.initsupportbrwsplit!(k, i, hi, data, priorC, settings, support1, state1)
 
-  support1.lograR = logratiopriorrowsplit(k, state1.v[hi], priorR)
+  support1.lograR = Kpax3.logratiopriorrowsplit(k, state1.v[hi], priorR)
 
-  updatelogmargliki!(priorC, support1)
-  updatelogmarglikj!(priorC, support1)
+  Kpax3.updatelogmargliki!(priorC, support1)
+  Kpax3.updatelogmarglikj!(priorC, support1)
 
-  logmarglikbrwsplit!(state1.cl, state1.k, hi, priorC, support1)
+  Kpax3.logmarglikbrwsplit!(state1.cl, state1.k, hi, priorC, support1)
 
-  performbrwsplit!(i, hi, settings, support1, state1)
+  Kpax3.performbrwsplit!(i, hi, settings, support1, state1)
 
   @test state1.R == state2.R
   @test state1.k == state2.k
