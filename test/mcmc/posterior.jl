@@ -11,10 +11,10 @@
 # compute log(normalization constant) as accurate as possible
 include("data/partitions.jl")
 
-function computelogp(b::Int,
+function Kpax3.computelogp(b::Int,
                      c::Vector{UInt8},
                      n1s::Matrix{Float64},
-                     priorC::AminoAcidPriorCol)
+                     priorC::Kpax3.AminoAcidPriorCol)
   k = size(n1s, 1)
   logp = 0.0
 
@@ -22,20 +22,19 @@ function computelogp(b::Int,
     logp = priorC.logγ[1]
 
     for g in 1:k
-      logp += logmarglik(n1s[g, b], v[g], priorC.A[1, b], priorC.B[1, b])
+      logp += Kpax3.logmarglik(n1s[g, b], v[g], priorC.A[1, b], priorC.B[1, b])
     end
   elseif c1[1] == UInt8(2)
     logp = priorC.logγ[2]
 
     for g in 1:k
-      logp += logmarglik(n1s[g, b], v[g], priorC.A[2, b], priorC.B[2, b])
+      logp += Kpax3.logmarglik(n1s[g, b], v[g], priorC.A[2, b], priorC.B[2, b])
     end
   else
     logp = priorC.logγ[3]
 
     for g in 1:k
-      logp += priorC.logω[k][c[g] - 2] +
-              logmarglik(n1s[g, b], v[g], priorC.A[c[g], b], priorC.B[c[g], b])
+      logp += priorC.logω[k][c[g] - 2] + Kpax3.logmarglik(n1s[g, b], v[g], priorC.A[c[g], b], priorC.B[c[g], b])
     end
   end
 
@@ -57,17 +56,17 @@ function addvalue!(b::Int,
   nothing
 end
 
-function computelognormconst(ck,
+function Kpax3.computelognormconst(ck,
                              k::Int,
                              lumpp::Float64,
                              data::Matrix{UInt8},
                              po::TestPartition,
                              γ::Vector{Float64},
                              r::Float64,
-                             priorR::PriorRowPartition)
+                             priorR::Kpax3.PriorRowPartition)
   (m, n) = size(data)
 
-  priorC = AminoAcidPriorCol(data, γ, r)
+  priorC = Kpax3.AminoAcidPriorCol(data, γ, r)
 
   st = po.index[po.k .== k][1]
   en = any(po.k .== k + 1) ? po.index[po.k .== k + 1][1] - 1 : st
@@ -102,13 +101,13 @@ function computelognormconst(ck,
       end
     end
 
-    logprR = logdPriorRow(R, priorR)
+    logprR = Kpax3.logdPriorRow(R, priorR)
 
     for c1 in ck, c2 in ck, c3 in ck, c4 in ck
-      logp[1] += computelogp(1, c1, n1s, priorC)
-      logp[2] += computelogp(2, c2, n1s, priorC)
-      logp[3] += computelogp(3, c3, n1s, priorC)
-      logp[4] += computelogp(4, c4, n1s, priorC)
+      logp[1] += Kpax3.computelogp(1, c1, n1s, priorC)
+      logp[2] += Kpax3.computelogp(2, c2, n1s, priorC)
+      logp[3] += Kpax3.computelogp(3, c3, n1s, priorC)
+      logp[4] += Kpax3.computelogp(4, c4, n1s, priorC)
 
       logpost = logprR + logp[1] + logp[2] + logp[3] + logp[4]
 
@@ -128,14 +127,14 @@ function lognormconst(cs,
                       po::TestPartition,
                       γ::Vector{Float64},
                       r::Float64,
-                      priorR::PriorRowPartition)
+                      priorR::Kpax3.PriorRowPartition)
   # log unnormalized maximum posterior probability
   lumpp = -Inf
 
   println("Computing 'lumpp'...")
   for k in 1:size(data, 2)
     println("k = ", k)
-    t1, t2 = computelognormconst(cs[k], k, 0.0, data, po, γ, r, priorR)
+    t1, t2 = Kpax3.computelognormconst(cs[k], k, 0.0, data, po, γ, r, priorR)
 
     if t1 > lumpp
       lumpp = t1
@@ -150,7 +149,7 @@ function lognormconst(cs,
   println("Computing 'z'...")
   for k in 1:size(data, 2)
     println("k = ", k)
-    t1, t2 = computelognormconst(cs[k], k, lumpp, data, po, γ, r, priorR)
+    t1, t2 = Kpax3.computelognormconst(cs[k], k, lumpp, data, po, γ, r, priorR)
     z += t2
   end
   println("Done.")
@@ -165,7 +164,7 @@ function computeProbs(cs,
                       po::TestPartition,
                       γ::Vector{Float64},
                       r::Float64,
-                      priorR::PriorRowPartition)
+                      priorR::Kpax3.PriorRowPartition)
   (m, n) = size(data)
 
   P = zeros(Float64, div(n * (n - 1), 2))
@@ -184,7 +183,7 @@ function computeProbs(cs,
   for k in 1:(n - 1)
     println("k = ", k)
 
-    priorC = AminoAcidPriorCol(data, γ, r)
+    priorC = Kpax3.AminoAcidPriorCol(data, γ, r)
 
     st = po.index[po.k .== k][1]
     en = po.index[po.k .== k + 1][1] - 1
@@ -209,7 +208,7 @@ function computeProbs(cs,
         end
       end
 
-      logprR = logdPriorRow(R, priorR)
+      logprR = Kpax3.logdPriorRow(R, priorR)
 
       idx = 1
       for i in 1:(n - 1)
@@ -220,10 +219,10 @@ function computeProbs(cs,
       end
 
       for c1 in cs[k], c2 in cs[k], c3 in cs[k], c4 in cs[k]
-        logp[1] += computelogp(1, c1, n1s, priorC)
-        logp[2] += computelogp(2, c2, n1s, priorC)
-        logp[3] += computelogp(3, c3, n1s, priorC)
-        logp[4] += computelogp(4, c4, n1s, priorC)
+        logp[1] += Kpax3.computelogp(1, c1, n1s, priorC)
+        logp[2] += Kpax3.computelogp(2, c2, n1s, priorC)
+        logp[3] += Kpax3.computelogp(3, c3, n1s, priorC)
+        logp[4] += Kpax3.computelogp(4, c4, n1s, priorC)
 
         tmp = exp(logpost - lumpp)
 
@@ -242,7 +241,7 @@ function computeProbs(cs,
   k = n
   println("k = ", k)
 
-  priorC = AminoAcidPriorCol(data, γ, r)
+  priorC = Kpax3.AminoAcidPriorCol(data, γ, r)
 
   v = ones(Float64, k)
   n1s = zeros(Float64, k, m)
@@ -258,7 +257,7 @@ function computeProbs(cs,
     end
   end
 
-  logprR = logdPriorRow(R, priorR)
+  logprR = Kpax3.logdPriorRow(R, priorR)
 
   idx = 1
   for i in 1:(n - 1)
@@ -269,10 +268,10 @@ function computeProbs(cs,
   end
 
   for c1 in cs[k], c2 in cs[k], c3 in cs[k], c4 in cs[k]
-    logp[1] += computelogp(1, c1, n1s, priorC)
-    logp[2] += computelogp(2, c2, n1s, priorC)
-    logp[3] += computelogp(3, c3, n1s, priorC)
-    logp[4] += computelogp(4, c4, n1s, priorC)
+    logp[1] += Kpax3.computelogp(1, c1, n1s, priorC)
+    logp[2] += Kpax3.computelogp(2, c2, n1s, priorC)
+    logp[3] += Kpax3.computelogp(3, c3, n1s, priorC)
+    logp[4] += Kpax3.computelogp(4, c4, n1s, priorC)
 
     tmp = exp(logpost - lumpp)
 
@@ -289,11 +288,11 @@ function computeProbs(cs,
   (exp(log(P) - lz), exp(log(S) - lz), exp(log(K) - lz))
 end
 
-settings = KSettings(ifile, ofile, alpha=α, theta=θ)
+settings = Kpax3.KSettings(ifile, ofile, alpha=α, theta=θ)
 
-x = AminoAcidData(settings)
+x = Kpax3.AminoAcidData(settings)
 
-priorR = EwensPitman(settings.α, settings.θ)
+priorR = Kpax3.EwensPitman(settings.α, settings.θ)
 po = TestPartition(size(x.data, 2))
 cs = ((UInt8[1], UInt8[2], UInt8[3], UInt8[4]),
       (UInt8[1; 1], UInt8[2; 2], UInt8[3; 3], UInt8[3; 4], UInt8[4; 3],
@@ -401,7 +400,7 @@ function test_mcmc_algorithm()
 
   partition = "data/mcmc_6.csv"
 
-  x = AminoAcidData(KSettings(ifile, ofile))
+  x = Kpax3.AminoAcidData(Kpax3.KSettings(ifile, ofile))
 
   n = 6
 
@@ -409,8 +408,7 @@ function test_mcmc_algorithm()
   α = 0.0
   θ = 1.0
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ,
-                       op=[0.6; 0.2; 0.2])
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ, op=[0.6; 0.2; 0.2])
 
   trueProbK = [0.0572011678382854799052026351091626565903425216674804687500000;
                0.3147244396041969372035396190767642110586166381835937500000000;
@@ -456,11 +454,11 @@ function test_mcmc_algorithm()
                        0.0326157471566144094299311007034702925011515617370606],
                       (4, 3))'
 
-  kpax3mcmc(x, partition, settings)
+  Kpax3.kpax3mcmc(x, partition, settings)
 
-  (k, estimK) = readposteriork(settings.ofile)
-  (id, estimP) = readposteriorP(settings.ofile)
-  (site, aa, freq, estimS) = readposteriorC(settings.ofile)
+  (k, estimK) = Kpax3.readposteriork(settings.ofile)
+  (id, estimP) = Kpax3.readposteriorP(settings.ofile)
+  (site, aa, freq, estimS) = Kpax3.readposteriorC(settings.ofile)
 
   @test isapprox(estimK, trueProbK, rtol=0.02)
   @test isapprox(estimP, trueProbP, rtol=0.02)
@@ -470,8 +468,7 @@ function test_mcmc_algorithm()
   α = 0.5
   θ = -0.25
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ,
-                       op=[0.6; 0.2; 0.2])
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ, op=[0.6; 0.2; 0.2])
 
   trueProbK = [0.20304357310850917883726651780307292938232421875000000000;
                0.21850248716493331224697271863988135010004043579101562500;
@@ -517,11 +514,11 @@ function test_mcmc_algorithm()
                        0.0257256929731574761344159441023293766193091869354248],
                       (4, 3))'
 
-  kpax3mcmc(x, partition, settings)
+  Kpax3.kpax3mcmc(x, partition, settings)
 
-  (k, estimK) = readposteriork(settings.ofile)
-  (id, estimP) = readposteriorP(settings.ofile)
-  (site, aa, freq, estimS) = readposteriorC(settings.ofile)
+  (k, estimK) = Kpax3.readposteriork(settings.ofile)
+  (id, estimP) = Kpax3.readposteriorP(settings.ofile)
+  (site, aa, freq, estimS) = Kpax3.readposteriorC(settings.ofile)
 
   @test isapprox(estimK, trueProbK, rtol=0.02)
   @test isapprox(estimP, trueProbP, rtol=0.02)
@@ -531,8 +528,7 @@ function test_mcmc_algorithm()
   α = 0.5
   θ = 0.0
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ,
-                       op=[0.6; 0.2; 0.2])
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ, op=[0.6; 0.2; 0.2])
 
   trueProbK = [0.08297365650265563219445397180606960318982601165771484375;
                0.17858186829001693185503540917125064879655838012695312500;
@@ -578,11 +574,11 @@ function test_mcmc_algorithm()
                        0.0303205997137780264294448784312407951802015304565430],
                       (4, 3))'
 
-  kpax3mcmc(x, partition, settings)
+  Kpax3.kpax3mcmc(x, partition, settings)
 
-  (k, estimK) = readposteriork(settings.ofile)
-  (id, estimP) = readposteriorP(settings.ofile)
-  (site, aa, freq, estimS) = readposteriorC(settings.ofile)
+  (k, estimK) = Kpax3.readposteriork(settings.ofile)
+  (id, estimP) = Kpax3.readposteriorP(settings.ofile)
+  (site, aa, freq, estimS) = Kpax3.readposteriorC(settings.ofile)
 
   @test isapprox(estimK, trueProbK, rtol=0.02)
   @test isapprox(estimP, trueProbP, rtol=0.02)
@@ -592,8 +588,7 @@ function test_mcmc_algorithm()
   α = -1
   θ = 4
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ,
-                       op=[0.6; 0.2; 0.2])
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1, alpha=α, theta=θ, op=[0.6; 0.2; 0.2])
 
   trueProbK = [0.013987232861628222380101504995764116756618022918701171875;
                0.277957780373217555602849415663513354957103729248046875000;
@@ -637,11 +632,11 @@ function test_mcmc_algorithm()
                        0.0366354411681910074882750905089778825640678405761719],
                       (4, 3))'
 
-  kpax3mcmc(x, partition, settings)
+  Kpax3.kpax3mcmc(x, partition, settings)
 
-  (k, estimK) = readposteriork(settings.ofile)
-  (id, estimP) = readposteriorP(settings.ofile)
-  (site, aa, freq, estimS) = readposteriorC(settings.ofile)
+  (k, estimK) = Kpax3.readposteriork(settings.ofile)
+  (id, estimP) = Kpax3.readposteriorP(settings.ofile)
+  (site, aa, freq, estimS) = Kpax3.readposteriorC(settings.ofile)
 
   @test isapprox(estimK, trueProbK, rtol=0.02)
   @test isapprox(estimP, trueProbP, rtol=0.02)

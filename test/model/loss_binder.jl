@@ -18,7 +18,7 @@ function test_loss_binder()
               1 1 1 1 1 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, P)
+  lossfunction = Kpax3.loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -32,7 +32,7 @@ function test_loss_binder()
               0 0 1 1 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, P)
+  lossfunction = Kpax3.loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -45,7 +45,7 @@ function test_loss_binder()
               0 1 0 1 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, P)
+  lossfunction = Kpax3.loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -59,7 +59,7 @@ function test_loss_binder()
               0 0 1 1 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, P)
+  lossfunction = Kpax3.loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -72,7 +72,7 @@ function test_loss_binder()
               0 0 1 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, P)
+  lossfunction = Kpax3.loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -86,7 +86,7 @@ function test_loss_binder()
               0 0 0 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, P)
+  lossfunction = Kpax3.loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -99,7 +99,7 @@ function test_loss_binder()
               0 1 0 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, P)
+  lossfunction = Kpax3.loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -113,7 +113,7 @@ function test_loss_binder()
               0 0 0 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, P)
+  lossfunction = Kpax3.loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -126,7 +126,7 @@ function test_loss_binder()
               0 0 0 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, P)
+  lossfunction = Kpax3.loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 
@@ -140,7 +140,7 @@ function test_loss_binder()
               0 0 0 0 0 1]
 
   losscorrect = sum(abs(A - P)) / 2
-  lossfunction = loss_binder(R, P)
+  lossfunction = Kpax3.loss_binder(R, P)
 
   @test_approx_eq_eps lossfunction losscorrect ε
 

@@ -4,29 +4,29 @@ function test_settings_exceptions()
   ifile = "data/proper_aa.fasta"
   ofile = "../build/test"
 
-  @test_throws KDomainError KSettings(ifile, ofile, miss=UInt8[63; 0])
-  @test_throws KDomainError KSettings(ifile, ofile, l=-1)
-  @test_throws KInputError  KSettings(ifile, ofile, gamma=[1.0; 0.0])
-  @test_throws KDomainError KSettings(ifile, ofile, gamma=[1.0; 0.0; -1.0])
-  @test_throws KDomainError KSettings(ifile, ofile, r=0.0)
-  @test_throws KDomainError KSettings(ifile, ofile, r=-1.0)
-  @test_throws KDomainError KSettings(ifile, ofile, maxclust=0)
-  @test_throws KDomainError KSettings(ifile, ofile, maxunit=0)
-  @test_throws KDomainError KSettings(ifile, ofile, verbosestep=-1)
-  @test_throws KDomainError KSettings(ifile, ofile, popsize=-1)
-  @test_throws KDomainError KSettings(ifile, ofile, popsize=0)
-  @test_throws KDomainError KSettings(ifile, ofile, popsize=1)
-  @test_throws KDomainError KSettings(ifile, ofile, maxiter=0)
-  @test_throws KDomainError KSettings(ifile, ofile, maxgap=-1)
-  @test_throws KDomainError KSettings(ifile, ofile, xrate=-1.0)
-  @test_throws KDomainError KSettings(ifile, ofile, xrate=2.0)
-  @test_throws KDomainError KSettings(ifile, ofile, mrate=-1.0)
-  @test_throws KDomainError KSettings(ifile, ofile, mrate=2.0)
-  @test_throws KDomainError KSettings(ifile, ofile, T=0)
-  @test_throws KDomainError KSettings(ifile, ofile, burnin=-1)
-  @test_throws KDomainError KSettings(ifile, ofile, tstep=-1)
-  @test_throws KInputError  KSettings(ifile, ofile, op=[1.0; 0.0])
-  @test_throws KDomainError KSettings(ifile, ofile, op=[1.0; -1.0; 0.0])
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, miss=UInt8[63; 0])
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, l=-1)
+  @test_throws Kpax3.KInputError  Kpax3.KSettings(ifile, ofile, gamma=[1.0; 0.0])
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, gamma=[1.0; 0.0; -1.0])
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, r=0.0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, r=-1.0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, maxclust=0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, maxunit=0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, verbosestep=-1)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, popsize=-1)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, popsize=0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, popsize=1)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, maxiter=0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, maxgap=-1)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, xrate=-1.0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, xrate=2.0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, mrate=-1.0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, mrate=2.0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, T=0)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, burnin=-1)
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, tstep=-1)
+  @test_throws Kpax3.KInputError  Kpax3.KSettings(ifile, ofile, op=[1.0; 0.0])
+  @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, op=[1.0; -1.0; 0.0])
 
   nothing
 end
@@ -57,12 +57,7 @@ function test_settings_constructor()
   tstep = 2
   op = [0.7; 0.3; 0.0]
 
-  settings = KSettings(ifile, ofile, protein=protein, miss=miss, l=l, alpha=α,
-                       theta=θ, gamma=γ, r=r, maxclust=maxclust,
-                       maxunit=maxunit, verbose=verbose,
-                       verbosestep=verbosestep, popsize=popsize,
-                       maxiter=maxiter, maxgap=maxgap, xrate=xrate,
-                       mrate=mrate, T=T, burnin=burnin, tstep=tstep, op=op)
+  settings = Kpax3.KSettings(ifile, ofile, protein=protein, miss=miss, l=l, alpha=α, theta=θ, gamma=γ, r=r, maxclust=maxclust, maxunit=maxunit, verbose=verbose, verbosestep=verbosestep, popsize=popsize, maxiter=maxiter, maxgap=maxgap, xrate=xrate, mrate=mrate, T=T, burnin=burnin, tstep=tstep, op=op)
 
   @test settings.ifile == ifile
   @test settings.ofile == ofile
@@ -86,30 +81,25 @@ function test_settings_constructor()
   @test isa(settings.op, StatsBase.WeightVec)
   @test StatsBase.values(settings.op) == op
 
-  settings = KSettings(ifile, ofile, protein=true, miss=zeros(UInt8, 0))
+  settings = Kpax3.KSettings(ifile, ofile, protein=true, miss=zeros(UInt8, 0))
 
   @test settings.protein
   @test settings.miss == UInt8['?', '*', '#', '-', 'b', 'j', 'x', 'z']
 
-  settings = KSettings(ifile, ofile, protein=true,
-                       miss=UInt8['?', '*', '#', 'b', 'j', 'x', 'z'])
+  settings = Kpax3.KSettings(ifile, ofile, protein=true, miss=UInt8['?', '*', '#', 'b', 'j', 'x', 'z'])
 
   @test settings.protein
   @test settings.miss == UInt8['?', '*', '#', 'b', 'j', 'x', 'z']
 
-  settings = KSettings(ifile, ofile, protein=false, miss=zeros(UInt8, 0))
+  settings = Kpax3.KSettings(ifile, ofile, protein=false, miss=zeros(UInt8, 0))
 
   @test !settings.protein
-  @test settings.miss == UInt8['?', '*', '#', '-', 'b', 'd', 'h', 'k', 'm',
-                               'n', 'r', 's', 'v', 'w', 'x', 'y', 'j', 'z']
+  @test settings.miss == UInt8['?', '*', '#', '-', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's', 'v', 'w', 'x', 'y', 'j', 'z']
 
-  settings = KSettings(ifile, ofile, protein=false,
-                       miss=UInt8['?', '*', '#', 'b', 'd', 'h', 'k', 'm', 'n',
-                                  'r', 's', 'v', 'w', 'x', 'y', 'j', 'z'])
+  settings = Kpax3.KSettings(ifile, ofile, protein=false, miss=UInt8['?', '*', '#', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's', 'v', 'w', 'x', 'y', 'j', 'z'])
 
   @test !settings.protein
-  @test settings.miss == UInt8['?', '*', '#', 'b', 'd', 'h', 'k', 'm', 'n',
-                               'r', 's', 'v', 'w', 'x', 'y', 'j', 'z']
+  @test settings.miss == UInt8['?', '*', '#', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's', 'v', 'w', 'x', 'y', 'j', 'z']
 
   nothing
 end

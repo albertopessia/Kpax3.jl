@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-function test_basic_functions_shuffle()
+function test_basic_functions_shuffleunits()
   x = [1; 2; 3; 4; 5; 6]
   y = [1; 2; 3; 4; 5; 6]
 
@@ -15,13 +15,13 @@ function test_basic_functions_shuffle()
   v2 = 0
 
   for i in 1:N
-    shuffle!(x)
+    Kpax3.shuffleunits!(x)
 
     if x == [3; 1; 2; 4; 5; 6]
       v1 += 1
     end
 
-    shuffle!(y, S)
+    Kpax3.shuffleunits!(y, S)
 
     if y == [2; 1; 3; 4; 5; 6]
       v2 += 1
@@ -37,4 +37,4 @@ function test_basic_functions_shuffle()
   nothing
 end
 
-test_basic_functions_shuffle()
+test_basic_functions_shuffleunits()
