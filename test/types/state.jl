@@ -28,7 +28,7 @@ function test_state_constructor()
   (m, n) = size(data)
 
   # test constructor
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
   R = [13; 13; 42; 42; 76; 76]
 
@@ -49,10 +49,10 @@ function test_state_constructor()
   n1s[2, :] = vec(sum(float(data[:, R .== 42]), 2))
   n1s[3, :] = vec(sum(float(data[:, R .== 76]), 2))
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-  state = AminoAcidState(data, R, priorR, priorC, settings)
+  state = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
 
   @test state.R == [1; 1; 2; 2; 3; 3]
 
@@ -66,45 +66,34 @@ function test_state_constructor()
 
   @test state.v == v
   @test state.n1s == n1s
-  @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ?
-                                  find(state.R .== g) :
-                                  [0] for g in 1:maxclust]
+  @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:maxclust]
 
-  @test state.logpR == logdPriorRow(n, k, v, priorR)
-  @test_approx_eq_eps state.logpC[1] logpriorC(state.C, state.cl, state.k,
-                                               priorC) ε
-  @test_approx_eq_eps state.logpC[2] logcondpostC(state.C, state.cl,
-                                                  state.k, state.v,
-                                                  state.n1s, priorC) ε
+  @test state.logpR == Kpax3.logdPriorRow(n, k, v, priorR)
+  @test_approx_eq_eps state.logpC[1] Kpax3.logpriorC(state.C, state.cl, state.k, priorC) ε
+  @test_approx_eq_eps state.logpC[2] Kpax3.logcondpostC(state.C, state.cl, state.k, state.v, state.n1s, priorC) ε
 
   loglik = zeros(Float64, 3)
 
   linearidx = Int[state.C[cl[1], b] + 4 * (b - 1) for b in 1:m]
-  loglik[1] = sum(logmarglik(vec(state.n1s[cl[1], :]), state.v[cl[1]],
-                             priorC.A[linearidx], priorC.B[linearidx]))
+  loglik[1] = sum(Kpax3.logmarglik(vec(state.n1s[cl[1], :]), state.v[cl[1]], priorC.A[linearidx], priorC.B[linearidx]))
 
   linearidx = Int[state.C[cl[2], b] + 4 * (b - 1) for b in 1:m]
-  loglik[2] = sum(logmarglik(vec(state.n1s[cl[2], :]), state.v[cl[2]],
-                             priorC.A[linearidx], priorC.B[linearidx]))
+  loglik[2] = sum(Kpax3.logmarglik(vec(state.n1s[cl[2], :]), state.v[cl[2]], priorC.A[linearidx], priorC.B[linearidx]))
 
   linearidx = Int[state.C[cl[3], b] + 4 * (b - 1) for b in 1:m]
-  loglik[3] = sum(logmarglik(vec(state.n1s[cl[3], :]), state.v[cl[3]],
-                             priorC.A[linearidx], priorC.B[linearidx]))
+  loglik[3] = sum(Kpax3.logmarglik(vec(state.n1s[cl[3], :]), state.v[cl[3]], priorC.A[linearidx], priorC.B[linearidx]))
 
   ll = loglik[1] + loglik[2] + loglik[3]
   @test_approx_eq_eps state.loglik ll ε
 
-  @test_approx_eq_eps state.logpp (logdPriorRow(n, k, v, priorR) +
-                                   logpriorC(state.C, state.cl, state.k,
-                                             priorC) + ll) ε
+  @test_approx_eq_eps state.logpp (Kpax3.logdPriorRow(n, k, v, priorR) + Kpax3.logpriorC(state.C, state.cl, state.k, priorC) + ll) ε
 
-  settings = KSettings("data/mcmc_6.fasta", "../build/test",
-                       maxclust=1, maxunit=1)
-  x = AminoAcidData(settings)
-  state = optimumstate(x, "data/mcmc_6.csv", settings)
+  settings = Kpax3.KSettings("data/mcmc_6.fasta", "../build/test", maxclust=1, maxunit=1)
+  x = Kpax3.AminoAcidData(settings)
+  state = Kpax3.optimumstate(x, "data/mcmc_6.csv", settings)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(x.data, settings.γ, settings.r)
 
   n = 6
   R = [1; 1; 2; 2; 3; 4]
@@ -135,41 +124,30 @@ function test_state_constructor()
 
   @test state.v == v
   @test state.n1s == n1s
-  @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ?
-                                  find(state.R .== g) :
-                                  [0] for g in 1:maxclust]
+  @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:maxclust]
 
-  @test state.logpR == logdPriorRow(n, k, v, priorR)
-  @test_approx_eq_eps state.logpC[1] logpriorC(state.C, state.cl, state.k,
-                                               priorC) ε
-  @test_approx_eq_eps state.logpC[2] logcondpostC(state.C, state.cl,
-                                                  state.k, state.v,
-                                                  state.n1s, priorC) ε
+  @test state.logpR == Kpax3.logdPriorRow(n, k, v, priorR)
+  @test_approx_eq_eps state.logpC[1] Kpax3.logpriorC(state.C, state.cl, state.k, priorC) ε
+  @test_approx_eq_eps state.logpC[2] Kpax3.logcondpostC(state.C, state.cl, state.k, state.v, state.n1s, priorC) ε
 
   loglik = zeros(Float64, 4)
 
   linearidx = Int[state.C[cl[1], b] + 4 * (b - 1) for b in 1:m]
-  loglik[1] = sum(logmarglik(vec(state.n1s[cl[1], :]), state.v[cl[1]],
-                             priorC.A[linearidx], priorC.B[linearidx]))
+  loglik[1] = sum(Kpax3.logmarglik(vec(state.n1s[cl[1], :]), state.v[cl[1]], priorC.A[linearidx], priorC.B[linearidx]))
 
   linearidx = Int[state.C[cl[2], b] + 4 * (b - 1) for b in 1:m]
-  loglik[2] = sum(logmarglik(vec(state.n1s[cl[2], :]), state.v[cl[2]],
-                             priorC.A[linearidx], priorC.B[linearidx]))
+  loglik[2] = sum(Kpax3.logmarglik(vec(state.n1s[cl[2], :]), state.v[cl[2]], priorC.A[linearidx], priorC.B[linearidx]))
 
   linearidx = Int[state.C[cl[3], b] + 4 * (b - 1) for b in 1:m]
-  loglik[3] = sum(logmarglik(vec(state.n1s[cl[3], :]), state.v[cl[3]],
-                             priorC.A[linearidx], priorC.B[linearidx]))
+  loglik[3] = sum(Kpax3.logmarglik(vec(state.n1s[cl[3], :]), state.v[cl[3]], priorC.A[linearidx], priorC.B[linearidx]))
 
   linearidx = Int[state.C[cl[4], b] + 4 * (b - 1) for b in 1:m]
-  loglik[4] = sum(logmarglik(vec(state.n1s[cl[4], :]), state.v[cl[4]],
-                             priorC.A[linearidx], priorC.B[linearidx]))
+  loglik[4] = sum(Kpax3.logmarglik(vec(state.n1s[cl[4], :]), state.v[cl[4]], priorC.A[linearidx], priorC.B[linearidx]))
 
   ll = loglik[1] + loglik[2] + loglik[3] + loglik[4]
   @test_approx_eq_eps state.loglik ll ε
 
-  @test_approx_eq_eps state.logpp (logdPriorRow(n, k, v, priorR) +
-                                   logpriorC(state.C, state.cl, state.k,
-                                             priorC) + ll) ε
+  @test_approx_eq_eps state.logpp (Kpax3.logdPriorRow(n, k, v, priorR) + Kpax3.logpriorC(state.C, state.cl, state.k, priorC) + ll) ε
 
   nothing
 end
@@ -203,12 +181,12 @@ function test_state_resizestate()
 
   # resizestate!(state, k)
   # k < 2 * maxclust => len = maxclust
-  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-  state = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
+  state = Kpax3.AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
   len = 4
 
@@ -230,15 +208,14 @@ function test_state_resizestate()
   n1s = zeros(Float64, len, m)
   n1s[1, :] = copy(vec(state.n1s[1, :]))
 
-  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0]
-                     for g in 1:len]
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:len]
 
   logpR = state.logpR
   logpC = copy(state.logpC)
   loglik = state.loglik
   logpp = state.logpp
 
-  resizestate!(state, 3)
+  Kpax3.resizestate!(state, 3)
 
   @test state.R == R
   @test state.C == C
@@ -255,12 +232,12 @@ function test_state_resizestate()
 
   # resizestate!(state, k)
   # k > 2 * maxclust => len = k
-  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-  state = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
+  state = Kpax3.AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
   len = 5
 
@@ -282,15 +259,14 @@ function test_state_resizestate()
   n1s = zeros(Float64, len, m)
   n1s[1, :] = copy(vec(state.n1s[1, :]))
 
-  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0]
-                     for g in 1:len]
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:len]
 
   logpR = state.logpR
   logpC = copy(state.logpC)
   loglik = state.loglik
   logpp = state.logpp
 
-  resizestate!(state, 5)
+  Kpax3.resizestate!(state, 5)
 
   @test state.R == R
   @test state.C == C
@@ -307,12 +283,12 @@ function test_state_resizestate()
 
   # resizestate!(state, k, settings)
   # k < 2 * maxclust => len = maxclust
-  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-  state = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
+  state = Kpax3.AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
   len = 4
 
@@ -334,15 +310,14 @@ function test_state_resizestate()
   n1s = zeros(Float64, len, m)
   n1s[1, :] = copy(vec(state.n1s[1, :]))
 
-  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0]
-                     for g in 1:len]
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:len]
 
   logpR = state.logpR
   logpC = copy(state.logpC)
   loglik = state.loglik
   logpp = state.logpp
 
-  resizestate!(state, 3, settings)
+  Kpax3.resizestate!(state, 3, settings)
 
   @test state.R == R
   @test state.C == C
@@ -359,12 +334,12 @@ function test_state_resizestate()
 
   # resizestate!(state, k, settings)
   # k > 2 * maxclust => len = k
-  settings = KSettings(ifile, ofile, maxclust=2, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=2, maxunit=1)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-  state = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
+  state = Kpax3.AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
   len = 5
 
@@ -386,15 +361,14 @@ function test_state_resizestate()
   n1s = zeros(Float64, len, m)
   n1s[1, :] = copy(vec(state.n1s[1, :]))
 
-  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0]
-                     for g in 1:len]
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:len]
 
   logpR = state.logpR
   logpC = copy(state.logpC)
   loglik = state.loglik
   logpp = state.logpp
 
-  resizestate!(state, 5, settings)
+  Kpax3.resizestate!(state, 5, settings)
 
   @test state.R == R
   @test state.C == C
@@ -439,10 +413,10 @@ function test_state_copy_basic()
 
   (m, n) = size(data)
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [3; 3; 1; 1; 5; 5]
   g = sort(unique(R))
@@ -473,11 +447,8 @@ function test_state_copy_basic()
   loglik = -66.7559125873377894322402426041662693023681640625
   logpp = logpR + logpC[1] + loglik
 
-  state1 = AminoAcidState(copy(R), copy(C), copy(emptycluster), copy(cl), k,
-                          copy(v), copy(n1s), deepcopy(unit), logpR,
-                          copy(logpC), loglik, logpp)
-
-  state2 = copystate(state1)
+  state1 = Kpax3.AminoAcidState(copy(R), copy(C), copy(emptycluster), copy(cl), k, copy(v), copy(n1s), deepcopy(unit), logpR, copy(logpC), loglik, logpp)
+  state2 = Kpax3.copystate(state1)
 
   @test state2.R == R
   @test state2.C == C
@@ -506,12 +477,10 @@ function test_state_copy_basic()
   state1.unit[1] = [1; 2; 3; 4]
   state1.unit[2] = [5; 0]
   state1.unit[3] = [6]
-  state1.logpR = logdPriorRow(n, state1.k, state1.v[1:state1.k], priorR)
-  state1.logpC[1] = logpriorC(state1.C, state1.cl, state1.k, priorC)
-  state1.logpC[2] = logcondpostC(state1.C, state1.cl, state1.k, state1.v,
-                                 state1.n1s, priorC)
-  state1.loglik = loglikelihood(state1.C, state1.cl, state1.k, state1.v,
-                                state1.n1s, priorC)
+  state1.logpR = Kpax3.logdPriorRow(n, state1.k, state1.v[1:state1.k], priorR)
+  state1.logpC[1] = Kpax3.logpriorC(state1.C, state1.cl, state1.k, priorC)
+  state1.logpC[2] = Kpax3.logcondpostC(state1.C, state1.cl, state1.k, state1.v, state1.n1s, priorC)
+  state1.loglik = Kpax3.loglikelihood(state1.C, state1.cl, state1.k, state1.v, state1.n1s, priorC)
   state1.logpp = state1.logpR + state1.logpC[1] + state1.loglik
 
   @test state2.R == R
@@ -557,10 +526,10 @@ function test_state_copy_with_resize()
 
   (m, n) = size(data)
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [3; 3; 1; 1; 5; 5]
   g = sort(unique(R))
@@ -591,15 +560,13 @@ function test_state_copy_with_resize()
   loglik = -66.7559125873377894322402426041662693023681640625
   logpp = logpR + logpC[1] + loglik
 
-  state1 = AminoAcidState(copy(R), copy(C), copy(emptycluster), copy(cl), k,
-                          copy(v), copy(n1s), deepcopy(unit), logpR,
-                          copy(logpC), loglik, logpp)
+  state1 = Kpax3.AminoAcidState(copy(R), copy(C), copy(emptycluster), copy(cl), k, copy(v), copy(n1s), deepcopy(unit), logpR, copy(logpC), loglik, logpp)
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
-  state2 = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
+  state2 = Kpax3.AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
-  copystate!(state2, state1)
+  Kpax3.copystate!(state2, state1)
 
   l = state1.cl[1:state1.k]
 
@@ -634,12 +601,10 @@ function test_state_copy_with_resize()
   state1.unit[3] = [2; 3; 0; 0; 0; 0]
   state1.unit[4] = [4; 5; 0; 0; 0; 0]
   state1.unit[5] = [6; 0; 0; 0; 0; 0]
-  state1.logpR = logdPriorRow(n, state1.k, state1.v[[1; 3; 4; 5]], priorR)
-  state1.logpC[1] = logpriorC(state1.C, state1.cl, state1.k, priorC)
-  state1.logpC[2] = logcondpostC(state1.C, state1.cl, state1.k, state1.v,
-                                 state1.n1s, priorC)
-  state1.loglik = loglikelihood(state1.C, state1.cl, state1.k, state1.v,
-                                state1.n1s, priorC)
+  state1.logpR = Kpax3.logdPriorRow(n, state1.k, state1.v[[1; 3; 4; 5]], priorR)
+  state1.logpC[1] = Kpax3.logpriorC(state1.C, state1.cl, state1.k, priorC)
+  state1.logpC[2] = Kpax3.logcondpostC(state1.C, state1.cl, state1.k, state1.v, state1.n1s, priorC)
+  state1.loglik = Kpax3.loglikelihood(state1.C, state1.cl, state1.k, state1.v, state1.n1s, priorC)
   state1.logpp = state1.logpR + state1.logpC[1] + state1.loglik
 
   @test state2.R != state1.R
@@ -687,10 +652,10 @@ function test_state_copy_without_resize()
 
   (m, n) = size(data)
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
   R = [3; 3; 1; 1; 5; 5]
   g = sort(unique(R))
@@ -721,14 +686,12 @@ function test_state_copy_without_resize()
   loglik = -66.7559125873377894322402426041662693023681640625
   logpp = logpR + logpC[1] + loglik
 
-  state1 = AminoAcidState(copy(R), copy(C), copy(emptycluster), copy(cl), k,
-                          copy(v), copy(n1s), deepcopy(unit), logpR,
-                          copy(logpC), loglik, logpp)
+  state1 = Kpax3.AminoAcidState(copy(R), copy(C), copy(emptycluster), copy(cl), k, copy(v), copy(n1s), deepcopy(unit), logpR, copy(logpC), loglik, logpp)
 
-  settings = KSettings(ifile, ofile, maxclust=6, maxunit=6)
-  state2 = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=6, maxunit=6)
+  state2 = Kpax3.AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
-  copystate!(state2, state1)
+  Kpax3.copystate!(state2, state1)
 
   l = state1.cl[1:state1.k]
 
@@ -763,12 +726,10 @@ function test_state_copy_without_resize()
   state1.unit[3] = [2; 3; 0; 0; 0; 0]
   state1.unit[4] = [4; 5; 0; 0; 0; 0]
   state1.unit[5] = [6; 0; 0; 0; 0; 0]
-  state1.logpR = logdPriorRow(n, state1.k, state1.v[[1; 3; 4; 5]], priorR)
-  state1.logpC[1] = logpriorC(state1.C, state1.cl, state1.k, priorC)
-  state1.logpC[2] = logcondpostC(state1.C, state1.cl, state1.k, state1.v,
-                                 state1.n1s, priorC)
-  state1.loglik = loglikelihood(state1.C, state1.cl, state1.k, state1.v,
-                                state1.n1s, priorC)
+  state1.logpR = Kpax3.logdPriorRow(n, state1.k, state1.v[[1; 3; 4; 5]], priorR)
+  state1.logpC[1] = Kpax3.logpriorC(state1.C, state1.cl, state1.k, priorC)
+  state1.logpC[2] = Kpax3.logcondpostC(state1.C, state1.cl, state1.k, state1.v, state1.n1s, priorC)
+  state1.loglik = Kpax3.loglikelihood(state1.C, state1.cl, state1.k, state1.v, state1.n1s, priorC)
   state1.logpp = state1.logpR + state1.logpC[1] + state1.loglik
 
   @test state2.R != state1.R
@@ -816,15 +777,15 @@ function test_state_update_with_resize()
 
   (m, n) = size(data)
 
-  settings = KSettings(ifile, ofile, maxclust=1, maxunit=1)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-  state1 = AminoAcidState(data, [1; 1; 1; 1; 2; 3], priorR, priorC, settings)
-  state2 = AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
+  state1 = Kpax3.AminoAcidState(data, [1; 1; 1; 1; 2; 3], priorR, priorC, settings)
+  state2 = Kpax3.AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
-  updatestate!(state2, data, [1; 1; 1; 1; 2; 3], priorR, priorC, settings)
+  Kpax3.updatestate!(state2, data, [1; 1; 1; 1; 2; 3], priorR, priorC, settings)
 
   @test state2.R == state1.R
   @test state2.C == state1.C
@@ -871,15 +832,15 @@ function test_state_update_without_resize()
 
   (m, n) = size(data)
 
-  settings = KSettings(ifile, ofile, maxclust=6, maxunit=6)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=6, maxunit=6)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-  state1 = AminoAcidState(data, [1; 1; 1; 2; 2; 2], priorR, priorC, settings)
-  state2 = AminoAcidState(data, [1; 1; 2; 2; 3; 3], priorR, priorC, settings)
+  state1 = Kpax3.AminoAcidState(data, [1; 1; 1; 2; 2; 2], priorR, priorC, settings)
+  state2 = Kpax3.AminoAcidState(data, [1; 1; 2; 2; 3; 3], priorR, priorC, settings)
 
-  updatestate!(state2, data, [1; 1; 1; 2; 2; 2], priorR, priorC, settings)
+  Kpax3.updatestate!(state2, data, [1; 1; 1; 2; 2; 2], priorR, priorC, settings)
 
   l = state1.cl[1:state1.k]
 
@@ -928,22 +889,22 @@ function test_state_initializestate()
 
   (m, n) = size(data)
 
-  settings = KSettings(ifile, ofile, maxclust=6, maxunit=6)
+  settings = Kpax3.KSettings(ifile, ofile, maxclust=6, maxunit=6)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
   D = zeros(Float64, n, n)
   for j in 1:(n - 1), i in (j + 1):n
     D[i, j] = D[j, i] = sum(data[:, j] .!= data[:, i]) / m
   end
 
-  s = initializestate(data, D, 1:6, priorR, priorC, settings)
+  s = Kpax3.initializestate(data, D, 1:6, priorR, priorC, settings)
 
   @test isa(s.R, Vector{Int})
   @test all(s.R .> 0)
 
-  t = AminoAcidState(data, s.R, priorR, priorC, settings)
+  t = Kpax3.AminoAcidState(data, s.R, priorR, priorC, settings)
 
   l = t.cl[1:t.k]
 

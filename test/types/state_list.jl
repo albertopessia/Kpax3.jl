@@ -4,19 +4,18 @@ function test_state_list_constructor()
   ifile = "data/proper_aa.fasta"
   ofile = "../build/test"
 
-  settings = KSettings(ifile, ofile)
+  settings = Kpax3.KSettings(ifile, ofile)
 
-  x = AminoAcidData(settings)
+  x = Kpax3.AminoAcidData(settings)
 
   (m, n) = size(x.data)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(x.data, settings.γ, settings.r)
 
-  slist = AminoAcidStateList(x.data, [3; 3; 3; 1; 1; 2], priorR, priorC,
-                             settings)
+  slist = Kpax3.AminoAcidStateList(x.data, [3; 3; 3; 1; 1; 2], priorR, priorC, settings)
 
-  @test isa(slist.state, Vector{AminoAcidState})
+  @test isa(slist.state, Vector{Kpax3.AminoAcidState})
   @test isa(slist.logpp, Vector{Float64})
   @test isa(slist.rank, Vector{Int})
   @test all(slist.logpp .< 0.0)
@@ -28,7 +27,7 @@ function test_state_list_constructor()
   @test slist.state[1].R == [3; 3; 3; 1; 1; 2]
 
   for i in 1:settings.popsize
-    t = AminoAcidState(x.data, slist.state[i].R, priorR, priorC, settings)
+    t = Kpax3.AminoAcidState(x.data, slist.state[i].R, priorR, priorC, settings)
 
     l = t.cl[1:t.k]
 
@@ -50,10 +49,10 @@ function test_state_list_constructor()
     @test_approx_eq_eps slist.logpp[i] slist.state[i].logpp ε
   end
 
-  state = AminoAcidState(x.data, [3; 3; 3; 1; 1; 2], priorR, priorC, settings)
-  slist = AminoAcidStateList(settings.popsize, state)
+  state = Kpax3.AminoAcidState(x.data, [3; 3; 3; 1; 1; 2], priorR, priorC, settings)
+  slist = Kpax3.AminoAcidStateList(settings.popsize, state)
 
-  @test isa(slist.state, Vector{AminoAcidState})
+  @test isa(slist.state, Vector{Kpax3.AminoAcidState})
   @test isa(slist.logpp, Vector{Float64})
   @test isa(slist.rank, Vector{Int})
   @test all(slist.logpp .< 0.0)
@@ -91,19 +90,19 @@ function test_state_list_copy_basic()
   ifile = "data/proper_aa.fasta"
   ofile = "../build/test"
 
-  settings = KSettings(ifile, ofile)
+  settings = Kpax3.KSettings(ifile, ofile)
 
-  x = AminoAcidData(settings)
+  x = Kpax3.AminoAcidData(settings)
 
   (m, n) = size(x.data)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(x.data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(x.data, settings.γ, settings.r)
 
-  s1 = AminoAcidStateList(x.data, [3; 3; 3; 1; 1; 2], priorR, priorC, settings)
-  s2 = AminoAcidStateList(x.data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
+  s1 = Kpax3.AminoAcidStateList(x.data, [3; 3; 3; 1; 1; 2], priorR, priorC, settings)
+  s2 = Kpax3.AminoAcidStateList(x.data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings)
 
-  copystatelist!(s2, s1, settings.popsize)
+  Kpax3.copystatelist!(s2, s1, settings.popsize)
 
   for i in 1:settings.popsize
     j = s1.rank[i]

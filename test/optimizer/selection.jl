@@ -4,7 +4,7 @@ function test_selection()
   ifile = "data/proper_aa.fasta"
   ofile = "../build/test"
 
-  settings = KSettings(ifile, ofile)
+  settings = Kpax3.KSettings(ifile, ofile)
 
   data = UInt8[0 0 0 0 0 1;
                1 1 1 1 1 0;
@@ -27,14 +27,14 @@ function test_selection()
 
   (m, n) = size(data)
 
-  priorR = EwensPitman(settings.α, settings.θ)
-  priorC = AminoAcidPriorCol(data, settings.γ, settings.r)
+  priorR = Kpax3.EwensPitman(settings.α, settings.θ)
+  priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
 
-  state = [AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings);
-           AminoAcidState(data, [1; 2; 3; 4; 5; 6], priorR, priorC, settings);
-           AminoAcidState(data, [1; 1; 2; 2; 3; 3], priorR, priorC, settings);
-           AminoAcidState(data, [1; 1; 1; 1; 2; 2], priorR, priorC, settings);
-           AminoAcidState(data, [1; 2; 3; 1; 2; 3], priorR, priorC, settings)]
+  state = [Kpax3.AminoAcidState(data, [1; 1; 1; 1; 1; 1], priorR, priorC, settings);
+           Kpax3.AminoAcidState(data, [1; 2; 3; 4; 5; 6], priorR, priorC, settings);
+           Kpax3.AminoAcidState(data, [1; 1; 2; 2; 3; 3], priorR, priorC, settings);
+           Kpax3.AminoAcidState(data, [1; 1; 1; 1; 2; 2], priorR, priorC, settings);
+           Kpax3.AminoAcidState(data, [1; 2; 3; 1; 2; 3], priorR, priorC, settings)]
 
   popsize = 5
 
@@ -79,7 +79,7 @@ function test_selection()
   i2 = 0
 
   for i in 1:N
-    (i1, i2) = selection(logpp)
+    (i1, i2) = Kpax3.selection(logpp)
 
     tmp[i1] += 1
     tmp[i2] += 1

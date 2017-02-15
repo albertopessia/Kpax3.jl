@@ -25,167 +25,152 @@ function test_jaccard_distance()
   nt = [1; 1; 1; 1; 1; 1]
   kt = 6
 
-  @test jaccard(u, ku, u, ku, v) == 0.0
-  @test jaccard_index_basic(u, u, v) == 1.0
-  @test jaccard_index_table(u, ku, u, ku, v) == 1.0
+  @test Kpax3.jaccard(u, ku, u, ku, v) == 0.0
+  @test Kpax3.jaccard_index_basic(u, u, v) == 1.0
+  @test Kpax3.jaccard_index_table(u, ku, u, ku, v) == 1.0
 
-  @test_approx_eq jaccard(u, ku, a, ka, v) 0.5333333333333333
-  @test_approx_eq jaccard(u, ku, b, kb, v) 0.8
-  @test_approx_eq jaccard(u, ku, c, kc, v) 0.8666666666666667
-  @test_approx_eq jaccard(u, ku, d, kd, v) 0.9333333333333333
-  @test_approx_eq jaccard(u, ku, t, kt, v) 1.0
+  @test_approx_eq Kpax3.jaccard(u, ku, a, ka, v) 0.5333333333333333
+  @test_approx_eq Kpax3.jaccard(u, ku, b, kb, v) 0.8
+  @test_approx_eq Kpax3.jaccard(u, ku, c, kc, v) 0.8666666666666667
+  @test_approx_eq Kpax3.jaccard(u, ku, d, kd, v) 0.9333333333333333
+  @test_approx_eq Kpax3.jaccard(u, ku, t, kt, v) 1.0
 
-  @test_approx_eq jaccard_index_basic(u, a, v) 0.4666666666666667
-  @test_approx_eq jaccard_index_basic(u, b, v) 0.2
-  @test_approx_eq jaccard_index_basic(u, c, v) 0.1333333333333333
-  @test_approx_eq jaccard_index_basic(u, d, v) 0.0666666666666667
-  @test_approx_eq jaccard_index_basic(u, t, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(u, a, v) 0.4666666666666667
+  @test_approx_eq Kpax3.jaccard_index_basic(u, b, v) 0.2
+  @test_approx_eq Kpax3.jaccard_index_basic(u, c, v) 0.1333333333333333
+  @test_approx_eq Kpax3.jaccard_index_basic(u, d, v) 0.0666666666666667
+  @test_approx_eq Kpax3.jaccard_index_basic(u, t, v) 0.0
 
-  @test_approx_eq jaccard_index_table(u, ku, a, ka, v) 0.4666666666666667
-  @test_approx_eq jaccard_index_table(u, ku, b, kb, v) 0.2
-  @test_approx_eq jaccard_index_table(u, ku, c, kc, v) 0.1333333333333333
-  @test_approx_eq jaccard_index_table(u, ku, d, kd, v) 0.0666666666666667
-  @test_approx_eq jaccard_index_table(u, ku, t, kt, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(u, ku, a, ka, v) 0.4666666666666667
+  @test_approx_eq Kpax3.jaccard_index_table(u, ku, b, kb, v) 0.2
+  @test_approx_eq Kpax3.jaccard_index_table(u, ku, c, kc, v) 0.1333333333333333
+  @test_approx_eq Kpax3.jaccard_index_table(u, ku, d, kd, v) 0.0666666666666667
+  @test_approx_eq Kpax3.jaccard_index_table(u, ku, t, kt, v) 0.0
 
-  @test_approx_eq jaccardlower(na, ka, v) 0.5333333333333333
-  @test_approx_eq jaccardlower(nb, kb, v) 0.8
-  @test_approx_eq jaccardlower(nc, kc, v) 0.8666666666666667
-  @test_approx_eq jaccardlower(nd, kd, v) 0.9333333333333333
-  @test_approx_eq jaccardlower(nt, kt, v) 1.0
+  @test_approx_eq Kpax3.jaccardlower(na, ka, v) 0.5333333333333333
+  @test_approx_eq Kpax3.jaccardlower(nb, kb, v) 0.8
+  @test_approx_eq Kpax3.jaccardlower(nc, kc, v) 0.8666666666666667
+  @test_approx_eq Kpax3.jaccardlower(nd, kd, v) 0.9333333333333333
+  @test_approx_eq Kpax3.jaccardlower(nt, kt, v) 1.0
 
-  @test jaccard(a, ka, a, ka, v) == 0.0
-  @test jaccard_index_basic(a, a, v) == 1.0
-  @test jaccard_index_table(a, ka, a, ka, v) == 1.0
+  @test Kpax3.jaccard(a, ka, a, ka, v) == 0.0
+  @test Kpax3.jaccard_index_basic(a, a, v) == 1.0
+  @test Kpax3.jaccard_index_table(a, ka, a, ka, v) == 1.0
 
-  @test_approx_eq jaccard(a, ka, u, ku, v) 0.5333333333333333
-  @test_approx_eq jaccard(a, ka, b, kb, v) 0.8888888888888889
-  @test_approx_eq jaccard(a, ka, c, kc, v) 0.875
-  @test_approx_eq jaccard(a, ka, d, kd, v) 0.8571428571428572
-  @test_approx_eq jaccard(a, ka, t, kt, v) 1.0
+  @test_approx_eq Kpax3.jaccard(a, ka, u, ku, v) 0.5333333333333333
+  @test_approx_eq Kpax3.jaccard(a, ka, b, kb, v) 0.8888888888888889
+  @test_approx_eq Kpax3.jaccard(a, ka, c, kc, v) 0.875
+  @test_approx_eq Kpax3.jaccard(a, ka, d, kd, v) 0.8571428571428572
+  @test_approx_eq Kpax3.jaccard(a, ka, t, kt, v) 1.0
 
-  @test_approx_eq jaccard_index_basic(a, u, v) 0.4666666666666667
-  @test_approx_eq jaccard_index_basic(a, b, v) 0.1111111111111111
-  @test_approx_eq jaccard_index_basic(a, c, v) 0.125
-  @test_approx_eq jaccard_index_basic(a, d, v) 0.1428571428571428
-  @test_approx_eq jaccard_index_basic(a, t, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(a, u, v) 0.4666666666666667
+  @test_approx_eq Kpax3.jaccard_index_basic(a, b, v) 0.1111111111111111
+  @test_approx_eq Kpax3.jaccard_index_basic(a, c, v) 0.125
+  @test_approx_eq Kpax3.jaccard_index_basic(a, d, v) 0.1428571428571428
+  @test_approx_eq Kpax3.jaccard_index_basic(a, t, v) 0.0
 
-  @test_approx_eq jaccard_index_table(a, ka, u, ku, v) 0.4666666666666667
-  @test_approx_eq jaccard_index_table(a, ka, b, kb, v) 0.1111111111111111
-  @test_approx_eq jaccard_index_table(a, ka, c, kc, v) 0.125
-  @test_approx_eq jaccard_index_table(a, ka, d, kd, v) 0.1428571428571428
-  @test_approx_eq jaccard_index_table(a, ka, t, kt, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(a, ka, u, ku, v) 0.4666666666666667
+  @test_approx_eq Kpax3.jaccard_index_table(a, ka, b, kb, v) 0.1111111111111111
+  @test_approx_eq Kpax3.jaccard_index_table(a, ka, c, kc, v) 0.125
+  @test_approx_eq Kpax3.jaccard_index_table(a, ka, d, kd, v) 0.1428571428571428
+  @test_approx_eq Kpax3.jaccard_index_table(a, ka, t, kt, v) 0.0
 
-  @test jaccard(b, kb, b, kb, v) == 0.0
-  @test jaccard_index_basic(b, b, v) == 1.0
-  @test jaccard_index_table(b, kb, b, kb, v) == 1.0
+  @test Kpax3.jaccard(b, kb, b, kb, v) == 0.0
+  @test Kpax3.jaccard_index_basic(b, b, v) == 1.0
+  @test Kpax3.jaccard_index_table(b, kb, b, kb, v) == 1.0
 
-  @test_approx_eq jaccard(b, kb, u, ku, v) 0.8
-  @test_approx_eq jaccard(b, kb, a, ka, v) 0.8888888888888889
-  @test_approx_eq jaccard(b, kb, c, kc, v) 1.0
-  @test_approx_eq jaccard(b, kb, d, kd, v) 1.0
-  @test_approx_eq jaccard(b, kb, t, kt, v) 1.0
+  @test_approx_eq Kpax3.jaccard(b, kb, u, ku, v) 0.8
+  @test_approx_eq Kpax3.jaccard(b, kb, a, ka, v) 0.8888888888888889
+  @test_approx_eq Kpax3.jaccard(b, kb, c, kc, v) 1.0
+  @test_approx_eq Kpax3.jaccard(b, kb, d, kd, v) 1.0
+  @test_approx_eq Kpax3.jaccard(b, kb, t, kt, v) 1.0
 
-  @test_approx_eq jaccard_index_basic(b, u, v) 0.2
-  @test_approx_eq jaccard_index_basic(b, a, v) 0.1111111111111111
-  @test_approx_eq jaccard_index_basic(b, c, v) 0.0
-  @test_approx_eq jaccard_index_basic(b, d, v) 0.0
-  @test_approx_eq jaccard_index_basic(b, t, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(b, u, v) 0.2
+  @test_approx_eq Kpax3.jaccard_index_basic(b, a, v) 0.1111111111111111
+  @test_approx_eq Kpax3.jaccard_index_basic(b, c, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(b, d, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(b, t, v) 0.0
 
-  @test_approx_eq jaccard_index_table(b, kb, u, ku, v) 0.2
-  @test_approx_eq jaccard_index_table(b, kb, a, ka, v) 0.1111111111111111
-  @test_approx_eq jaccard_index_table(b, kb, c, kc, v) 0.0
-  @test_approx_eq jaccard_index_table(b, kb, d, kd, v) 0.0
-  @test_approx_eq jaccard_index_table(b, kb, t, kt, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(b, kb, u, ku, v) 0.2
+  @test_approx_eq Kpax3.jaccard_index_table(b, kb, a, ka, v) 0.1111111111111111
+  @test_approx_eq Kpax3.jaccard_index_table(b, kb, c, kc, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(b, kb, d, kd, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(b, kb, t, kt, v) 0.0
 
-  @test jaccard(c, kc, c, kc, v) == 0.0
-  @test jaccard_index_basic(c, c, v) == 1.0
-  @test jaccard_index_table(c, kc, c, kc, v) == 1.0
+  @test Kpax3.jaccard(c, kc, c, kc, v) == 0.0
+  @test Kpax3.jaccard_index_basic(c, c, v) == 1.0
+  @test Kpax3.jaccard_index_table(c, kc, c, kc, v) == 1.0
 
-  @test_approx_eq jaccard(c, kc, u, ku, v) 0.8666666666666667
-  @test_approx_eq jaccard(c, kc, a, ka, v) 0.875
-  @test_approx_eq jaccard(c, kc, b, kb, v) 1.0
-  @test_approx_eq jaccard(c, kc, d, kd, v) 0.5
-  @test_approx_eq jaccard(c, kc, t, kt, v) 1.0
+  @test_approx_eq Kpax3.jaccard(c, kc, u, ku, v) 0.8666666666666667
+  @test_approx_eq Kpax3.jaccard(c, kc, a, ka, v) 0.875
+  @test_approx_eq Kpax3.jaccard(c, kc, b, kb, v) 1.0
+  @test_approx_eq Kpax3.jaccard(c, kc, d, kd, v) 0.5
+  @test_approx_eq Kpax3.jaccard(c, kc, t, kt, v) 1.0
 
-  @test_approx_eq jaccard_index_basic(c, u, v) 0.1333333333333333
-  @test_approx_eq jaccard_index_basic(c, a, v) 0.125
-  @test_approx_eq jaccard_index_basic(c, b, v) 0.0
-  @test_approx_eq jaccard_index_basic(c, d, v) 0.5
-  @test_approx_eq jaccard_index_basic(c, t, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(c, u, v) 0.1333333333333333
+  @test_approx_eq Kpax3.jaccard_index_basic(c, a, v) 0.125
+  @test_approx_eq Kpax3.jaccard_index_basic(c, b, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(c, d, v) 0.5
+  @test_approx_eq Kpax3.jaccard_index_basic(c, t, v) 0.0
 
-  @test_approx_eq jaccard_index_table(c, kc, u, ku, v) 0.1333333333333333
-  @test_approx_eq jaccard_index_table(c, kc, a, ka, v) 0.125
-  @test_approx_eq jaccard_index_table(c, kc, b, kb, v) 0.0
-  @test_approx_eq jaccard_index_table(c, kc, d, kd, v) 0.5
-  @test_approx_eq jaccard_index_table(c, kc, t, kt, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(c, kc, u, ku, v) 0.1333333333333333
+  @test_approx_eq Kpax3.jaccard_index_table(c, kc, a, ka, v) 0.125
+  @test_approx_eq Kpax3.jaccard_index_table(c, kc, b, kb, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(c, kc, d, kd, v) 0.5
+  @test_approx_eq Kpax3.jaccard_index_table(c, kc, t, kt, v) 0.0
 
-  @test jaccard(d, kd, d, kd, v) == 0.0
-  @test jaccard_index_basic(d, d, v) == 1.0
-  @test jaccard_index_table(d, kd, d, kd, v) == 1.0
+  @test Kpax3.jaccard(d, kd, d, kd, v) == 0.0
+  @test Kpax3.jaccard_index_basic(d, d, v) == 1.0
+  @test Kpax3.jaccard_index_table(d, kd, d, kd, v) == 1.0
 
-  @test_approx_eq jaccard(d, kd, u, ku, v) 0.9333333333333333
-  @test_approx_eq jaccard(d, kd, a, ka, v) 0.8571428571428572
-  @test_approx_eq jaccard(d, kd, b, kb, v) 1.0
-  @test_approx_eq jaccard(d, kd, c, kc, v) 0.5
-  @test_approx_eq jaccard(d, kd, t, kt, v) 1.0
+  @test_approx_eq Kpax3.jaccard(d, kd, u, ku, v) 0.9333333333333333
+  @test_approx_eq Kpax3.jaccard(d, kd, a, ka, v) 0.8571428571428572
+  @test_approx_eq Kpax3.jaccard(d, kd, b, kb, v) 1.0
+  @test_approx_eq Kpax3.jaccard(d, kd, c, kc, v) 0.5
+  @test_approx_eq Kpax3.jaccard(d, kd, t, kt, v) 1.0
 
-  @test_approx_eq jaccard_index_basic(d, u, v) 0.0666666666666667
-  @test_approx_eq jaccard_index_basic(d, a, v) 0.1428571428571428
-  @test_approx_eq jaccard_index_basic(d, b, v) 0.0
-  @test_approx_eq jaccard_index_basic(d, c, v) 0.5
-  @test_approx_eq jaccard_index_basic(d, t, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(d, u, v) 0.0666666666666667
+  @test_approx_eq Kpax3.jaccard_index_basic(d, a, v) 0.1428571428571428
+  @test_approx_eq Kpax3.jaccard_index_basic(d, b, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(d, c, v) 0.5
+  @test_approx_eq Kpax3.jaccard_index_basic(d, t, v) 0.0
 
-  @test_approx_eq jaccard_index_table(d, kd, u, ku, v) 0.0666666666666667
-  @test_approx_eq jaccard_index_table(d, kd, a, ka, v) 0.1428571428571428
-  @test_approx_eq jaccard_index_table(d, kd, b, kb, v) 0.0
-  @test_approx_eq jaccard_index_table(d, kd, c, kc, v) 0.5
-  @test_approx_eq jaccard_index_table(d, kd, t, kt, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(d, kd, u, ku, v) 0.0666666666666667
+  @test_approx_eq Kpax3.jaccard_index_table(d, kd, a, ka, v) 0.1428571428571428
+  @test_approx_eq Kpax3.jaccard_index_table(d, kd, b, kb, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(d, kd, c, kc, v) 0.5
+  @test_approx_eq Kpax3.jaccard_index_table(d, kd, t, kt, v) 0.0
 
-  @test jaccard(t, kt, t, kt, v) == 0.0
-  @test jaccard_index_basic(t, t, v) == 1.0
-  @test jaccard_index_table(t, kt, t, kt, v) == 1.0
+  @test Kpax3.jaccard(t, kt, t, kt, v) == 0.0
+  @test Kpax3.jaccard_index_basic(t, t, v) == 1.0
+  @test Kpax3.jaccard_index_table(t, kt, t, kt, v) == 1.0
 
-  @test_approx_eq jaccard(t, kt, u, ku, v) 1.0
-  @test_approx_eq jaccard(t, kt, a, ka, v) 1.0
-  @test_approx_eq jaccard(t, kt, b, kb, v) 1.0
-  @test_approx_eq jaccard(t, kt, c, kc, v) 1.0
-  @test_approx_eq jaccard(t, kt, d, kd, v) 1.0
+  @test_approx_eq Kpax3.jaccard(t, kt, u, ku, v) 1.0
+  @test_approx_eq Kpax3.jaccard(t, kt, a, ka, v) 1.0
+  @test_approx_eq Kpax3.jaccard(t, kt, b, kb, v) 1.0
+  @test_approx_eq Kpax3.jaccard(t, kt, c, kc, v) 1.0
+  @test_approx_eq Kpax3.jaccard(t, kt, d, kd, v) 1.0
 
-  @test_approx_eq jaccard_index_basic(t, u, v) 0.0
-  @test_approx_eq jaccard_index_basic(t, a, v) 0.0
-  @test_approx_eq jaccard_index_basic(t, b, v) 0.0
-  @test_approx_eq jaccard_index_basic(t, c, v) 0.0
-  @test_approx_eq jaccard_index_basic(t, d, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(t, u, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(t, a, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(t, b, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(t, c, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_basic(t, d, v) 0.0
 
-  @test_approx_eq jaccard_index_table(t, kt, u, ku, v) 0.0
-  @test_approx_eq jaccard_index_table(t, kt, a, ka, v) 0.0
-  @test_approx_eq jaccard_index_table(t, kt, b, kb, v) 0.0
-  @test_approx_eq jaccard_index_table(t, kt, c, kc, v) 0.0
-  @test_approx_eq jaccard_index_table(t, kt, d, kd, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(t, kt, u, ku, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(t, kt, a, ka, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(t, kt, b, kb, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(t, kt, c, kc, v) 0.0
+  @test_approx_eq Kpax3.jaccard_index_table(t, kt, d, kd, v) 0.0
 
-  @test jaccard(u, ku, t, kt, v) <=
-        (jaccard(u, ku, b, kb, v) + jaccard(b, kb, t, kt, v))
-
-  @test jaccard(a, ka, b, kb, v) <=
-        (jaccard(a, ka, c, kc, v) + jaccard(c, kc, b, kb, v))
-
-  @test jaccard(b, kb, c, kc, v) <=
-        (jaccard(b, kb, d, kd, v) + jaccard(d, kd, c, kc, v))
-
-  @test jaccard(c, kc, d, kd, v) <=
-        (jaccard(c, kc, a, ka, v) + jaccard(a, ka, d, kd, v))
-
-  @test jaccard(a, ka, b, kb, v) <=
-        (jaccard(a, ka, u, ku, v) + jaccard(u, ku, b, kb, v))
-
-  @test jaccard(a, ka, b, kb, v) <=
-        (jaccard(a, ka, t, kt, v) + jaccard(t, kt, b, kb, v))
-
-  @test jaccard(a, ka, d, kd, v) <=
-        (jaccard(a, ka, u, ku, v) + jaccard(u, ku, d, kd, v))
-
-  @test jaccard(a, ka, d, kd, v) <=
-        (jaccard(a, ka, t, kt, v) + jaccard(t, kt, d, kd, v))
+  @test Kpax3.jaccard(u, ku, t, kt, v) <= (Kpax3.jaccard(u, ku, b, kb, v) + Kpax3.jaccard(b, kb, t, kt, v))
+  @test Kpax3.jaccard(a, ka, b, kb, v) <= (Kpax3.jaccard(a, ka, c, kc, v) + Kpax3.jaccard(c, kc, b, kb, v))
+  @test Kpax3.jaccard(b, kb, c, kc, v) <= (Kpax3.jaccard(b, kb, d, kd, v) + Kpax3.jaccard(d, kd, c, kc, v))
+  @test Kpax3.jaccard(c, kc, d, kd, v) <= (Kpax3.jaccard(c, kc, a, ka, v) + Kpax3.jaccard(a, ka, d, kd, v))
+  @test Kpax3.jaccard(a, ka, b, kb, v) <= (Kpax3.jaccard(a, ka, u, ku, v) + Kpax3.jaccard(u, ku, b, kb, v))
+  @test Kpax3.jaccard(a, ka, b, kb, v) <= (Kpax3.jaccard(a, ka, t, kt, v) + Kpax3.jaccard(t, kt, b, kb, v))
+  @test Kpax3.jaccard(a, ka, d, kd, v) <= (Kpax3.jaccard(a, ka, u, ku, v) + Kpax3.jaccard(u, ku, d, kd, v))
+  @test Kpax3.jaccard(a, ka, d, kd, v) <= (Kpax3.jaccard(a, ka, t, kt, v) + Kpax3.jaccard(t, kt, d, kd, v))
 
   nothing
 end
