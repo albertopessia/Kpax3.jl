@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function test_mcmc_logmarglikmerge()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile)
@@ -44,7 +44,7 @@ function test_mcmc_logmarglikmerge()
   state2 = Kpax3.AminoAcidState(data, [1; 1; 1; 2; 2; 2], priorR, priorC, settings)
   support2 = Kpax3.MCMCSupport(state2, priorC)
 
-  @test_approx_eq_eps support1.logmlikcandidate support2.logmlik ε
+  @test isapprox(support1.logmlikcandidate, support2.logmlik, atol=ε)
 
   nothing
 end
@@ -52,7 +52,7 @@ end
 test_mcmc_logmarglikmerge()
 
 function test_mcmc_logmargliksplit()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile)
@@ -99,7 +99,7 @@ function test_mcmc_logmargliksplit()
   state2 = Kpax3.AminoAcidState(data, [1; 1; 1; 2; 3; 3], priorR, priorC, settings)
   support2 = Kpax3.MCMCSupport(state2, priorC)
 
-  @test_approx_eq_eps support1.logmlikcandidate support2.logmlik ε
+  @test isapprox(support1.logmlikcandidate, support2.logmlik, atol=ε)
 
   nothing
 end

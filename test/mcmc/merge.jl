@@ -2,7 +2,7 @@
 
 function test_mcmc_merge_init()
   # merge cluster 2 and cluster 3
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=2, maxunit=1)
@@ -51,7 +51,7 @@ function test_mcmc_merge_init()
     wi[4, col] = priorC.logγ[3] + priorC.logω[k][2] + Kpax3.logmarglik(data[col, ij[1]], 1, priorC.A[4, col], priorC.B[4, col])
   end
 
-  ci = Float64[log(sum(exp(support.wi.w[:, b]))) for b in 1:m]
+  ci = Float64[log(sum(exp.(support.wi.w[:, b]))) for b in 1:m]
 
   wj = zeros(Float64, 4, m)
   for col in 1:m
@@ -61,22 +61,22 @@ function test_mcmc_merge_init()
     wj[4, col] = priorC.logγ[3] + priorC.logω[k][2] + Kpax3.logmarglik(data[col, ij[2]], 1, priorC.A[4, col], priorC.B[4, col])
   end
 
-  cj = Float64[log(sum(exp(support.wj.w[:, b]))) for b in 1:m]
+  cj = Float64[log(sum(exp.(support.wj.w[:, b]))) for b in 1:m]
 
   @test support.vi == 1
   @test support.ni == float(data[:, ij[1]])
   @test support.ui == [ij[1]; 0; 0; 0; 0; 0]
 
-  @test maximum(abs(support.wi.w - wi)) <= ε
-  @test maximum(abs(support.wi.c - ci)) <= ε
+  @test maximum(abs.(support.wi.w - wi)) <= ε
+  @test maximum(abs.(support.wi.c - ci)) <= ε
   @test support.wi.z == zeros(Float64, 4, m)
 
   @test support.vj == 1
   @test support.nj == float(data[:, ij[2]])
   @test support.uj == [ij[2]; 0; 0; 0; 0; 0]
 
-  @test maximum(abs(support.wj.w - wj)) <= ε
-  @test maximum(abs(support.wj.c - cj)) <= ε
+  @test maximum(abs.(support.wj.w - wj)) <= ε
+  @test maximum(abs.(support.wj.c - cj)) <= ε
   @test support.wj.z == zeros(Float64, 4, m)
 
   nothing
@@ -86,7 +86,7 @@ test_mcmc_merge_init()
 
 function test_mcmc_merge_updatei()
   # move the first unit (u) to cluster 2 (test inverse split operator)
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=2, maxunit=1)
@@ -144,7 +144,7 @@ function test_mcmc_merge_updatei()
 
   zi = copy(wi)
 
-  ci = Float64[log(sum(exp(support.wi.w[:, b]))) for b in 1:m]
+  ci = Float64[log(sum(exp.(support.wi.w[:, b]))) for b in 1:m]
 
   wj = zeros(Float64, 4, m)
   zj = zeros(Float64, 4, m)
@@ -161,23 +161,23 @@ function test_mcmc_merge_updatei()
 
   end
 
-  cj = Float64[log(sum(exp(support.wj.w[:, b]))) for b in 1:m]
+  cj = Float64[log(sum(exp.(support.wj.w[:, b]))) for b in 1:m]
 
   @test support.vi == 2
   @test support.ni == float(data[:, ij[1]]) + float(data[:, u])
   @test support.ui == [ij[1]; u; 0; 0; 0; 0]
 
-  @test maximum(abs(support.wi.w - wi)) <= ε
-  @test maximum(abs(support.wi.c - ci)) <= ε
-  @test maximum(abs(support.wi.z - zi)) <= ε
+  @test maximum(abs.(support.wi.w - wi)) <= ε
+  @test maximum(abs.(support.wi.c - ci)) <= ε
+  @test maximum(abs.(support.wi.z - zi)) <= ε
 
   @test support.vj == 1
   @test support.nj == float(data[:, ij[2]])
   @test support.uj == [ij[2]; 0; 0; 0; 0; 0]
 
-  @test maximum(abs(support.wj.w - wj)) <= ε
-  @test maximum(abs(support.wj.c - cj)) <= ε
-  @test maximum(abs(support.wj.z - zj)) <= ε
+  @test maximum(abs.(support.wj.w - wj)) <= ε
+  @test maximum(abs.(support.wj.c - cj)) <= ε
+  @test maximum(abs.(support.wj.z - zj)) <= ε
 
   nothing
 end
@@ -186,7 +186,7 @@ test_mcmc_merge_updatei()
 
 function test_mcmc_merge_updatej()
   # move the first unit (u) to cluster 2 (test inverse split operator)
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=2, maxunit=1)
@@ -248,7 +248,7 @@ function test_mcmc_merge_updatej()
     zi[4, col] = wi[4, col] + Kpax3.logcondmarglik(data[col, u], data[col, ij[1]], 1, priorC.A[4, col], priorC.B[4, col])
   end
 
-  ci = Float64[log(sum(exp(support.wi.w[:, b]))) for b in 1:m]
+  ci = Float64[log(sum(exp.(support.wi.w[:, b]))) for b in 1:m]
 
   wj = zeros(Float64, 4, m)
   for col in 1:m
@@ -259,23 +259,23 @@ function test_mcmc_merge_updatej()
   end
   zj = copy(wj)
 
-  cj = Float64[log(sum(exp(support.wj.w[:, b]))) for b in 1:m]
+  cj = Float64[log(sum(exp.(support.wj.w[:, b]))) for b in 1:m]
 
   @test support.vi == 1
   @test support.ni == float(data[:, ij[1]])
   @test support.ui == [ij[1]; 0; 0; 0; 0; 0]
 
-  @test maximum(abs(support.wi.w - wi)) <= ε
-  @test maximum(abs(support.wi.c - ci)) <= ε
-  @test maximum(abs(support.wi.z - zi)) <= ε
+  @test maximum(abs.(support.wi.w - wi)) <= ε
+  @test maximum(abs.(support.wi.c - ci)) <= ε
+  @test maximum(abs.(support.wi.z - zi)) <= ε
 
   @test support.vj == 2
   @test support.nj == float(data[:, ij[2]]) + float(data[:, u])
   @test support.uj == [ij[2]; u; 0; 0; 0; 0]
 
-  @test maximum(abs(support.wj.w - wj)) <= ε
-  @test maximum(abs(support.wj.c - cj)) <= ε
-  @test maximum(abs(support.wj.z - zj)) <= ε
+  @test maximum(abs.(support.wj.w - wj)) <= ε
+  @test maximum(abs.(support.wj.c - cj)) <= ε
+  @test maximum(abs.(support.wj.z - zj)) <= ε
 
   nothing
 end

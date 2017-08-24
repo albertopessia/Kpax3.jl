@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function test_mcmc_brw_init()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=2, maxunit=1)
@@ -101,7 +101,7 @@ end
 test_mcmc_brw_init()
 
 function test_mcmc_brw()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=1, maxunit=1, op=[0.0; 0.0; 1.0])
@@ -168,9 +168,9 @@ function test_mcmc_brw()
 
   @test state1.emptycluster[3]
 
-  @test_approx_eq_eps state1.logpR state2.logpR ε
+  @test isapprox(state1.logpR, state2.logpR, atol=ε)
 
-  @test_approx_eq_eps support1.logmlik support2.logmlik ε
+  @test isapprox(support1.logmlik, support2.logmlik, atol=ε)
 
   # [2; 2; 2; 1; 1; 3] => [2; 2; 3; 1; 1; 3]
   state1 = Kpax3.AminoAcidState(data, [2; 2; 2; 1; 1; 3], priorR, priorC, settings)
@@ -215,9 +215,9 @@ function test_mcmc_brw()
   @test state1.n1s[3, :] == state2.n1s[3, :]
   @test state1.unit[3][1:state1.v[3]] == [6; 3]
 
-  @test_approx_eq_eps state1.logpR state2.logpR ε
+  @test isapprox(state1.logpR, state2.logpR, atol=ε)
 
-  @test_approx_eq_eps support1.logmlik support2.logmlik ε
+  @test isapprox(support1.logmlik, support2.logmlik, atol=ε)
 
   # [3; 3; 3; 2; 2; 4] => [3; 3; 1; 2; 2; 4]
   state1 = Kpax3.AminoAcidState(data, [3; 3; 3; 2; 2; 4], priorR, priorC, settings)
@@ -283,9 +283,9 @@ function test_mcmc_brw()
   @test state1.n1s[4, :] == state2.n1s[4, :]
   @test state1.unit[4][1:state1.v[4]] == [6]
 
-  @test_approx_eq_eps state1.logpR state2.logpR ε
+  @test isapprox(state1.logpR,state2.logpR, atol=ε)
 
-  @test_approx_eq_eps support1.logmlik support2.logmlik ε
+  @test isapprox(support1.logmlik, support2.logmlik, atol=ε)
 
   # [2; 2; 2; 1; 1; 3] => [2; 2; 4; 1; 1; 3]
   # allocate new resources
@@ -337,9 +337,9 @@ function test_mcmc_brw()
   @test state1.n1s[4, :] == state2.n1s[4, :]
   @test state1.unit[4][1:state1.v[4]] == [i]
 
-  @test_approx_eq_eps state1.logpR state2.logpR ε
+  @test isapprox(state1.logpR, state2.logpR, atol=ε)
 
-  @test_approx_eq_eps support1.logmlik support2.logmlik ε
+  @test isapprox(support1.logmlik, support2.logmlik, atol=ε)
 
   nothing
 end

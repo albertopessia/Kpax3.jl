@@ -152,7 +152,7 @@ function normalizepartition(partition::Vector{Int},
   indexin(partition, sort(unique(partition)))
 end
 
-function normalizepartition(ifile::AbstractString,
+function normalizepartition(ifile::String,
                             n::Int)
   d = readcsv(ifile, Int)
 
@@ -168,7 +168,7 @@ function normalizepartition(ifile::AbstractString,
   indexin(d[:, 1], sort(unique(d[:, 1])))
 end
 
-function normalizepartition(ifile::AbstractString,
+function normalizepartition(ifile::String,
                             id::Vector{String})
   d = readcsv(ifile, String)
 
@@ -300,7 +300,8 @@ function modifysplit!(R::Vector{Int},
   while k != q
     k += 1
 
-    w = StatsBase.WeightVec(Float64[t[a] > 0 ? t[a] - 1 : 0 for a in 1:n])
+    w = StatsBase.ProbabilityWeights(Float64[t[a] > 0 ? t[a] - 1 : 0
+                                             for a in 1:n])
     g = StatsBase.sample(w)
 
     for a in 1:n
@@ -339,7 +340,7 @@ function modifyscramble!(R::Vector{Int},
         v[a] = t[a] > 0 ? t[a] - 1 : 0
       end
 
-      w = StatsBase.WeightVec(v)
+      w = StatsBase.ProbabilityWeights(v)
       h = StatsBase.sample(w)
 
       keepgoing = true

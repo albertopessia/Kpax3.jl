@@ -8,14 +8,14 @@ function test_likelihoods_marginal()
       logcp0 = log(β + n - y) - log(α + β + n)
       logcp1 = log(α + y) - log(α + β + n)
 
-      @test_approx_eq_eps Kpax3.marglik(y, n, α, β) exp(logp) ε
-      @test_approx_eq_eps Kpax3.logmarglik(y, n, α, β) logp ε
+      @test isapprox(Kpax3.marglik(y, n, α, β), exp(logp), atol=ε)
+      @test isapprox(Kpax3.logmarglik(y, n, α, β), logp, atol=ε)
 
-      @test_approx_eq_eps Kpax3.condmarglik(0x00, y, n, α, β) exp(logcp0) ε
-      @test_approx_eq_eps Kpax3.condmarglik(0x01, y, n, α, β) exp(logcp1) ε
+      @test isapprox(Kpax3.condmarglik(0x00, y, n, α, β), exp(logcp0), atol=ε)
+      @test isapprox(Kpax3.condmarglik(0x01, y, n, α, β), exp(logcp1), atol=ε)
 
-      @test_approx_eq_eps Kpax3.logcondmarglik(0x00, y, n, α, β) logcp0 ε
-      @test_approx_eq_eps Kpax3.logcondmarglik(0x01, y, n, α, β) logcp1 ε
+      @test isapprox(Kpax3.logcondmarglik(0x00, y, n, α, β), logcp0, atol=ε)
+      @test isapprox(Kpax3.logcondmarglik(0x01, y, n, α, β), logcp1, atol=ε)
     end
   end
 
@@ -39,25 +39,25 @@ function test_likelihoods_marginal()
       qx = Kpax3.condmarglik([fill(0x01, n1s); fill(0x00, m - n1s)], y, n, a, b)
       logqx = Kpax3.logcondmarglik([fill(0x01, n1s); fill(0x00, m - n1s)], y, n, a, b)
 
-      logp = lgamma(a + y) + lgamma(b + n - y) - lgamma(a + b + n) + lgamma(a + b) - lgamma(a) - lgamma(b)
+      logp = lgamma.(a + y) + lgamma.(b + n - y) - lgamma.(a + b + n) + lgamma.(a + b) - lgamma.(a) - lgamma.(b)
 
-      logcp0 = log(b + n - y) - log(a + b + n)
-      logcp1 = log(a + y) - log(a + b + n)
+      logcp0 = log.(b + n - y) - log.(a + b + n)
+      logcp1 = log.(a + y) - log.(a + b + n)
 
-      logcpx = log([a[1:n1s] + y[1:n1s]; b[(n1s + 1):m] + n - y[(n1s + 1):m]]) - log(a + b + n)
+      logcpx = log.([a[1:n1s] + y[1:n1s]; b[(n1s + 1):m] + n - y[(n1s + 1):m]]) - log.(a + b + n)
 
       for i in 1:m
-        @test_approx_eq_eps q[i] exp(logp[i]) ε
-        @test_approx_eq_eps logq[i] logp[i] ε
+        @test isapprox(q[i], exp(logp[i]), atol=ε)
+        @test isapprox(logq[i], logp[i], atol=ε)
 
-        @test_approx_eq_eps q0[i] exp(logcp0[i]) ε
-        @test_approx_eq_eps logq0[i] logcp0[i] ε
+        @test isapprox(q0[i], exp(logcp0[i]), atol=ε)
+        @test isapprox(logq0[i], logcp0[i], atol=ε)
 
-        @test_approx_eq_eps q1[i] exp(logcp1[i]) ε
-        @test_approx_eq_eps logq1[i] logcp1[i] ε
+        @test isapprox(q1[i], exp(logcp1[i]), atol=ε)
+        @test isapprox(logq1[i], logcp1[i], atol=ε)
 
-        @test_approx_eq_eps qx[i] exp(logcpx[i]) ε
-        @test_approx_eq_eps logqx[i] logcpx[i] ε
+        @test isapprox(qx[i], exp(logcpx[i]), atol=ε)
+        @test isapprox(logqx[i], logcpx[i], atol=ε)
       end
     end
   end
@@ -68,7 +68,7 @@ end
 test_likelihoods_marginal()
 
 function test_likelihoods_loglik()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile)
@@ -144,8 +144,8 @@ function test_likelihoods_loglik()
 
   ll = loglik[1] + loglik[2] + loglik[3]
 
-  @test_approx_eq_eps Kpax3.loglikelihood(state.C, state.cl, state.k, state.v, state.n1s, priorC) ll ε
-  @test_approx_eq_eps Kpax3.loglikelihood(state.C, state.cl, state.k, support) ll ε
+  @test isapprox(Kpax3.loglikelihood(state.C, state.cl, state.k, state.v, state.n1s, priorC), ll, atol=ε)
+  @test isapprox(Kpax3.loglikelihood(state.C, state.cl, state.k, support), ll, atol=ε)
 
   nothing
 end
@@ -153,7 +153,7 @@ end
 test_likelihoods_loglik()
 
 function test_likelihoods_logmarginal()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile)
@@ -235,7 +235,7 @@ function test_likelihoods_logmarginal()
     lml += log(exp(tmp[1]) + exp(tmp[2]) + exp(tmp[3]))
   end
 
-  @test_approx_eq_eps logmlik lml ε
+  @test isapprox(logmlik, lml, atol=ε)
 
   nothing
 end

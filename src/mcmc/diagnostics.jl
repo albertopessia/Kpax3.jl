@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-function traceR(fileroot::AbstractString;
+function traceR(fileroot::String;
                 maxlag::Int=50)
   fpR = open(string(fileroot, "_row_partition.bin"), "r")
 
@@ -132,7 +132,7 @@ function traceR(fileroot::AbstractString;
   (entropy, avgd)
 end
 
-function traceC(fileroot::AbstractString;
+function traceC(fileroot::String;
                 maxlag::Int=50)
   fpC = open(string(fileroot, "_col_partition.bin"), "r")
 

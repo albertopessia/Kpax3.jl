@@ -237,7 +237,7 @@ function kpax3mcmc(x::AminoAcidData,
 end
 
 function kpax3mcmc(x::AminoAcidData,
-                   partition::AbstractString,
+                   partition::String,
                    settings::KSettings)
   (m, n) = size(x.data)
 

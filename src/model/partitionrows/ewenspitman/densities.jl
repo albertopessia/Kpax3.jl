@@ -143,7 +143,7 @@ function logdPriorRow(p::Vector{Int},
   end
 
   log(prod((1:(k - 1)) - ep.L) * ep.α^(k - 1) *
-      exp(sum(lgamma(m[m .> 0] - ep.α)) - k * lgamma(1 - ep.α)) /
+      exp(sum(lgamma.(m[m .> 0] - ep.α)) - k * lgamma(1 - ep.α)) /
       prod((1:(n - 1)) - ep.α * ep.L))
 end
 
@@ -152,7 +152,7 @@ function logdPriorRow(n::Int,
                       m::Vector{Int},
                       ep::EwensPitmanNAPT)
   log(prod((1:(k - 1)) - ep.L) * ep.α^(k - 1) *
-      exp(sum(lgamma(m[m .> 0] - ep.α)) - k * lgamma(1 - ep.α)) /
+      exp(sum(lgamma.(m[m .> 0] - ep.α)) - k * lgamma(1 - ep.α)) /
       prod((1:(n - 1)) - ep.α * ep.L))
 end
 

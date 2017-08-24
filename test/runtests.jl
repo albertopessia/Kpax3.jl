@@ -9,7 +9,11 @@ cd(dirname(@__FILE__))
 srand(1427371200)
 
 function runtests()
-  tests = ["data_processing/data_processing";
+  # this module is used by "model/partition_rows" tests
+  include("data/partitions.jl")
+
+  tests = ["data_processing/fasta_data_processing";
+           "data_processing/csv_data_processing";
            "distances/simovici_jaroszewicz";
            "distances/jaccard";
            "misc/basic_functions";

@@ -11,8 +11,8 @@ Provides a message explaining the reason of the DomainError exception.
 
 * `msg` Optional argument with a descriptive error string
 """
-type KDomainError <: Exception
-  msg::AbstractString
+mutable struct KDomainError <: Exception
+  msg::String
 end
 KDomainError() = KDomainError("")
 
@@ -27,10 +27,26 @@ Exception for a wrong formatted FASTA file.
 
 * `msg` Optional argument with a descriptive error string
 """
-type KFASTAError <: Exception
-  msg::AbstractString
+mutable struct KFASTAError <: Exception
+  msg::String
 end
 KFASTAError() = KFASTAError("")
+
+"""
+# Kpax3 Exception
+
+## Description
+
+Exception for a wrong formatted CSV file.
+
+## Fields
+
+* `msg` Optional argument with a descriptive error string
+"""
+mutable struct KCSVError <: Exception
+  msg::String
+end
+KCSVError() = KCSVError("")
 
 """
 # Kpax3 Exception
@@ -43,7 +59,7 @@ Exception for wrong data read from a source.
 
 * `msg` Optional argument with a descriptive error string
 """
-type KInputError <: Exception
-  msg::AbstractString
+mutable struct KInputError <: Exception
+  msg::String
 end
 KInputError() = KInputError("")

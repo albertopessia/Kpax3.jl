@@ -44,7 +44,7 @@ function test_traceR()
       e -= v[g, T] * (log(v[g, T]) - log(n)) / n
     end
 
-    @test_approx_eq_eps entropy[T] e ε
+    @test isapprox(entropy[T], e, atol=ε)
 
     T += 1
   end
@@ -57,7 +57,7 @@ function test_traceR()
   for t in 1:(N - l)
     z[t] = Kpax3.jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
-  @test_approx_eq_eps avgd[l] mean(z) ε
+  @test isapprox(avgd[l], mean(z), atol=ε)
 
   # test lag 5
   l = 5
@@ -65,7 +65,7 @@ function test_traceR()
   for t in 1:(N - l)
     z[t] = Kpax3.jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
-  @test_approx_eq_eps avgd[l] mean(z) ε
+  @test isapprox(avgd[l], mean(z), atol=ε)
 
   # test lag 13
   l = 13
@@ -73,7 +73,7 @@ function test_traceR()
   for t in 1:(N - l)
     z[t] = Kpax3.jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
-  @test_approx_eq_eps avgd[l] mean(z) ε
+  @test isapprox(avgd[l], mean(z), atol=ε)
 
   nothing
 end
@@ -129,7 +129,7 @@ function test_traceC()
       e -= v0[3] * log(v0[3])
     end
 
-    @test_approx_eq_eps entropy[T] e ε
+    @test isapprox(entropy[T], e, atol=ε)
 
     T += 1
   end
@@ -142,7 +142,7 @@ function test_traceC()
   for t in 1:(N - l)
     z[t] = Distances.hamming(C[:, t], C[:, t + l]) / m
   end
-  @test_approx_eq_eps avgd[l] mean(z) ε
+  @test isapprox(avgd[l], mean(z), atol=ε)
 
   # test lag 5
   l = 5
@@ -151,7 +151,7 @@ function test_traceC()
     z[t] = Distances.hamming(C[:, t], C[:, t + l]) / m
   end
 
-  @test_approx_eq_eps avgd[l] mean(z) ε
+  @test isapprox(avgd[l], mean(z), atol=ε)
 
   # test lag 13
   l = 13
@@ -160,7 +160,7 @@ function test_traceC()
     z[t] = Distances.hamming(C[:, t], C[:, t + l]) / m
   end
 
-  @test_approx_eq_eps avgd[l] mean(z) ε
+  @test isapprox(avgd[l], mean(z), atol=ε)
 
   nothing
 end
@@ -196,7 +196,7 @@ function test_imsevar()
 
   z = 0.0306296450517703523763746176200584159232676029205322265625
 
-  @test_approx_eq_eps Kpax3.imsevar(ac, N) z ε
+  @test isapprox(Kpax3.imsevar(ac, N), z, atol=ε)
 
   nothing
 end

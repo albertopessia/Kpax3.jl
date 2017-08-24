@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function processchain(x::AminoAcidData,
-                      fileroot::AbstractString)
+                      fileroot::String)
   # open and close output files to check writing permissions
   # fail early if we can't write, saving the computational time required to
   # process the chain
@@ -153,20 +153,31 @@ function processchain(x::AminoAcidData,
   write(fp, string("\"Site\",\"AminoAcid\",\"Proportion\",\"p('noise' | x)\",",
                    "\"p('weak signal' | x)\",\"p('strong signal' | x)\"\n"))
 
+  isuint8 = eltype(x.ref) == UInt8
+
+  polval = if isuint8
+              UInt8('.')
+            else
+              "."
+            end
+
   key = 0
   b = 1
   for j in 1:length(x.ref)
-    if x.ref[j] == UInt8('.')
+    if x.ref[j] == polval
       key += 1
 
       while (b <= m[1]) && (x.key[b] == key)
-        write(fp, string(j, ",\"", uppercase(Char(x.val[b])), "\",", p[b], ",",
-                         pC[1, b], ",", pC[2, b], ",", pC[3, b], "\n"))
+        write(fp, string(j, ",\"",
+                        uppercase(isuint8 ? string(Char(x.val[b])) : x.val[b]),
+                        "\",", p[b], ",", pC[1, b], ",", pC[2, b], ",",
+                        pC[3, b], "\n"))
         b += 1
       end
     else
-      write(fp, string(j, ",\"", uppercase(Char(x.ref[j])), "\",", 1.0, ",",
-                       1.0, ",", 0.0, ",", 0.0, "\n"))
+      write(fp, string(j, ",\"",
+                       uppercase(isuint8 ? string(Char(x.ref[j])) : x.ref[j]),
+                       "\",", 1.0, ",", 1.0, ",", 0.0, ",", 0.0, "\n"))
     end
   end
   close(fp)

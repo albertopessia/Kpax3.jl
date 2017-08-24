@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function test_state_list_constructor()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile)
@@ -46,7 +46,7 @@ function test_state_list_constructor()
     @test slist.state[i].loglik == t.loglik
     @test slist.state[i].logpp == t.logpp
 
-    @test_approx_eq_eps slist.logpp[i] slist.state[i].logpp ε
+    @test isapprox(slist.logpp[i], slist.state[i].logpp, atol=ε)
   end
 
   state = Kpax3.AminoAcidState(x.data, [3; 3; 3; 1; 1; 2], priorR, priorC, settings)
@@ -87,7 +87,7 @@ end
 test_state_list_constructor()
 
 function test_state_list_copy_basic()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile)

@@ -3,7 +3,7 @@
 # TODO: How to test properly initializestate?
 
 function test_state_constructor()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
@@ -39,7 +39,7 @@ function test_state_constructor()
   emptycluster[1:k] = false
 
   cl = zeros(Int, maxclust)
-  cl[1:k] = find(!emptycluster)
+  cl[1:k] = find(.!emptycluster)
 
   v = zeros(Int, maxclust)
   v[1:k] = [2; 2; 2]
@@ -69,8 +69,8 @@ function test_state_constructor()
   @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:maxclust]
 
   @test state.logpR == Kpax3.logdPriorRow(n, k, v, priorR)
-  @test_approx_eq_eps state.logpC[1] Kpax3.logpriorC(state.C, state.cl, state.k, priorC) ε
-  @test_approx_eq_eps state.logpC[2] Kpax3.logcondpostC(state.C, state.cl, state.k, state.v, state.n1s, priorC) ε
+  @test isapprox(state.logpC[1], Kpax3.logpriorC(state.C, state.cl, state.k, priorC), atol=ε)
+  @test isapprox(state.logpC[2], Kpax3.logcondpostC(state.C, state.cl, state.k, state.v, state.n1s, priorC), atol=ε)
 
   loglik = zeros(Float64, 3)
 
@@ -84,9 +84,9 @@ function test_state_constructor()
   loglik[3] = sum(Kpax3.logmarglik(vec(state.n1s[cl[3], :]), state.v[cl[3]], priorC.A[linearidx], priorC.B[linearidx]))
 
   ll = loglik[1] + loglik[2] + loglik[3]
-  @test_approx_eq_eps state.loglik ll ε
+  @test isapprox(state.loglik, ll, atol=ε)
 
-  @test_approx_eq_eps state.logpp (Kpax3.logdPriorRow(n, k, v, priorR) + Kpax3.logpriorC(state.C, state.cl, state.k, priorC) + ll) ε
+  @test isapprox(state.logpp, Kpax3.logdPriorRow(n, k, v, priorR) + Kpax3.logpriorC(state.C, state.cl, state.k, priorC) + ll, atol=ε)
 
   settings = Kpax3.KSettings("data/mcmc_6.fasta", "../build/test", maxclust=1, maxunit=1)
   x = Kpax3.AminoAcidData(settings)
@@ -127,8 +127,8 @@ function test_state_constructor()
   @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:maxclust]
 
   @test state.logpR == Kpax3.logdPriorRow(n, k, v, priorR)
-  @test_approx_eq_eps state.logpC[1] Kpax3.logpriorC(state.C, state.cl, state.k, priorC) ε
-  @test_approx_eq_eps state.logpC[2] Kpax3.logcondpostC(state.C, state.cl, state.k, state.v, state.n1s, priorC) ε
+  @test isapprox(state.logpC[1], Kpax3.logpriorC(state.C, state.cl, state.k, priorC), atol=ε)
+  @test isapprox(state.logpC[2], Kpax3.logcondpostC(state.C, state.cl, state.k, state.v, state.n1s, priorC), atol=ε)
 
   loglik = zeros(Float64, 4)
 
@@ -145,9 +145,9 @@ function test_state_constructor()
   loglik[4] = sum(Kpax3.logmarglik(vec(state.n1s[cl[4], :]), state.v[cl[4]], priorC.A[linearidx], priorC.B[linearidx]))
 
   ll = loglik[1] + loglik[2] + loglik[3] + loglik[4]
-  @test_approx_eq_eps state.loglik ll ε
+  @test isapprox(state.loglik, ll, atol=ε)
 
-  @test_approx_eq_eps state.logpp (Kpax3.logdPriorRow(n, k, v, priorR) + Kpax3.logpriorC(state.C, state.cl, state.k, priorC) + ll) ε
+  @test isapprox(state.logpp, Kpax3.logdPriorRow(n, k, v, priorR) + Kpax3.logpriorC(state.C, state.cl, state.k, priorC) + ll, atol=ε)
 
   nothing
 end
@@ -155,7 +155,7 @@ end
 test_state_constructor()
 
 function test_state_resizestate()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
@@ -389,7 +389,7 @@ end
 test_state_resizestate()
 
 function test_state_copy_basic()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
@@ -502,7 +502,7 @@ end
 test_state_copy_basic()
 
 function test_state_copy_with_resize()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
@@ -628,7 +628,7 @@ end
 test_state_copy_with_resize()
 
 function test_state_copy_without_resize()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
@@ -753,7 +753,7 @@ end
 test_state_copy_without_resize()
 
 function test_state_update_with_resize()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
@@ -808,7 +808,7 @@ end
 test_state_update_with_resize()
 
 function test_state_update_without_resize()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
@@ -865,7 +865,7 @@ end
 test_state_update_without_resize()
 
 function test_state_initializestate()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   data = UInt8[0 0 0 0 0 1;
@@ -922,7 +922,7 @@ function test_state_initializestate()
   @test s.logpC == t.logpC
   @test s.loglik == t.loglik
 
-  @test_approx_eq_eps s.logpp t.logpp ε
+  @test isapprox(s.logpp, t.logpp, atol=ε)
 
   nothing
 end

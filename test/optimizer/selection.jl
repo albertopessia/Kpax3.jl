@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function test_selection()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile)

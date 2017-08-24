@@ -7,7 +7,7 @@
 # c) move a unit from a cluster with 15 units to another cluster with 7 units
 
 function test_mcmc_partition_ratios()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile)
@@ -29,19 +29,19 @@ function test_mcmc_partition_ratios()
     lr1 = Kpax3.logdPriorRow(50, 6, [22;  8; 7; 5; 1; 7], ep) - Kpax3.logdPriorRow(50, 5, [22; 15; 7; 5; 1], ep)
 
     Kpax3.logratiopriorrowsplit!(6, ep, support)
-    @test_approx_eq_eps support.lograR lr1 ε
+    @test isapprox(support.lograR, lr1, atol=ε)
 
     Kpax3.logratiopriorrowmerge!(5, ep, support)
-    @test_approx_eq_eps support.lograR -lr1 ε
+    @test isapprox(support.lograR, -lr1, atol=ε)
 
     lr2 = Kpax3.logdPriorRow(50, 6, [22; 14; 7; 5; 1; 1], ep) - Kpax3.logdPriorRow(50, 5, [22; 15; 7; 5; 1], ep)
 
-    @test_approx_eq_eps Kpax3.logratiopriorrowsplit(6, 15, ep) lr2 ε
-    @test_approx_eq_eps Kpax3.logratiopriorrowmerge(5, 14, ep) -lr2 ε
+    @test isapprox(Kpax3.logratiopriorrowsplit(6, 15, ep), lr2, atol=ε)
+    @test isapprox(Kpax3.logratiopriorrowmerge(5, 14, ep), -lr2, atol=ε)
 
     lr3 = Kpax3.logdPriorRow(50, 5, [22; 14; 8; 5; 1], ep) - Kpax3.logdPriorRow(50, 5, [22; 15; 7; 5; 1], ep)
 
-    @test_approx_eq_eps Kpax3.logratiopriorrowmove(15, 7, ep) lr3 ε
+    @test isapprox(Kpax3.logratiopriorrowmove(15, 7, ep), lr3, atol=ε)
   end
 
   nothing
