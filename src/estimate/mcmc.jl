@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-function kpax3Restimate(fileroot::AbstractString)
+function kpax3Restimate(fileroot::String)
   (k, pk) = readposteriork(fileroot)
   (id, P) = readposteriorP(fileroot)
 
@@ -71,12 +71,12 @@ function kpax3estimate(x::AminoAcidData,
   op = copy(StatsBase.values(settings.op))
 
   settings = KSettings(settings.ifile, settings.ofile, settings.protein,
-                       settings.miss, settings.l, α, θ, γ, r,
+                       settings.miss, settings.misscsv, settings.l, α, θ, γ, r,
                        settings.maxclust, settings.maxunit, settings.verbose,
                        settings.verbosestep, settings.popsize,
                        settings.maxiter, settings.maxgap, settings.xrate,
                        settings.mrate, settings.T, settings.burnin,
-                       settings.tstep, StatsBase.WeightVec(op))
+                       settings.tstep, StatsBase.ProbabilityWeights(op))
 
   k = maximum(R)
 

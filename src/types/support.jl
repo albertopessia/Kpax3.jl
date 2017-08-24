@@ -1,12 +1,12 @@
 # This file is part of Kpax3. License is MIT.
 
-type KWeight
+mutable struct KWeight
   c::Vector{Float64}
   w::Matrix{Float64}
   z::Matrix{Float64}
 end
 
-type MCMCSupport
+mutable struct MCMCSupport
   m::Int
   n::Int
 
@@ -115,12 +115,12 @@ function resizesupport!(support::MCMCSupport,
   nothing
 end
 
-type KOffspring
+mutable struct KOffspring
   R::Vector{Int}
   v::Vector{Int}
 end
 
-type GASupport
+mutable struct GASupport
   m::Int
   n::Int
 

@@ -8,12 +8,13 @@
 ## Fields
 
 """
-immutable KSettings
-  ifile::AbstractString
-  ofile::AbstractString
+struct KSettings
+  ifile::String
+  ofile::String
   # Common parameters
   protein::Bool
   miss::Vector{UInt8}
+  misscsv::Vector{String}
   l::Int
   α::Real
   θ::Real
@@ -33,13 +34,14 @@ immutable KSettings
   T::Int
   burnin::Int
   tstep::Int
-  op::StatsBase.WeightVec
+  op::StatsBase.ProbabilityWeights
 end
 
-function KSettings(ifile::AbstractString,
-                   ofile::AbstractString;
+function KSettings(ifile::String,
+                   ofile::String;
                    protein::Bool=true,
                    miss::Vector{UInt8}=zeros(UInt8, 0),
+                   misscsv::Vector{String}=Array{String}(0),
                    l::Int=100000000,
                    alpha::Real=0.5,
                    theta::Real=-0.25,
@@ -113,6 +115,12 @@ function KSettings(ifile::AbstractString,
         end
       end
     end
+  end
+
+  if length(misscsv) == 0
+    misscsv = [""]
+  elseif !("" in misscsv)
+    insert!(misscsv, 1, "")
   end
 
   if l < 1
@@ -190,7 +198,7 @@ function KSettings(ifile::AbstractString,
     throw(KDomainError("Argument 'op[3]' is negative."))
   end
 
-  KSettings(ifile, ofile, protein, miss, l, alpha, theta, gamma, r, maxclust,
-            maxunit, verbose, verbosestep, popsize, maxiter, maxgap, xrate,
-            mrate, T, burnin, tstep, StatsBase.WeightVec(op))
+  KSettings(ifile, ofile, protein, miss, misscsv, l, alpha, theta, gamma, r,
+            maxclust, maxunit, verbose, verbosestep, popsize, maxiter, maxgap,
+            xrate, mrate, T, burnin, tstep, StatsBase.ProbabilityWeights(op))
 end

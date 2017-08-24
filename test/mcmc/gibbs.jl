@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function test_mcmc_gibbs_init()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=3, maxunit=1)
@@ -52,7 +52,7 @@ end
 test_mcmc_gibbs_init()
 
 function test_mcmc_gibbs_move()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=4, maxunit=1)
@@ -135,29 +135,29 @@ function test_mcmc_gibbs_move()
     @test support.lq[3, l, b] == Kpax3.logmarglik(y, v, priorC.A[3, b], priorC.B[3, b])
     @test support.lq[4, l, b] == Kpax3.logmarglik(y, v, priorC.A[4, b], priorC.B[4, b])
 
-    @test_approx_eq_eps support.lpi[1, b] (priorC.logγ[1] + support.lp[1, 1, b] + support.lp[1, 3, b]) ε
-    @test_approx_eq_eps support.lpi[2, b] (priorC.logγ[2] + support.lp[2, 1, b] + support.lp[2, 3, b]) ε
+    @test isapprox(support.lpi[1, b], priorC.logγ[1] + support.lp[1, 1, b] + support.lp[1, 3, b], atol=ε)
+    @test isapprox(support.lpi[2, b], priorC.logγ[2] + support.lp[2, 1, b] + support.lp[2, 3, b], atol=ε)
 
     z[1] = log(exp(priorC.logω[state.k][1] + support.lp[3, 1, b]) + exp(priorC.logω[state.k][2] + support.lp[4, 1, b]))
     z[2] = log(exp(priorC.logω[state.k][1] + support.lp[3, 3, b]) + exp(priorC.logω[state.k][2] + support.lp[4, 3, b]))
 
-    @test_approx_eq_eps support.lpi[3, b] (priorC.logγ[3] + z[1] + z[2]) ε
+    @test isapprox(support.lpi[3, b], priorC.logγ[3] + z[1] + z[2], atol=ε)
 
     z[1] = support.lq[1, 1, b] + support.lq[1, li, b] - support.lp[1, 1, b]
     z[2] = support.lq[1, 2, b] + support.lq[1, li, b] - support.lp[1, 3, b]
-    @test_approx_eq_eps support.lr[1, 1, b] z[1] ε
-    @test_approx_eq_eps support.lr[1, 2, b] z[2] ε
+    @test isapprox(support.lr[1, 1, b], z[1], atol=ε)
+    @test isapprox(support.lr[1, 2, b], z[2], atol=ε)
 
     z[1] = support.lq[2, 1, b] + support.lq[2, li, b] - support.lp[2, 1, b]
     z[2] = support.lq[2, 2, b] + support.lq[2, li, b] - support.lp[2, 3, b]
-    @test_approx_eq_eps support.lr[2, 1, b] z[1] ε
-    @test_approx_eq_eps support.lr[2, 2, b] z[2] ε
+    @test isapprox(support.lr[2, 1, b], z[1], atol=ε)
+    @test isapprox(support.lr[2, 2, b], z[2], atol=ε)
 
     z[1] = log(exp(priorC.logω[state.k][1] + support.lq[3, 1, b]) + exp(priorC.logω[state.k][2] + support.lq[4, 1, b])) - log(exp(priorC.logω[state.k][1] + support.lp[3, 1, b]) + exp(priorC.logω[state.k][2] + support.lp[4, 1, b]))
     z[2] = log(exp(priorC.logω[state.k][1] + support.lq[3, 2, b]) + exp(priorC.logω[state.k][2] + support.lq[4, 2, b])) - log(exp(priorC.logω[state.k][1] + support.lp[3, 3, b]) + exp(priorC.logω[state.k][2] + support.lp[4, 3, b]))
 
-    @test_approx_eq_eps support.lr[3, 1, b] z[1] ε
-    @test_approx_eq_eps support.lr[3, 2, b] z[2] ε
+    @test isapprox(support.lr[3, 1, b], z[1], atol=ε)
+    @test isapprox(support.lr[3, 2, b], z[2], atol=ε)
 
     Kpax3.gibbsupdateclusteri!(state.k, b, li, priorC, support)
 
@@ -172,7 +172,7 @@ function test_mcmc_gibbs_move()
     z[1] = priorC.logω[state.k][1] + support.lq[3, li, b]
     z[2] = priorC.logω[state.k][2] + support.lq[4, li, b]
 
-    @test_approx_eq_eps support.lpj[1, b] log(exp(z[1]) + exp(z[2])) ε
+    @test isapprox(support.lpj[1, b], log(exp(z[1]) + exp(z[2])),  atol=ε)
 
     Kpax3.gibbsupdateclusterj!(data[b, i], state.k + 1, b, li, lj, priorC, support)
 
@@ -182,7 +182,7 @@ function test_mcmc_gibbs_move()
     z[1] = priorC.logω[state.k + 1][1] + Kpax3.logmarglik(y, v, priorC.A[3, b], priorC.B[3, b])
     z[2] = priorC.logω[state.k + 1][2] + Kpax3.logmarglik(y, v, priorC.A[4, b], priorC.B[4, b])
 
-    @test_approx_eq_eps support.lpj[2, b] log(exp(z[1]) + exp(z[2])) ε
+    @test isapprox(support.lpj[2, b], log(exp(z[1]) + exp(z[2])), atol=ε)
 
     @test support.lq[1, lj, b] == Kpax3.logmarglik(data[b, i], 1, priorC.A[1, b], priorC.B[1, b])
     @test support.lq[2, lj, b] == Kpax3.logmarglik(data[b, i], 1, priorC.A[2, b], priorC.B[2, b])
@@ -192,7 +192,7 @@ function test_mcmc_gibbs_move()
     z[1] = priorC.logω[state.k + 1][1] + support.lq[3, lj, b]
     z[2] = priorC.logω[state.k + 1][2] + support.lq[4, lj, b]
 
-    @test_approx_eq_eps support.lpj[3, b] log(exp(z[1]) + exp(z[2])) ε
+    @test isapprox(support.lpj[3, b], log(exp(z[1]) + exp(z[2])), atol=ε)
   end
 
   Kpax3.gibbscomputeprobi!(li, support)
@@ -207,29 +207,29 @@ function test_mcmc_gibbs_move()
   su = Kpax3.MCMCSupport(st, priorC)
   t = Kpax3.clusterweight(state.v[1], priorR) + su.logmlik
 
-  @test_approx_eq_eps support.t[1] t ε
+  @test isapprox(support.t[1], t, atol=ε)
 
   st = Kpax3.AminoAcidState(data, [1; 1; 1; 2; 3; 3], priorR, priorC, settings)
   su = Kpax3.MCMCSupport(st, priorC)
   t = Kpax3.clusterweight(state.v[3], priorR) + su.logmlik
 
-  @test_approx_eq_eps support.t[2] t ε
+  @test isapprox(support.t[2], t, atol=ε)
 
   st = Kpax3.AminoAcidState(data, [1; 1; 1; 2; 2; 3], priorR, priorC, settings)
   su = Kpax3.MCMCSupport(st, priorC)
   t = Kpax3.clusterweight(state.v[2] - 1, priorR) + su.logmlik
 
-  @test_approx_eq_eps support.t[li] t ε
+  @test isapprox(support.t[li], t, atol=ε)
 
   st = Kpax3.AminoAcidState(data, [1; 1; 1; 2; 4; 3], priorR, priorC, settings)
   su = Kpax3.MCMCSupport(st, priorC)
   t = Kpax3.clusterweight(1, state.k, priorR) + su.logmlik
 
-  @test_approx_eq_eps support.t[lj] t ε
+  @test isapprox(support.t[lj], t, atol=ε)
 
   logc = Kpax3.gibbscomputenormconst(lj, support)
 
-  @test_approx_eq_eps logc log(sum(exp(support.t[1:4]))) ε
+  @test isapprox(logc, log(sum(exp.(support.t[1:4]))), atol=ε)
 
   nothing
 end
@@ -237,7 +237,7 @@ end
 test_mcmc_gibbs_move()
 
 function test_mcmc_gibbs_merge()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=3, maxunit=1)
@@ -315,29 +315,29 @@ function test_mcmc_gibbs_merge()
     @test support.lq[3, l, b] == Kpax3.logmarglik(y, v, priorC.A[3, b], priorC.B[3, b])
     @test support.lq[4, l, b] == Kpax3.logmarglik(y, v, priorC.A[4, b], priorC.B[4, b])
 
-    @test_approx_eq_eps support.lpi[1, b] (priorC.logγ[1] + support.lp[1, 1, b] + support.lp[1, 2, b]) ε
-    @test_approx_eq_eps support.lpi[2, b] (priorC.logγ[2] + support.lp[2, 1, b] + support.lp[2, 2, b]) ε
+    @test isapprox(support.lpi[1, b], priorC.logγ[1] + support.lp[1, 1, b] + support.lp[1, 2, b], atol=ε)
+    @test isapprox(support.lpi[2, b], priorC.logγ[2] + support.lp[2, 1, b] + support.lp[2, 2, b], atol=ε)
 
     z[1] = log(exp(priorC.logω[support.k][1] + support.lp[3, 1, b]) + exp(priorC.logω[support.k][2] + support.lp[4, 1, b]))
     z[2] = log(exp(priorC.logω[support.k][1] + support.lp[3, 2, b]) + exp(priorC.logω[support.k][2] + support.lp[4, 2, b]))
 
-    @test_approx_eq_eps support.lpi[3, b] (priorC.logγ[3] + z[1] + z[2]) ε
+    @test isapprox(support.lpi[3, b], priorC.logγ[3] + z[1] + z[2], atol=ε)
 
     z[1] = support.lq[1, 1, b] + support.lq[1, li, b] - support.lp[1, 1, b]
     z[2] = support.lq[1, 2, b] + support.lq[1, li, b] - support.lp[1, 2, b]
-    @test_approx_eq_eps support.lr[1, 1, b] z[1] ε
-    @test_approx_eq_eps support.lr[1, 2, b] z[2] ε
+    @test isapprox(support.lr[1, 1, b], z[1], atol=ε)
+    @test isapprox(support.lr[1, 2, b], z[2], atol=ε)
 
     z[1] = support.lq[2, 1, b] + support.lq[2, li, b] - support.lp[2, 1, b]
     z[2] = support.lq[2, 2, b] + support.lq[2, li, b] - support.lp[2, 2, b]
-    @test_approx_eq_eps support.lr[2, 1, b] z[1] ε
-    @test_approx_eq_eps support.lr[2, 2, b] z[2] ε
+    @test isapprox(support.lr[2, 1, b], z[1], atol=ε)
+    @test isapprox(support.lr[2, 2, b], z[2], atol=ε)
 
     z[1] = log(exp(priorC.logω[support.k][1] + support.lq[3, 1, b]) + exp(priorC.logω[support.k][2] + support.lq[4, 1, b])) + support.lpj[1, b] - log(exp(priorC.logω[support.k][1] + support.lp[3, 1, b]) + exp(priorC.logω[support.k][2] + support.lp[4, 1, b]))
     z[2] = log(exp(priorC.logω[support.k][1] + support.lq[3, 2, b]) + exp(priorC.logω[support.k][2] + support.lq[4, 2, b])) + support.lpj[1, b] - log(exp(priorC.logω[support.k][1] + support.lp[3, 2, b]) + exp(priorC.logω[support.k][2] + support.lp[4, 2, b]))
 
-    @test_approx_eq_eps support.lr[3, 1, b] z[1] ε
-    @test_approx_eq_eps support.lr[3, 2, b] z[2] ε
+    @test isapprox(support.lr[3, 1, b], z[1], atol=ε)
+    @test isapprox(support.lr[3, 2, b], z[2], atol=ε)
   end
 
   Kpax3.gibbscomputeprobi!(lj, support)
@@ -351,23 +351,23 @@ function test_mcmc_gibbs_merge()
   su = Kpax3.MCMCSupport(st, priorC)
   t = Kpax3.clusterweight(state.v[1], priorR) + su.logmlik
 
-  @test_approx_eq_eps support.t[1] t ε
+  @test isapprox(support.t[1], t, atol=ε)
 
   st = Kpax3.AminoAcidState(data, [1; 1; 1; 2; 2; 2], priorR, priorC, settings)
   su = Kpax3.MCMCSupport(st, priorC)
   t = Kpax3.clusterweight(state.v[2], priorR) + su.logmlik
 
-  @test_approx_eq_eps support.t[2] t ε
+  @test isapprox(support.t[2], t, atol=ε)
 
   st = Kpax3.AminoAcidState(data, [1; 1; 1; 2; 2; 3], priorR, priorC, settings)
   su = Kpax3.MCMCSupport(st, priorC)
   t = Kpax3.clusterweight(1, state.k - 1, priorR) + su.logmlik
 
-  @test_approx_eq_eps support.t[lj] t ε
+  @test isapprox(support.t[lj], t, atol=ε)
 
   logc = Kpax3.gibbscomputenormconst(lj, support)
 
-  @test_approx_eq_eps logc log(sum(exp(support.t[1:3]))) ε
+  @test isapprox(logc, log(sum(exp.(support.t[1:3]))), atol=ε)
 
   nothing
 end
@@ -375,7 +375,7 @@ end
 test_mcmc_gibbs_merge()
 
 function test_mcmc_gibbs_sample_cluster()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=4, maxunit=1)
@@ -427,7 +427,7 @@ function test_mcmc_gibbs_sample_cluster()
 
   counter /= N
 
-  @test maximum(abs(counter - [0.4; 0.3; 0.2; 0.1; 0.0; 0.0])) <= 0.005
+  @test maximum(abs.(counter - [0.4; 0.3; 0.2; 0.1; 0.0; 0.0])) <= 0.005
 
   nothing
 end
@@ -435,7 +435,7 @@ end
 test_mcmc_gibbs_sample_cluster()
 
 function test_mcmc_gibbs_perform_move()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=4, maxunit=1)
@@ -549,9 +549,9 @@ function test_mcmc_gibbs_perform_move()
   @test state.n1s[3, :] == st.n1s[3, :]
   @test state.unit[3][1:state.v[3]] == [6; 5]
 
-  @test_approx_eq_eps state.logpR st.logpR ε
+  @test isapprox(state.logpR, st.logpR, atol=ε)
 
-  @test_approx_eq_eps support.logmlik su.logmlik ε
+  @test isapprox(support.logmlik, su.logmlik, atol=ε)
 
   @test support.lp == su.lp
 
@@ -561,7 +561,7 @@ end
 test_mcmc_gibbs_perform_move()
 
 function test_mcmc_gibbs_perform_merge()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile, maxclust=3, maxunit=1)
@@ -662,9 +662,9 @@ function test_mcmc_gibbs_perform_merge()
 
   @test state.emptycluster[3]
 
-  @test_approx_eq_eps state.logpR st.logpR ε
+  @test isapprox(state.logpR, st.logpR, atol=ε)
 
-  @test_approx_eq_eps support.logmlik su.logmlik ε
+  @test isapprox(support.logmlik, su.logmlik, atol=ε)
 
   @test support.lp[:, 1:2, :] == su.lp[:, 1:2, :]
 
@@ -674,7 +674,7 @@ end
 test_mcmc_gibbs_perform_merge()
 
 function test_mcmc_gibbs_perform_split()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   # state should be resized
@@ -798,9 +798,9 @@ function test_mcmc_gibbs_perform_split()
   @test state.n1s[4, :] == st.n1s[4, :]
   @test state.unit[4][1:state.v[4]] == [i]
 
-  @test_approx_eq_eps state.logpR st.logpR ε
+  @test isapprox(state.logpR, st.logpR, atol=ε)
 
-  @test_approx_eq_eps support.logmlik su.logmlik ε
+  @test isapprox(support.logmlik, su.logmlik, atol=ε)
 
   @test support.lp[:, 1:4, :] == su.lp
 

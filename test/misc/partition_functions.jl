@@ -4,7 +4,7 @@
 #       modifyscramble
 
 function test_partition_functions_initializepartition()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   settings = Kpax3.KSettings(ifile, ofile)

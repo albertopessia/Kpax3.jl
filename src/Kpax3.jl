@@ -22,6 +22,7 @@ module Kpax3
   # types
   KSettings,
   AminoAcidData,
+  CategoricalData,
   AminoAcidState,
 
   # distances

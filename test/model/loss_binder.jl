@@ -17,10 +17,10 @@ function test_loss_binder()
               1 1 1 1 1 1;
               1 1 1 1 1 1]
 
-  losscorrect = sum(abs(A - P)) / 2
+  losscorrect = sum(abs.(A - P)) / 2
   lossfunction = Kpax3.loss_binder(R, P)
 
-  @test_approx_eq_eps lossfunction losscorrect ε
+  @test isapprox(lossfunction, losscorrect, atol=ε)
 
   # k = 2
   R = Int[1; 1; 2; 2; 1; 2]
@@ -31,10 +31,10 @@ function test_loss_binder()
               1 1 0 0 1 0;
               0 0 1 1 0 1]
 
-  losscorrect = sum(abs(A - P)) / 2
+  losscorrect = sum(abs.(A - P)) / 2
   lossfunction = Kpax3.loss_binder(R, P)
 
-  @test_approx_eq_eps lossfunction losscorrect ε
+  @test isapprox(lossfunction, losscorrect, atol=ε)
 
   R = Int[2; 1; 2; 1; 2; 1]
   A = Float64[1 0 1 0 1 0;
@@ -44,10 +44,10 @@ function test_loss_binder()
               1 0 1 0 1 0;
               0 1 0 1 0 1]
 
-  losscorrect = sum(abs(A - P)) / 2
+  losscorrect = sum(abs.(A - P)) / 2
   lossfunction = Kpax3.loss_binder(R, P)
 
-  @test_approx_eq_eps lossfunction losscorrect ε
+  @test isapprox(lossfunction, losscorrect, atol=ε)
 
   # k = 3
   R = Int[1; 1; 2; 2; 3; 2]
@@ -58,10 +58,10 @@ function test_loss_binder()
               0 0 0 0 1 0;
               0 0 1 1 0 1]
 
-  losscorrect = sum(abs(A - P)) / 2
+  losscorrect = sum(abs.(A - P)) / 2
   lossfunction = Kpax3.loss_binder(R, P)
 
-  @test_approx_eq_eps lossfunction losscorrect ε
+  @test isapprox(lossfunction, losscorrect, atol=ε)
 
   R = Int[1; 2; 3; 1; 2; 3]
   A = Float64[1 0 0 1 0 0;
@@ -71,10 +71,10 @@ function test_loss_binder()
               0 1 0 0 1 0;
               0 0 1 0 0 1]
 
-  losscorrect = sum(abs(A - P)) / 2
+  losscorrect = sum(abs.(A - P)) / 2
   lossfunction = Kpax3.loss_binder(R, P)
 
-  @test_approx_eq_eps lossfunction losscorrect ε
+  @test isapprox(lossfunction, losscorrect, atol=ε)
 
   # k = 4
   R = Int[1; 1; 2; 2; 3; 4]
@@ -85,10 +85,10 @@ function test_loss_binder()
               0 0 0 0 1 0;
               0 0 0 0 0 1]
 
-  losscorrect = sum(abs(A - P)) / 2
+  losscorrect = sum(abs.(A - P)) / 2
   lossfunction = Kpax3.loss_binder(R, P)
 
-  @test_approx_eq_eps lossfunction losscorrect ε
+  @test isapprox(lossfunction, losscorrect, atol=ε)
 
   R = Int[1; 2; 3; 4; 3; 2]
   A = Float64[1 0 0 0 0 0;
@@ -98,10 +98,10 @@ function test_loss_binder()
               0 0 1 0 1 0;
               0 1 0 0 0 1]
 
-  losscorrect = sum(abs(A - P)) / 2
+  losscorrect = sum(abs.(A - P)) / 2
   lossfunction = Kpax3.loss_binder(R, P)
 
-  @test_approx_eq_eps lossfunction losscorrect ε
+  @test isapprox(lossfunction, losscorrect, atol=ε)
 
   # k = 5
   R = Int[1; 2; 3; 3; 4; 5]
@@ -112,10 +112,10 @@ function test_loss_binder()
               0 0 0 0 1 0;
               0 0 0 0 0 1]
 
-  losscorrect = sum(abs(A - P)) / 2
+  losscorrect = sum(abs.(A - P)) / 2
   lossfunction = Kpax3.loss_binder(R, P)
 
-  @test_approx_eq_eps lossfunction losscorrect ε
+  @test isapprox(lossfunction, losscorrect, atol=ε)
 
   R = Int[1; 2; 3; 4; 1; 5]
   A = Float64[1 0 0 0 1 0;
@@ -125,10 +125,10 @@ function test_loss_binder()
               1 0 0 0 1 0;
               0 0 0 0 0 1]
 
-  losscorrect = sum(abs(A - P)) / 2
+  losscorrect = sum(abs.(A - P)) / 2
   lossfunction = Kpax3.loss_binder(R, P)
 
-  @test_approx_eq_eps lossfunction losscorrect ε
+  @test isapprox(lossfunction, losscorrect, atol=ε)
 
   # k = 6
   R = Int[1; 2; 3; 4; 5; 6]
@@ -139,10 +139,10 @@ function test_loss_binder()
               0 0 0 0 1 0;
               0 0 0 0 0 1]
 
-  losscorrect = sum(abs(A - P)) / 2
+  losscorrect = sum(abs.(A - P)) / 2
   lossfunction = Kpax3.loss_binder(R, P)
 
-  @test_approx_eq_eps lossfunction losscorrect ε
+  @test isapprox(lossfunction, losscorrect, atol=ε)
 
   nothing
 end

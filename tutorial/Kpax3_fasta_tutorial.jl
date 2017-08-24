@@ -33,7 +33,7 @@
 # the commands into your julia environment. Alternatively, it is also possible
 # to run the script directly from the command line by typing:
 #
-# julia Kpax3_tutorial.jl
+# julia Kpax3_fasta_tutorial.jl
 #
 # from within the directory where the file is located.
 #
@@ -108,18 +108,27 @@ output_file = "path_to_output_file";
 #
 # - Missing values
 # First of all, we need to specify which characters are to be considered
-# missing data. Variable format is a UInt8 vector representing the characters.
+# missing data.
 #
-# Default value:
-# miss = UInt8['?', '*', '#', '-', 'b', 'j', 'x', 'z']
+# If the dataset is contained in a fasta file (genetic data), then the variable
+# is called `miss` and the format is a UInt8 vector representing the
+# characters:
+#   Default value:
+#     miss = UInt8['?', '*', '#', '-', 'b', 'j', 'x', 'z']
+#
+# If the dataset is contained in a csv file (generic categorical data), then
+# the variable is called `misscsv` and the format is a String vector
+# representing the values:
+#  Default value:
+#    misscsv = [""]
 #
 # - Ewens-Pitman distribution for the partition
 # alpha is a Float64 variable constrained in (0, 1).
 # theta is a Float64 variable constrained in (-alpha, infinity)
 #
 # Default values:
-# alpha = 0.5
-# theta = -0.25
+#   alpha = 0.5
+#   theta = -0.25
 #
 # - Column status prior probabilities
 # This is a non-negative Float64 vector of length 3. If it does not sum to 1,
@@ -131,16 +140,16 @@ output_file = "path_to_output_file";
 # - informative and characteristic for a cluster (strong signal)
 #
 # Default value:
-# gamma = [0.6; 0.35; 0.05]
+#   gamma = [0.6; 0.35; 0.05]
 #
 # - Beta distribution hyper-parameter
 # This is a Float64 variable and it's a bit tricky to explain and to properly
 # setup. You can do it on your own, of course, but it requires some good
 # understanding of the model. Read the Pessia and Corander (2017) paper to
-# learn its usage (r = 1 - nu). I suggest leaving it to its default value.
+# learn its usage. I suggest leaving it to its default value.
 #
 # Default value:
-# r = log(0.001) / log(0.95)
+#   r = log(0.001) / log(0.95)
 #
 # - General settings
 # Boolean variable 'verbose' to print diagnostics messages during run.
@@ -148,8 +157,8 @@ output_file = "path_to_output_file";
 # number of steps.
 #
 # Default values:
-# verbose = false
-# verbosestep = 500
+#   verbose = false
+#   verbosestep = 500
 #
 # - MCMC settings
 # Integer variable 'T' to choose the length of the Markov Chain.
@@ -162,10 +171,10 @@ output_file = "path_to_output_file";
 # datasets, gibbs sampler might be needed to reach convergence.
 #
 # Default values:
-# T = 100000
-# burnin = 10000
-# tstep = 1
-# op = [0.5; 0.0; 0.5]
+#   T = 100000
+#   burnin = 10000
+#   tstep = 1
+#   op = [0.5; 0.0; 0.5]
 #
 # - Genetic Algorithm settings
 # Integer variable 'popsize' to choose the population size.
@@ -176,11 +185,11 @@ output_file = "path_to_output_file";
 # Float64 variable 'mrate' for mutation rate.
 #
 # Default values:
-# popsize = 20
-# maxiter = 20000
-# maxgap = 5000
-# xrate = 0.9
-# mrate = 0.005
+#   popsize = 20
+#   maxiter = 20000
+#   maxgap = 5000
+#   xrate = 0.9
+#   mrate = 0.005
 # -----------------------------------------------------------------------------
 
 # To save time in this tutorial, we will simulate a short chain. For a real
@@ -189,6 +198,7 @@ output_file = "path_to_output_file";
 settings = KSettings(input_file,
                      output_file,
                      miss=UInt8['?', '*', '#', '-', 'b', 'j', 'x', 'z'],
+                     misscsv=[""],
                      alpha=0.5,
                      theta=-0.25,
                      gamma=[0.6; 0.35; 0.05],
@@ -227,6 +237,7 @@ zika_data = AminoAcidData(settings);
 # 2) Heuristically find a good initial partition.
 #
 # Here, we will opt for the second option.
+#
 initial_partition = initializepartition(settings);
 
 # The csv file can be either a single column of integers (cluster indices)
@@ -267,7 +278,7 @@ map_solution = kpax3ga(zika_data, initial_partition, settings);
 #
 # To obtain a measure of uncertainty regarding the parameters of interest, we
 # need to sample realizations of such parameters from the posterior
-# distribution. We will do it by simulation of a Markov Chain.
+# distribution. We will do it by simulating a Markov Chain.
 #
 # NOTE
 # This step is going to take a while.
@@ -282,12 +293,13 @@ kpax3mcmc(zika_data, initial_partition, settings);
 # Compute the estimate that minimize the posterior expected loss
 mcmc_solution = kpax3estimate(zika_data, settings);
 
-# If the MAP estimate is a local optmimum, it might happen that the MCMC
+# If the MAP estimate is a local optimum, it might happen that the MCMC
 # estimate will have a higher posterior probability
 if mcmc_solution.logpp > map_solution.logpp
   # let's try again starting from a better solution. If no solution is found,
   # map_solution will be equal to mcmc_solution
   map_solution = kpax3ga(zika_data, mcmc_solution.R, settings);
+  nothing;
 end
 
 ###############################################################################
@@ -307,15 +319,23 @@ writeresults(zika_data, map_solution, map_output_file, what=4, verbose=true);
 writeresults(zika_data, mcmc_solution, mcmc_output_file, what=4, verbose=true);
 
 # Output description:
-# filename_summary.txt        = Text file with the log posterior probability.
-#                               This can be used to compare different parallel
-#                               runs.
-# filename_partition.csv      = Best partition found by the algorithm.
-# filename_attributes.csv     = Complete columns classification matrix.
-# filename_characteristic.csv = Characteristic sites and their corresponding
-#                               values.
-# filename_dataset.txt        = Original dataset with highlighted clusters and
-#                               their corresponding characteristic values.
+# If what = 1:
+#   filename_summary.txt        = Text file with the log posterior probability.
+#                                 This can be used to compare different
+#                                 parallel runs.
+#   filename_partition.csv      = Best partition found by the algorithm.
+#
+# If what = 2 writes all the previous files plus:
+#   filename_attributes.csv     = Complete columns classification matrix.
+#
+# If what = 3 writes all the previous files plus:
+#   filename_characteristic.csv = Characteristic sites and their corresponding
+#                                 values.
+#
+# If what = 4 writes all the previous files plus:
+#   filename_dataset.txt        = Original dataset with highlighted clusters
+#                                 and their corresponding characteristic
+#                                 values.
 #
 # To immediately check if the estimate is reliable, open
 # "filename_characteristic.csv" and count how many characteristic sites have

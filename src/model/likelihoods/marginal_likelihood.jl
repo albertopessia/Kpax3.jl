@@ -4,7 +4,7 @@ function logmarglik(y::Vector{Float64},
                     n::Real,
                     α::Vector{Float64},
                     β::Vector{Float64})
-  lbeta(α + y, β + n - y) - lbeta(α, β)
+  lbeta.(α + y, β + n - y) - lbeta.(α, β)
 end
 
 function logmarglik(y::Real,
@@ -35,7 +35,7 @@ function marglik(y::Vector{Float64},
                  n::Real,
                  α::Vector{Float64},
                  β::Vector{Float64})
-  exp(logmarglik(y, n, α, β))
+  exp.(logmarglik(y, n, α, β))
 end
 
 function marglik(y::Real,
@@ -50,7 +50,7 @@ function condmarglik(x::Vector{UInt8},
                      n::Real,
                      α::Vector{Float64},
                      β::Vector{Float64})
-  exp(logcondmarglik(x, y, n, α, β))
+  exp.(logcondmarglik(x, y, n, α, β))
 end
 
 function condmarglik(x::Real,

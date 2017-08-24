@@ -17,7 +17,7 @@ import Measures
 
 import Kpax3: AminoAcidData, AminoAcidState, reorderunits, computefontsize
 
-immutable Kpax3RectangularBinGeometry  <: Gadfly.GeometryElement
+struct Kpax3RectangularBinGeometry  <: Gadfly.GeometryElement
   tag::Symbol
 
   function Kpax3RectangularBinGeometry(; tag::Symbol=Gadfly.Geom.empty_tag)

@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-abstract PriorRowPartition
+abstract type PriorRowPartition end
 
 """
 # Ewens-Pitman distribution
@@ -49,7 +49,7 @@ Pitman, J. (2006) Combinatorial Stochastic Processes. In *Ecole d’Eté de
 Probabilités de Saint-Flour XXXII – 2002*. Lecture Notes in Mathematics
 **1875**. Springer Berlin Heidelberg. <http://dx.doi.org/10.1007/b11601500>.
 """
-abstract EwensPitman <: PriorRowPartition
+abstract type EwensPitman <: PriorRowPartition end
 
 """
 # Ewens-Pitman distribution
@@ -63,7 +63,7 @@ Ewens-Pitman distribution with 0 < α < 1,  θ > -α and θ ≠ 0.
 * `α` Real number greater than zero and lesser than one
 * `θ` Real number greater than `-α` but different from zero
 """
-immutable EwensPitmanPAUT <: EwensPitman
+struct EwensPitmanPAUT <: EwensPitman
   α::Float64
   θ::Float64
 end
@@ -79,7 +79,7 @@ Ewens-Pitman distribution with 0 < α < 1 and θ = 0.
 
 * `α` Real number greater than zero and lesser than one
 """
-immutable EwensPitmanPAZT <: EwensPitman
+struct EwensPitmanPAZT <: EwensPitman
   α::Float64
 end
 
@@ -95,7 +95,7 @@ sampling formula.
 
 * `θ` Real number greater than zero
 """
-immutable EwensPitmanZAPT <: EwensPitman
+struct EwensPitmanZAPT <: EwensPitman
   θ::Float64
 end
 
@@ -112,7 +112,7 @@ L ∈ {1, 2, ...}.
 * `α` Real number lesser than zero
 * `L` Integer number greater than zero
 """
-immutable EwensPitmanNAPT <: EwensPitman
+struct EwensPitmanNAPT <: EwensPitman
   α::Float64
   L::Int
 end
