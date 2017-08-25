@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-function save(ofile::AbstractString,
+function save(ofile::String,
               x::KData)
   # create directory if it does not exist
   dirpath = dirname(ofile)
@@ -13,7 +13,7 @@ function save(ofile::AbstractString,
            x.key, compress=true)
 end
 
-function loadnt(ifile::AbstractString)
+function loadnt(ifile::String)
   # open ifile for reading and immediately close it. We do this to throw a
   # proper Julia standard exception if something is wrong
   f = open(ifile, "r")
@@ -23,7 +23,7 @@ function loadnt(ifile::AbstractString)
   NucleotideData(d, id, ref, val, key)
 end
 
-function loadaa(ifile::AbstractString)
+function loadaa(ifile::String)
   # open ifile for reading and immediately close it. We do this to throw a
   # proper Julia standard exception if something is wrong
   f = open(ifile, "r")

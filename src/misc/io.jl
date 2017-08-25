@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-function readposteriork(fileroot::AbstractString)
+function readposteriork(fileroot::String)
   d = readcsv(string(fileroot, "_posterior_k.csv"), String, header=true)
 
   len = size(d[1], 1)
@@ -16,7 +16,7 @@ function readposteriork(fileroot::AbstractString)
   (k, pk)
 end
 
-function readposteriorP(fileroot::AbstractString)
+function readposteriorP(fileroot::String)
   d = readcsv(string(fileroot, "_posterior_R.csv"), String, header=true)
 
   len = size(d[1], 1)
@@ -39,7 +39,7 @@ function readposteriorP(fileroot::AbstractString)
   (id, P)
 end
 
-function readposteriorC(fileroot::AbstractString)
+function readposteriorC(fileroot::String)
   d = readcsv(string(fileroot, "_posterior_C.csv"), String, header=true)
 
   len = size(d[1], 1)

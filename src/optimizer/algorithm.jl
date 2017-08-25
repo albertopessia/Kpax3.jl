@@ -180,7 +180,7 @@ function kpax3ga(x::AminoAcidData,
   kpax3ga!(x, population, priorR, priorC, settings, support)
 end
 
-function kpax3ga(partition::AbstractString,
+function kpax3ga(partition::String,
                  settings::KSettings)
   x = AminoAcidData(settings)
   (m, n) = size(x.data)
@@ -201,7 +201,7 @@ function kpax3ga(partition::AbstractString,
 end
 
 function kpax3ga(x::AminoAcidData,
-                 partition::AbstractString,
+                 partition::String,
                  settings::KSettings)
   (m, n) = size(x.data)
 

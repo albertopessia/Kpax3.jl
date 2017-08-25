@@ -1,9 +1,9 @@
 # This file is part of Kpax3. License is MIT.
 
 function test_write_results()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
-  partition = "data/proper_aa_partition.csv"
+  partition = "data/output_fasta_proper_aa_partition.csv"
 
   settings = Kpax3.KSettings(ifile, ofile, gamma=[0.4; 0.35; 0.25])
 
@@ -26,10 +26,10 @@ function test_write_results()
   y5 = readstring("../build/test_results_dataset.txt")
 
   @test y1 == readstring(partition)
-  @test_approx_eq_eps y2 state.logpp ε
-  @test y3 == readstring("data/proper_aa_attributes.csv")
-  @test y4 == readstring("data/proper_aa_characteristic.csv")
-  @test y5 == readstring("data/proper_aa_dataset.txt")
+  @test isapprox(y2, state.logpp, rtol=ε)
+  @test y3 == readstring("data/output_fasta_proper_aa_attributes.csv")
+  @test y4 == readstring("data/output_fasta_proper_aa_characteristic.csv")
+  @test y5 == readstring("data/output_fasta_proper_aa_dataset.txt")
 
   nothing
 end

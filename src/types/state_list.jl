@@ -1,8 +1,8 @@
 # This file is part of Kpax3. License is MIT.
 
-abstract StateList
+abstract type StateList end
 
-type AminoAcidStateList <: StateList
+mutable struct AminoAcidStateList <: StateList
   state::Vector{AminoAcidState}
   logpp::Vector{Float64}
   rank::Vector{Int}

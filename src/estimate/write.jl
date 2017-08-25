@@ -2,7 +2,7 @@
 
 function writeresults(x::KData,
                       state::State,
-                      file::AbstractString;
+                      file::String;
                       what::Int=1,
                       verbose::Bool=false)
   dirpath = dirname(file)
@@ -42,10 +42,18 @@ end
 
 function writeattributes(x::KData,
                          state::State,
-                         file::AbstractString,
+                         file::String,
                          verbose::Bool)
   (m, n) = size(x.data)
   M = length(x.ref)
+
+  isuint8 = eltype(x.ref) == UInt8
+
+  polval = if isuint8
+              UInt8('.')
+            else
+              "."
+            end
 
   # attributes
   C = ones(UInt8, state.k, M)
@@ -61,7 +69,7 @@ function writeattributes(x::KData,
   v = 0x01
 
   for j in 1:M
-    if x.ref[j] == UInt8('.')
+    if x.ref[j] == polval
       s += 1
       b = t
       v = 0x01
@@ -112,13 +120,21 @@ end
 
 function writecvalues(x::KData,
                       state::State,
-                      file::AbstractString,
+                      file::String,
                       verbose::Bool)
   (m, n) = size(x.data)
   M = length(x.ref)
 
+  isuint8 = eltype(x.ref) == UInt8
+
+  polval = if isuint8
+              UInt8('.')
+            else
+              "."
+            end
+
   # characteristic values
-  V = fill(' ', (state.k, M))
+  V = fill(" ", (state.k, M))
 
   # column index in x.key
   s = 0
@@ -140,7 +156,7 @@ function writecvalues(x::KData,
   write(fp, string("\"Cluster ", state.k, "\"\n"))
 
   for j in 1:M
-    if x.ref[j] == UInt8('.')
+    if x.ref[j] == polval
       s += 1
       b = t
       v = 0x01
@@ -165,7 +181,9 @@ function writecvalues(x::KData,
           end
 
           if flag
-            V[l, j] = uppercase(Char(x.val[z - 1]))
+            V[l, j] = uppercase(isuint8 ?
+                                string(Char(x.val[z - 1])) :
+                                x.val[z - 1])
             write(fp, string("\"", V[l, j], "\","))
           else
             write(fp, ",")
@@ -181,7 +199,9 @@ function writecvalues(x::KData,
         end
 
         if flag
-          V[state.k, j] = uppercase(Char(x.val[z - 1]))
+          V[state.k, j] = uppercase(isuint8 ?
+                                    string(Char(x.val[z - 1])) :
+                                    x.val[z - 1])
           write(fp, string("\"", V[state.k, j], "\"\n"))
         else
           write(fp, "\n")
@@ -203,14 +223,22 @@ end
 
 function writedataset(x::KData,
                       state::State,
-                      file::AbstractString,
+                      file::String,
                       verbose::Bool,
-                      V::Matrix{Char})
+                      V::Matrix{String})
   (m, n) = size(x.data)
   M = length(x.ref)
 
+  isuint8 = eltype(x.ref) == UInt8
+
+  polval = if isuint8
+              UInt8('.')
+            else
+              "."
+            end
+
   # reconstruct original dataset
-  D = fill(' ', (M, n))
+  D = fill(" ", (M, n))
 
   # column index in x.key
   s = 0
@@ -228,15 +256,15 @@ function writedataset(x::KData,
     g = state.R[a]
 
     for j in 1:M
-      if x.ref[j] == UInt8('.')
+      if x.ref[j] == polval
         s += 1
         b = t
 
         while (b <= m) && (x.key[b] == s)
           if x.data[b, a] == 0x01
             D[j, a] = (state.C[g, b] == 0x04) ?
-                      uppercase(Char(x.val[b])) :
-                      lowercase(Char(x.val[b]))
+                      uppercase(isuint8 ? string(Char(x.val[b])) : x.val[b]) :
+                      lowercase(isuint8 ? string(Char(x.val[b])) : x.val[b])
           end
           b += 1
         end
@@ -249,14 +277,14 @@ function writedataset(x::KData,
   fp = open("$(file)_dataset.txt", "w")
   for l in 1:(state.k - 1)
     for j in 1:M
-      write(fp, string(V[l, j]))
+      write(fp, V[l, j])
     end
     write(fp, "\n")
 
     for i in 1:state.v[state.cl[l]]
       a = state.unit[state.cl[l]][i]
       for j in 1:M
-        write(fp, string(D[j, a]))
+        write(fp, D[j, a])
       end
       write(fp, string(" ; ", x.id[a], "\n"))
     end
@@ -265,14 +293,14 @@ function writedataset(x::KData,
   end
 
   for j in 1:M
-    write(fp, string(V[state.k, j]))
+    write(fp, V[state.k, j])
   end
   write(fp, "\n")
 
   for i in 1:state.v[state.cl[state.k]]
     a = state.unit[state.cl[state.k]][i]
     for j in 1:M
-      write(fp, string(D[j, a]))
+      write(fp, D[j, a])
     end
     write(fp, string(" ; ", x.id[a], "\n"))
   end

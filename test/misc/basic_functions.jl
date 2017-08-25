@@ -31,8 +31,8 @@ function test_basic_functions_shuffleunits()
   v1 /= N
   v2 /= N
 
-  @test_approx_eq_eps v1 p1 0.005
-  @test_approx_eq_eps v2 p2 0.005
+  @test isapprox(v1, p1, atol=0.005)
+  @test isapprox(v2, p2, atol=0.005)
 
   nothing
 end

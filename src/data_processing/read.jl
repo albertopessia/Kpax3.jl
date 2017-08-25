@@ -111,7 +111,7 @@ A tuple containing the following variables:
 sequences storing the values of homogeneous sites. SNPs are instead represented
 by a value of 46 ('.')
 """
-function readfasta(ifile::AbstractString,
+function readfasta(ifile::String,
                    protein::Bool,
                    miss::Vector{UInt8},
                    l::Int,
@@ -128,7 +128,7 @@ function readfasta(ifile::AbstractString,
   s = strip(readuntil(f, '>'))
   if length(s) == 0
     close(f)
-    throw(KFASTAError("No sequence has been found."))
+    throw(KFASTAError("No sequence was found."))
   elseif length(s) > 1
     close(f)
     throw(KFASTAError("First non empty row is not a sequence id."))
@@ -334,7 +334,7 @@ function readfasta(ifile::AbstractString,
   end
 
   data = zeros(UInt8, m, n)
-  id = Array(String, n)
+  id = Array{String}(n)
   enc = zeros(UInt8, 127)
 
   h1 = 0
@@ -411,6 +411,157 @@ function readfasta(ifile::AbstractString,
   for b in 1:seqlen
     if !snp[b]
       ref[b] = seqref[b]
+    end
+  end
+
+  (data, id, ref)
+end
+
+function countfields(string::String,
+                     delim::Char)
+  ncol = 0
+
+  idx = search(string, delim)
+  while idx > 0
+    ncol += 1
+    idx = search(string, delim, idx + 1)
+  end
+
+  ncol
+end
+
+function readdata(ifile::String,
+                  delim::Char,
+                  miss::Vector{String},
+                  verbose::Bool,
+                  verbosestep::Int)
+  # characters to strip from data values
+  chars = ['"', ' ', '\t', '\n', '\r']
+
+  f = open(ifile, "r")
+
+  # find the first sequence (skip initial blank lines)
+  s = ""
+  keepgoing = true
+  while keepgoing
+    s = strip(readline(f))
+
+    if length(s) > 0 || eof(f)
+        keepgoing = false
+    end
+  end
+
+  if length(s) == 0
+    close(f)
+    throw(KCSVError("No observation was found."))
+  end
+
+  obsref = map(x -> String(strip(x, chars)), split(s, ','))
+
+  p = length(obsref)
+
+  if p == 1
+    close(f)
+    throw(KCSVError(string("Delimiter '",  delim,
+                           "' was not found in the first observation.")))
+  end
+
+  # at least a sequence has been found
+  n = 1
+
+  # polymorphic columns
+  pol = falses(p)
+
+  # missing values
+  missobs = indexin(obsref, miss) .> 0
+
+  # count the observations and check that they are all the same length
+  for line in eachline(f)
+    s = strip(line)
+
+    if length(s) > 0
+      obs = map(x -> String(strip(x, chars)), split(s, ','))
+
+      if p != length(obs)
+        close(f)
+        throw(KCSVError(string("Different length. Failed at observation ",
+                               n + 1, " (", obs[1], ").")))
+      end
+
+      for b in 2:p
+        if !(obs[b] in miss)
+          if missobs[b]
+            # this observation has a non-missing value where it is missing in
+            # the reference observation
+            obsref[b] = obs[b]
+            missobs[b] = false
+          else
+            # to be compared, both values must be non-missing
+            pol[b] = pol[b] || (obs[b] != obsref[b])
+          end
+        end
+      end
+
+      n += 1
+
+      if verbose && (n % verbosestep == 0)
+        println(n, " observations have been pre-processed.")
+      end
+    end
+  end
+
+  m = 0
+  for b in 2:p
+    if pol[b]
+      m += 1
+    end
+  end
+
+  if verbose
+    println("Found ", n, " observations: ", m, " polymorphisms out of ",
+            p - 1, " total columns.\nProcessing data...")
+  end
+
+  data = Array{String}(m, n)
+  id = Array{String}(n)
+
+  # go back at the beginning of the file and start again
+  seekstart(f)
+
+  i = 0
+  for line in eachline(f)
+    s = strip(line)
+
+    if length(s) > 0
+      obs = map(x -> String(strip(x, chars)), split(s, ','))
+
+      i += 1
+
+      j = 0
+      for b in 2:p
+        if pol[b]
+          data[j += 1, i] = !(obs[b] in miss) ? obs[b] : ""
+        end
+      end
+
+      id[i] = obs[1]
+
+      if verbose && (i % verbosestep == 0)
+        println(i, " observations have been processed.")
+      end
+    end
+  end
+
+  if verbose
+    println("All ", i, " sequences have been processed.")
+  end
+
+  close(f)
+
+  ref = fill(".", p - 1)
+  for a in 2:p
+    if !pol[a]
+      ref[a - 1] = obsref[a]
     end
   end
 

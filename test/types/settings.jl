@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function test_settings_exceptions()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   @test_throws Kpax3.KDomainError Kpax3.KSettings(ifile, ofile, miss=UInt8[63; 0])
@@ -34,7 +34,7 @@ end
 test_settings_exceptions()
 
 function test_settings_constructor()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
   protein = false
   miss = zeros(UInt8, 0)
@@ -78,7 +78,7 @@ function test_settings_constructor()
   @test settings.T == T
   @test settings.burnin == burnin
   @test settings.tstep == tstep
-  @test isa(settings.op, StatsBase.WeightVec)
+  @test isa(settings.op, StatsBase.ProbabilityWeights)
   @test StatsBase.values(settings.op) == op
 
   settings = Kpax3.KSettings(ifile, ofile, protein=true, miss=zeros(UInt8, 0))
@@ -100,6 +100,18 @@ function test_settings_constructor()
 
   @test !settings.protein
   @test settings.miss == UInt8['?', '*', '#', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's', 'v', 'w', 'x', 'y', 'j', 'z']
+
+  settings = Kpax3.KSettings(ifile, ofile, misscsv=Array{String}(0))
+
+  @test settings.misscsv == [""]
+
+  settings = Kpax3.KSettings(ifile, ofile, misscsv=["", "?", "X", "NA", "-", "."])
+
+  @test settings.misscsv == ["", "?", "X", "NA", "-", "."]
+
+  settings = Kpax3.KSettings(ifile, ofile, misscsv=["?", "X", "NA", "-", "."])
+
+  @test settings.misscsv == ["", "?", "X", "NA", "-", "."]
 
   nothing
 end

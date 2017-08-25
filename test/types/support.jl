@@ -1,7 +1,7 @@
 # This file is part of Kpax3. License is MIT.
 
 function test_support_mcmc_constructor()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
   maxclust = 1
 
@@ -80,7 +80,7 @@ function test_support_mcmc_constructor()
     logmlik += log(exp(tmp[1]) + exp(tmp[2]) + exp(tmp[3]))
   end
 
-  @test_approx_eq_eps support.logmlik logmlik ε
+  @test isapprox(support.logmlik, logmlik, atol=ε)
 
   @test support.logmlikcandidate == 0.0
 
@@ -90,7 +90,7 @@ end
 test_support_mcmc_constructor()
 
 function test_support_mcmc_resize()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
   maxclust = 1
 

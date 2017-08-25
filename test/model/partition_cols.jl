@@ -102,19 +102,19 @@ function test_partition_cols_constructor()
       x1 = Kpax3.AminoAcidPriorCol(data, γ, r1)
       x2 = Kpax3.AminoAcidPriorCol(data, γ, r2)
 
-      @test_approx_eq_eps x1.logγ[1] log(γ[1] / sum(γ)) ε
-      @test_approx_eq_eps x2.logγ[2] log(γ[2] / sum(γ)) ε
-      @test_approx_eq_eps x2.logγ[3] log(γ[3] / sum(γ)) ε
+      @test isapprox(x1.logγ[1], log(γ[1] / sum(γ)), atol=ε)
+      @test isapprox(x2.logγ[2], log(γ[2] / sum(γ)), atol=ε)
+      @test isapprox(x2.logγ[3], log(γ[3] / sum(γ)), atol=ε)
 
-      @test_approx_eq_eps x1.logω[k][1] log(1.0 - 1.0 / k) ε
-      @test_approx_eq_eps x2.logω[k][2] log(1.0 / k) ε
+      @test isapprox(x1.logω[k][1], log(1.0 - 1.0 / k), atol=ε)
+      @test isapprox(x2.logω[k][2], log(1.0 / k), atol=ε)
 
       for b in 1:m, s in 1:4
-        @test_approx_eq_eps x1.A[s, b] A1[s, b] ε
-        @test_approx_eq_eps x1.B[s, b] B1[s, b] ε
+        @test isapprox(x1.A[s, b], A1[s, b], atol=ε)
+        @test isapprox(x1.B[s, b], B1[s, b], atol=ε)
 
-        @test_approx_eq_eps x2.A[s, b] A2[s, b] ε
-        @test_approx_eq_eps x2.B[s, b] B2[s, b] ε
+        @test isapprox(x2.A[s, b], A2[s, b], atol=ε)
+        @test isapprox(x2.B[s, b], B2[s, b], atol=ε)
       end
     end
   end
@@ -125,7 +125,7 @@ end
 test_partition_cols_constructor()
 
 function test_partition_cols_functions()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   data = UInt8[1 1 0 0 1 1;
@@ -170,17 +170,17 @@ function test_partition_cols_functions()
   end
 
   M = maximum(logp1)
-  p1 = exp(M + log(sum(exp(logp1 - M))))
+  p1 = exp(M + log(sum(exp.(logp1 - M))))
 
   M = maximum(logp2)
-  p2 = exp(M + log(sum(exp(logp2 - M))))
+  p2 = exp(M + log(sum(exp.(logp2 - M))))
 
   M = maximum(logp3)
-  p3 = exp(M + log(sum(exp(logp3 - M))))
+  p3 = exp(M + log(sum(exp.(logp3 - M))))
 
-  @test_approx_eq_eps p1 1.0 ε
-  @test_approx_eq_eps p2 1.0 ε
-  @test_approx_eq_eps p3 1.0 ε
+  @test isapprox(p1, 1.0, atol=ε)
+  @test isapprox(p2, 1.0, atol=ε)
+  @test isapprox(p3, 1.0, atol=ε)
 
   ss = UInt8[1; 2; 3]
   logp4 = zeros(Float64, 3^m)
@@ -193,9 +193,9 @@ function test_partition_cols_functions()
   end
 
   M = maximum(logp4)
-  p4 = exp(M + log(sum(exp(logp4 - M))))
+  p4 = exp(M + log(sum(exp.(logp4 - M))))
 
-  @test_approx_eq_eps p4 1.0 ε
+  @test isapprox(p4, 1.0, atol=ε)
 
   nothing
 end
@@ -203,7 +203,7 @@ end
 test_partition_cols_functions()
 
 function test_partition_cols_simulations()
-  ifile = "data/proper_aa.fasta"
+  ifile = "data/read_proper_aa.fasta"
   ofile = "../build/test"
 
   data = UInt8[1 1 0 0 1 1;
@@ -271,7 +271,7 @@ function test_partition_cols_simulations()
 
   Cp /= N
 
-  @test_approx_eq_eps Cp trueCp 0.005
+  @test isapprox(Cp, trueCp, atol=0.005)
 
   nothing
 end
