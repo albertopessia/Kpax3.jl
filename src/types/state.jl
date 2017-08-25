@@ -1,8 +1,8 @@
 # This file is part of Kpax3. License is MIT.
 
-abstract State
+abstract type State end
 
-type AminoAcidState <: State
+mutable struct AminoAcidState <: State
   R::Vector{Int}
   C::Matrix{UInt8}
 
@@ -383,7 +383,7 @@ function resizestate!(state::AminoAcidState,
 end
 
 function optimumstate(x::AminoAcidData,
-                      partition::AbstractString,
+                      partition::String,
                       settings::KSettings)
   R = normalizepartition(partition, x.id)
 

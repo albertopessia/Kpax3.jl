@@ -3,21 +3,26 @@
 function test_data_exceptions()
   f = "../build/test"
 
-  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/empty_file.fasta", f))
-  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/no_1st_seq.fasta", f))
-  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/no_id_char.fasta", f))
-  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/no_nth_seq.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/read_empty_file.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/read_no_id_char.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/read_no_1st_seq.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/read_no_nth_seq.fasta", f))
 
-  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/utf8_id.fasta", f))
-  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/utf8_seq.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/read_utf8_id.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.NucleotideData(Kpax3.KSettings("data/read_utf8_seq.fasta", f))
 
-  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/empty_file.fasta", f))
-  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/no_1st_seq.fasta", f))
-  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/no_id_char.fasta", f))
-  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/no_nth_seq.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/read_empty_file.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/read_no_id_char.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/read_no_1st_seq.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/read_no_nth_seq.fasta", f))
 
-  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/utf8_id.fasta", f))
-  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/utf8_seq.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/read_utf8_id.fasta", f))
+  @test_throws Kpax3.KFASTAError Kpax3.AminoAcidData(Kpax3.KSettings("data/read_utf8_seq.fasta", f))
+
+  @test_throws Kpax3.KCSVError Kpax3.CategoricalData(Kpax3.KSettings("data/read_empty_file.csv", f))
+  @test_throws Kpax3.KCSVError Kpax3.CategoricalData(Kpax3.KSettings("data/read_no_id_char.csv", f))
+  @test_throws Kpax3.KCSVError Kpax3.CategoricalData(Kpax3.KSettings("data/read_no_1st_seq.csv", f))
+  @test_throws Kpax3.KCSVError Kpax3.CategoricalData(Kpax3.KSettings("data/read_no_nth_seq.csv", f))
 
   nothing
 end
@@ -27,7 +32,7 @@ test_data_exceptions()
 function test_data_blanks()
   f = "../build/test"
 
-  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/blanks.fasta", f))
+  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/read_blanks.fasta", f))
   @test nt.data == UInt8[0 1;
                          1 0;
                          1 0;
@@ -40,12 +45,12 @@ function test_data_blanks()
                          0 1;
                          0 1;
                          1 0]
-  @test nt.id == String["ID1", "ID5"]
+  @test nt.id == ["ID1", "ID5"]
   @test nt.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.', 'a']
   @test nt.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c', 'g']
   @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
-  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/blanks.fasta", f, l=1))
+  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/read_blanks.fasta", f, l=1))
   @test nt.data == UInt8[0 1;
                          1 0;
                          1 0;
@@ -58,12 +63,12 @@ function test_data_blanks()
                          0 1;
                          0 1;
                          1 0]
-  @test nt.id == String["ID1", "ID5"]
+  @test nt.id == ["ID1", "ID5"]
   @test nt.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.', 'a']
   @test nt.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c', 'g']
   @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
-  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/blanks.fasta", f))
+  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/read_blanks.fasta", f))
   @test aa.data == UInt8[0 1;
                          1 0;
                          1 0;
@@ -76,12 +81,12 @@ function test_data_blanks()
                          0 1;
                          0 1;
                          1 0]
-  @test aa.id == String["ID1", "ID5"]
+  @test aa.id == ["ID1", "ID5"]
   @test aa.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.', 'a']
   @test aa.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c', 'g']
   @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
-  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/blanks.fasta", f, l=1))
+  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/read_blanks.fasta", f, l=1))
   @test aa.data == UInt8[0 1;
                          1 0;
                          1 0;
@@ -94,10 +99,12 @@ function test_data_blanks()
                          0 1;
                          0 1;
                          1 0]
-  @test aa.id == String["ID1", "ID5"]
+  @test aa.id == ["ID1", "ID5"]
   @test aa.ref == UInt8['a', 't', 'g', '.', '.', '.', 'g', '.', '.', 'a', '.', 'a']
   @test aa.val == UInt8['a', 'g', 'a', 'g', 'c', 'g', 'c', 'g', 'a', 'g', 'c', 'g']
   @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
+
+  cg = Kpax3.CategoricalData(Kpax3.KSettings("data/read_blanks.csv", f, l=1))
 
   nothing
 end
@@ -107,7 +114,7 @@ test_data_blanks()
 function test_data_proper_dna_file()
   f = "../build/test"
 
-  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/proper_nt.fasta", f))
+  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/read_proper_nt.fasta", f))
   @test nt.data == UInt8[0 0 0 0 0 1;
                          1 1 1 1 1 0;
                          0 0 1 0 1 1;
@@ -131,7 +138,7 @@ function test_data_proper_dna_file()
   @test nt.val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g', 'a', 'g', 't', 'a', 't', 'c', 'g']
   @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
-  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/proper_nt.fasta", f, l=1))
+  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/read_proper_nt.fasta", f, l=1))
   @test nt.data == UInt8[0 0 0 0 0 1;
                          1 1 1 1 1 0;
                          0 0 1 0 1 1;
@@ -156,7 +163,7 @@ function test_data_proper_dna_file()
   @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
   # consider all characters
-  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/proper_nt.fasta", f,
+  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/read_proper_nt.fasta", f,
                                 miss=zeros(UInt8, 1)))
   @test nt.data == UInt8[0 0 0 0 0 1;
                          1 1 1 1 1 0;
@@ -192,7 +199,7 @@ test_data_proper_dna_file()
 function test_data_proper_protein_file()
   f = "../build/test"
 
-  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/proper_aa.fasta", f))
+  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/read_proper_aa.fasta", f))
   @test aa.data == UInt8[0 0 0 0 0 1;
                          1 1 1 1 1 0;
                          0 0 1 0 1 1;
@@ -216,7 +223,7 @@ function test_data_proper_protein_file()
   @test aa.val == UInt8['e', 'k', 'i', 'k', 'l', 'v', 'l', 'v', 'c', 'l', 't', 'e', 'l', 'm', 'c', 'y', 'a', 't']
   @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
-  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/proper_aa.fasta", f, l=1))
+  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/read_proper_aa.fasta", f, l=1))
   @test aa.data == UInt8[0 0 0 0 0 1;
                          1 1 1 1 1 0;
                          0 0 1 0 1 1;
@@ -241,7 +248,7 @@ function test_data_proper_protein_file()
   @test aa.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
   # consider all characters
-  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/proper_aa.fasta", f, miss=zeros(UInt8,1)))
+  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/read_proper_aa.fasta", f, miss=zeros(UInt8,1)))
   @test aa.data == UInt8[0 0 0 0 0 1;
                          1 1 1 1 1 0;
                          0 0 1 0 1 1;
@@ -276,7 +283,7 @@ test_data_proper_protein_file()
 function test_data_input_output()
   f = "../build/test"
 
-  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/proper_nt.fasta", f))
+  nt = Kpax3.NucleotideData(Kpax3.KSettings("data/read_proper_nt.fasta", f))
 
   # TODO: Test exception when saving to a location without writing permissions
   Kpax3.save("../build/nt.jld", nt)
@@ -310,7 +317,7 @@ function test_data_input_output()
   @test nt.val == UInt8['c', 't', 'a', 'g', 'a', 'g', 'c', 'g', 'a', 'c', 'g', 'a', 'g', 't', 'a', 't', 'c', 'g']
   @test nt.key == [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8]
 
-  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/proper_aa.fasta", f))
+  aa = Kpax3.AminoAcidData(Kpax3.KSettings("data/read_proper_aa.fasta", f))
 
   # TODO: Test exception when saving to a location without writing permissions
   Kpax3.save("../build/aa.jld", aa)

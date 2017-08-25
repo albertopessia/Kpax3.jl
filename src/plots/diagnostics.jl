@@ -175,7 +175,7 @@ function plotjump(avgd::Vector{Float64};
                            minor_label_font_size=minorfontsize,
                            key_title_font_size=keytitlefontsize,
                            key_label_font_size=keylabelfontsize,
-                           default_point_size=pointsize,
+                           point_size=pointsize,
                            plot_padding=padding,
                            line_width=linewidth,
                            grid_line_width=gridwidth),

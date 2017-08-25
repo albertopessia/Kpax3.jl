@@ -1,6 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-abstract KData
+abstract type KData end
 
 """
 # Genetic data
@@ -23,7 +23,7 @@ by a value of 29
 
 Let `n` be the total number of units and `ml` be the total number of unique
 values observed at SNP `l`. Define m = m1 + ... + mL, where L is the total
-number os SNPs.
+number of SNPs.
 
 `data` is a `m`-by-`n` indicator matrix, i.e. `data[j, i]` is `1` if unit `i`
 possesses value `j`, `0` otherwise.
@@ -38,7 +38,7 @@ Bayesian identification of cluster-defining amino acid positions in large
 sequence datasets. _Microbial Genomics_ **1**(1).
 <http://dx.doi.org/10.1099/mgen.0.000025>.
 """
-immutable NucleotideData <: KData
+struct NucleotideData <: KData
   data::Matrix{UInt8}
   id::Vector{String}
   ref::Vector{UInt8}
@@ -46,32 +46,6 @@ immutable NucleotideData <: KData
   key::Vector{Int}
 end
 
-# TODO: Julia v0.4
-# we can't document this constructor: the type has already been documented
-
-#=
-# Constructor of an object of type NucleotideData
-
-## Description
-
-Create a new NucleotideData object.
-
-## Usage
-
-NucleotideData(settings)
-
-## Arguments
-
-* `ifile` Path to the input data file
-* `miss` Values to be considered missing.
-* `l` Sequence length. If unknown, it is better to choose a value which is
-surely greater than the real sequence length. If `l` is found to be
-insufficient, the array size is dynamically increased (not recommended from a
-performance point of view). Default value should be sufficient for most
-datasets
-* `verbose` If `true`, print status reports
-* `verbosestep` Print a status report every `verbosestep` read sequences
-=#
 function NucleotideData(settings::KSettings)
   missval = if (length(settings.miss) == 1) && (settings.miss[1] == 0x00)
               0x00
@@ -107,7 +81,7 @@ by a value of 29
 
 Let `n` be the total number of units and `ml` be the total number of unique
 values observed at SNP `l`. Define m = m1 + ... + mL, where L is the total
-number os SNPs.
+number of SNPs.
 
 `data` is a `m`-by-`n` indicator matrix, i.e. `data[j, i]` is `1` if unit `i`
 possesses value `j`, `0` otherwise.
@@ -122,37 +96,16 @@ Bayesian identification of cluster-defining amino acid positions in large
 sequence datasets. _Microbial Genomics_ **1**(1).
 <http://dx.doi.org/10.1099/mgen.0.000025>.
 """
-immutable AminoAcidData <: KData
+# generalize AminoAcidData to represent generic categorical data. Code must be
+# refactored
+struct AminoAcidData{T} <: KData
   data::Matrix{UInt8}
   id::Vector{String}
-  ref::Vector{UInt8}
-  val::Vector{UInt8}
+  ref::Vector{T}
+  val::Vector{T}
   key::Vector{Int}
 end
 
-#=
-# Constructor of an object of type AminoAcidData
-
-## Description
-
-Create a new AminoAcidData object.
-
-## Usage
-
-AminoAcidData(settings)
-
-## Arguments
-
-* `ifile` Path to the input data file
-* `miss` Values to be considered missing.
-* `l` Sequence length. If unknown, it is better to choose a value which is
-surely greater than the real sequence length. If `l` is found to be
-insufficient, the array size is dynamically increased (not recommended from a
-performance point of view). Default value should be sufficient for most
-datasets
-* `verbose` If `true`, print status reports
-* `verbosestep` Print a status report every `verbosestep` read sequences
-=#
 function AminoAcidData(settings::KSettings)
   missval = if (length(settings.miss) == 1) && (settings.miss[1] == 0x00)
               0x00
@@ -164,5 +117,61 @@ function AminoAcidData(settings::KSettings)
                               settings.verbose, settings.verbosestep)
   (bindata, val, key) = categorical2binary(data, UInt8(127), missval)
 
+  AminoAcidData(bindata, id, ref, val, key)
+end
+
+"""
+# CSV data
+
+## Description
+
+Generic data and its metadata.
+
+## Fields
+
+* `data` original data matrix encoded as a binary (UInt8) matrix
+* `id` units' ids
+* `ref` reference observation, i.e. a vector of the same length of the original
+observations storing the values of homogeneous sites. Polymorphisms are instead
+represented by the string "."
+* `val` vector with unique values per dataset column
+* `key` vector with indices of each value
+
+## Details
+
+Let `n` be the total number of units and `ml` be the total number of unique
+values observed at polymorphic column `l`. Define m = m1 + ... + mL, where L is
+the total number of polymorphic columns.
+
+`data` is a `m`-by-`n` indicator matrix, i.e. `data[j, i]` is `1` if unit `i`
+possesses value `j`, `0` otherwise.
+
+The value associated with column `j` can be obtained by `val[j]` while the
+polymorphic position by `find(ref == ".")[key[j]]`.
+
+## References
+
+Pessia A., Grad Y., Cobey S., Puranen J. S. and Corander J. (2015). K-Pax2:
+Bayesian identification of cluster-defining amino acid positions in large
+sequence datasets. _Microbial Genomics_ **1**(1).
+<http://dx.doi.org/10.1099/mgen.0.000025>.
+"""
+#=
+struct CategoricalData <: KData
+  data::Matrix{UInt8}
+  id::Vector{String}
+  ref::Vector{String}
+  val::Vector{String}
+  key::Vector{Int}
+end
+=#
+
+function CategoricalData(settings::KSettings)
+  (data, id, ref) = readdata(settings.ifile, ',', settings.misscsv,
+                             settings.verbose, settings.verbosestep)
+  (bindata, val, key) = categorical2binary(data, "")
+
+  #CategoricalData(bindata, id, ref, val, key)
+  # return an AminoAcidData object until the code has been refactored
   AminoAcidData(bindata, id, ref, val, key)
 end

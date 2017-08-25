@@ -1,8 +1,8 @@
 # This file is part of Kpax3. License is MIT.
 
-abstract PriorColPartition
+abstract type PriorColPartition end
 
-type AminoAcidPriorCol <: PriorColPartition
+mutable struct AminoAcidPriorCol <: PriorColPartition
   logγ::Vector{Float64}
   logω::Vector{Vector{Float64}}
 
