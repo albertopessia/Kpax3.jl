@@ -2,10 +2,10 @@
 
 # normalized distance between a generic partition 'a' and the partition
 # {{1, ..., v}}
-function distsjlower{T <: Real}(n::Vector{T},
-                                k::Int,
-                                v::Real;
-                                β::Real=3.0)
+function distsjlower(n::Vector{T},
+                     k::Int,
+                     v::Real;
+                     β::Real=3.0) where T <: Real
   w = v^β
 
   z = 0.0
@@ -18,10 +18,10 @@ end
 
 # normalized distance between a generic partition 'a' and the partition
 # {{1}, ..., {v}}
-function distsjupper{T <: Real}(n::Vector{T},
-                                k::Int,
-                                v::Real;
-                                β::Real=3.0)
+function distsjupper(n::Vector{T},
+                     k::Int,
+                     v::Real;
+                     β::Real=3.0) where T <: Real
   w = v^β
 
   z = 0.0
@@ -33,14 +33,14 @@ function distsjupper{T <: Real}(n::Vector{T},
 end
 
 # normalized distance between partition 'a' and partition 'b'
-function distsj{T <: Real}(a::Vector{Int},
-                           na::Vector{T},
-                           ka::Int,
-                           b::Vector{Int},
-                           nb::Vector{T},
-                           kb::Int,
-                           v::Int;
-                           β::Real=3.0)
+function distsj(a::Vector{Int},
+                na::Vector{T},
+                ka::Int,
+                b::Vector{Int},
+                nb::Vector{T},
+                kb::Int,
+                v::Int;
+                β::Real=3.0) where T <: Real
   w = v^β
 
   count = zeros(Float64, ka, kb)
