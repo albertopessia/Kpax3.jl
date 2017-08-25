@@ -78,9 +78,9 @@ function jaccard(a::Vector{Int},
   1.0 - index
 end
 
-function jaccardlower{T <: Real}(n::Vector{T},
-                                 k::Int,
-                                 v::Real)
+function jaccardlower(n::Vector{T},
+                      k::Int,
+                      v::Real) where T <: Real
   agree = 0.0
   disagree = 0.0
 

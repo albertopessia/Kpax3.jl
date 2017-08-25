@@ -53,9 +53,9 @@ while
 
 `0` values (here missing data) are discarded.
 """
-function categorical2binary{T <: Integer}(data::Matrix{T},
-                                          maxval::T,
-                                          missval::T)
+function categorical2binary(data::Matrix{T},
+                            maxval::T,
+                            missval::T) where T <: Integer
   # TOOPTIMIZE: traversing the matrices by row instead of by column
   (p, n) = size(data)
   m = 0
