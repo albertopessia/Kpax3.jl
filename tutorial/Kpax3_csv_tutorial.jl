@@ -382,15 +382,33 @@ writeresults(zika_data, mcmc_solution, mcmc_output_file, what=4, verbose=true);
 ###############################################################################
 #
 # In the following, we will use the MAP estimate as the reference partition.
-#
+
+# For high quality figures, you can save all these plots to SVG format with the
+# following command:
+# Gadfly.draw(Gadfly.SVG("path_to_figure.svg",
+#                        width * 1Measures.mm, height * 1Measures.mm),
+#             plotfunction(plot_parameters, width=width, height=height));
+# where 'width' and 'height' are to be set according to your needs and
+# 'plotfunction' is the corresponding desired plot.
+
+# Plot the complete dataset, highlighting clusters and polymorphic sites
+# function plotD(x::AminoAcidData,
+#                state::AminoAcidState;
+#                clusterorder::Vector{Int}=zeros(Int, 0),
+#                clusterlabel::Vector{String}=fill("", 0),
+#                linesep::Bool=true,
+#                width::Real=183.0,
+#                height::Real=92.0)
+plotD(zika_data, map_solution);
+
 # Load posterior probabilities:
 (k, pk) = readposteriork(output_file);
 (id, P) = readposteriorP(output_file);
 (site, aa, freq, C) = readposteriorC(output_file);
 
-# First of all, let's check how the Markov Chain performed by looking at trace
-# and jump plots. We will do it separately for R (partition of the units) and
-# C (partition of the columns).
+# Let's check how the Markov Chain performed by looking at trace and jump
+# plots. We will do it separately for R (partition of the units) and C
+# (partition of the columns).
 #
 # Compute the entropy of each sample and the average distance of entropies at
 # different lags.
@@ -400,12 +418,6 @@ writeresults(zika_data, mcmc_solution, mcmc_output_file, what=4, verbose=true);
 # Function signatures are shown in case you want to change default values.
 # Vector 'ac' is autocovariance vector (leave it to default value).
 #
-# For high quality figures, you can save all these plots to SVG format with the
-# following command:
-# Gadfly.draw(Gadfly.SVG("path_to_figure.svg",
-#                        width * 1Measures.mm, height * 1Measures.mm),
-#             plotfunction(plot_parameters, width=width, height=height));
-# where 'width' and 'height' are to be set according to your needs.
 
 # function plottrace(entropy::Vector{Float64};
 #                    ac::Vector{Float64}=zeros(Float64, 0),
