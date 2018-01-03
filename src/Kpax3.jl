@@ -53,6 +53,7 @@ module Kpax3
   traceC,
 
   # plot
+  plotD,
   plotk,
   plotP,
   plotC,

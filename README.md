@@ -7,19 +7,21 @@ Kpax3 is a [Julia](http://julialang.org/) package for inferring the group struct
 ## Reference
 To know more about the underlying statistical model, refer to the following publications (the first is the primary citation if you use the package):
 
-Pessia, A. and Corander, J. (2017). Kpax3: Bayesian bi-clustering of large sequence datasets. _Submitted_
+Pessia, A. and Corander, J. (2018). Kpax3: Bayesian bi-clustering of large sequence datasets. Bioinformatics. _Submitted_
 
 Pessia, A., Grad, Y., Cobey, S., Puranen, J. S., and Corander, J. (2015) K-Pax2: Bayesian identification of cluster-defining amino acid positions in large sequence datasets. _Microbial Genomics_ **1**(1). doi: [10.1099/mgen.0.000025](http://doi.org/10.1099/mgen.0.000025)
 
 ## Installation
-Kpax3 can be installed from within julia by typing
+Kpax3 can be installed from within Julia by typing
 
 ```julia
 Pkg.add("Kpax3")
 ```
 
 ## Usage
-The best way to learn how to use Kpax3 is by following the instructions in the [fasta tutorial](tutorial/Kpax3_fasta_tutorial.jl) (for genetic sequences) or in the [csv tutorial](tutorial/Kpax3_csv_tutorial.jl) (for general categorical data). Full documentation of Kpax3 functions will be available in the near future.
+The best way to learn how to use Kpax3 is by following the instructions in the [fasta tutorial](tutorial/Kpax3_fasta_tutorial.jl) (for genetic sequences) or in the [csv tutorial](tutorial/Kpax3_csv_tutorial.jl) (for general categorical data).
+
+It is also possible to run Kpax3 directly from the command line by using the script available on [GitHub Gist](https://gist.github.com/albertopessia/fd9df11fb2bdb158ad91936c4638d6fd).
 
 ## License
 See [LICENSE.md](LICENSE.md)
