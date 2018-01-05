@@ -383,13 +383,18 @@ writeresults(zika_data, mcmc_solution, mcmc_output_file, what=4, verbose=true);
 #
 # In the following, we will use the MAP estimate as the reference partition.
 
+# To change the default plot size for a SVGJS, use the command
+#   Gadfly.set_default_plot_size(width * 1Measures.mm, height * 1Measures.mm);
+#
 # For high quality figures, you can save all these plots to SVG format with the
 # following command:
-# Gadfly.draw(Gadfly.SVG("path_to_figure.svg",
-#                        width * 1Measures.mm, height * 1Measures.mm),
-#             plotfunction(plot_parameters, width=width, height=height));
-# where 'width' and 'height' are to be set according to your needs and
+#   Gadfly.draw(Gadfly.SVG("path_to_figure.svg",
+#                          width * 1Measures.mm, height * 1Measures.mm),
+#               plotfunction(plot_parameters, width=width, height=height));
+# where 'width' and 'height' are Float64 to be set according to your needs and
 # 'plotfunction' is the corresponding desired plot.
+#
+# Other backends can be found at: http://gadflyjl.org/stable/man/backends.html
 
 # Plot the complete dataset, highlighting clusters and polymorphic sites
 # function plotD(x::AminoAcidData,
