@@ -5,8 +5,8 @@ function plotP(R::Vector{Int},
                clusterorder::Vector{Int}=zeros(Int, 0),
                clusterlabel::Vector{String}=fill("", 0),
                linesep::Bool=true,
-               width::Real=89.0,
-               height::Real=89.0)
+               width::Real=640.0,
+               height::Real=640.0)
   n = length(R)
   k = maximum(R)
 
@@ -37,15 +37,15 @@ function plotP(R::Vector{Int},
 
     pij = P[ord[i], ord[j]]
     z[idx] = if pij <= 0.2
-      "[0.0, 0.2]"
+      "#FFFFFF"
     elseif pij <= 0.4
-      "(0.2, 0.4]"
+      "#F0F0F0"
     elseif pij <= 0.6
-      "(0.4, 0.6]"
+      "#BDBDBD"
     elseif pij <= 0.8
-      "(0.6, 0.8]"
+      "#636363"
     else
-      "(0.8, 1.0]"
+      "#000000"
     end
 
     idx += 1
@@ -65,7 +65,7 @@ function plotP(R::Vector{Int},
   col = fill("", 0)
 
   # elements on the diagonal have always p = 1.0
-  val = "(0.8, 1.0]"
+  val = "#000000"
 
   j = 1
   while j <= n
@@ -90,7 +90,7 @@ function plotP(R::Vector{Int},
       if !processed[i, j]
         val = z[sub2ind((n, n), i, j)]
 
-        (imax, jmax) = expand(i, j, n, n, val, z, processed)
+        (imax, jmax) = expandrect(i, j, n, n, val, z, processed)
 
         # lower triangular
         push!(xmin, j - 1)
@@ -118,67 +118,51 @@ function plotP(R::Vector{Int},
     j += 1
   end
 
-  majorfontsize = computefontsize(width, height)
-  minorfontsize = 0.8 * majorfontsize
+  xborder = zeros(Float64, 5, k)
+  yborder = zeros(Float64, 5, k)
+  for i = 1:k
+    xborder[:, i] = [sep[i]; sep[i]; sep[i + 1]; sep[i + 1]; sep[i]]
+    yborder[:, i] = [sep[i]; sep[i + 1]; sep[i + 1]; sep[i]; sep[i]]
+  end
 
-  keytitlefontsize = majorfontsize
-  keylabelfontsize = 0.8 * keytitlefontsize
-  padding = 1.0 * majorfontsize
+  rectangles = [Plots.Shape([(xmin[i], ymin[i]),
+                             (xmin[i], ymax[i]),
+                             (xmax[i], ymax[i]),
+                             (xmax[i], ymin[i])]) for i = 1:length(xmin)]
 
-  Gadfly.plot(Gadfly.layer(x=repeat(sep[1:k], outer=2),
-                           y=[sep[1:k]; sep[2:end]],
-                           xend=repeat(sep[2:end], outer=2),
-                           yend=[sep[1:k]; sep[2:end]],
-                           Gadfly.Geom.segment),
-              Gadfly.layer(x=[sep[1:k]; sep[2:end]],
-                           y=repeat(sep[1:k], outer=2),
-                           xend=[sep[1:k]; sep[2:end]],
-                           yend=repeat(sep[2:end], outer=2),
-                           Gadfly.Geom.segment),
-              Gadfly.layer(x_min=xmin, x_max=xmax, y_min=ymin, y_max=ymax,
-                           color=col, Gadfly.Geom.rect),
-              Gadfly.Coord.cartesian(yflip=true, fixed=true,
-                                     xmin=0, xmax=n,
-                                     ymin=0, ymax=n),
-              Gadfly.Scale.color_discrete_manual(
-                Gadfly.@colorant_str("#FFFFFF"),
-                Gadfly.@colorant_str("#CCCCCC"),
-                Gadfly.@colorant_str("#999999"),
-                Gadfly.@colorant_str("#666666"),
-                Gadfly.@colorant_str("#333333"),
-                Gadfly.@colorant_str("#000000"),
-                levels=["[0.0, 0.2]", "(0.2, 0.4]",
-                        "(0.4, 0.6]", "(0.6, 0.8]",
-                        "(0.8, 1.0]"]),
-              Gadfly.Scale.x_continuous(labels=l ->
-                string(clusterlabel[mid .== l][1])),
-              Gadfly.Scale.y_continuous(labels=l ->
-                string(clusterlabel[mid .== l][1])),
-              Gadfly.Theme(default_color=Gadfly.@colorant_str("black"),
-                           background_color=Gadfly.@colorant_str("white"),
-                           panel_fill=Gadfly.@colorant_str("white"),
-                           grid_line_width=0Measures.mm,
-                           line_width=linesep ? 0.3Measures.mm : 0Measures.mm,
-                           lowlight_color=c->c,
-                           lowlight_opacity=0.0,
-                           major_label_font_size=majorfontsize,
-                           minor_label_font_size=minorfontsize,
-                           key_title_font_size=keytitlefontsize,
-                           key_label_font_size=keylabelfontsize,
-                           plot_padding=padding),
-              Gadfly.Guide.xticks(ticks=mid),
-              Gadfly.Guide.yticks(ticks=mid),
-              Gadfly.Guide.xlabel("Samples by cluster"),
-              Gadfly.Guide.ylabel("Samples by cluster"),
-              Gadfly.Guide.title(""),
-              Gadfly.Guide.colorkey(""))
+  # create an empty plot and then add all the rectangles on top of it
+  mcol = ["#FFFFFF" "#F0F0F0" "#BDBDBD" "#636363" "#000000"]
+  mlab = ["[0.0, 0.2]" "(0.2, 0.4]" "(0.4, 0.6]" "(0.6, 0.8]" "(0.8, 1.0]"]
+
+  p = Plots.plot(xborder, yborder,
+                 # cluster borders
+                 seriestype=:path, linecolor=:black,
+                 # plot options
+                 background_color=:white, html_output_format=:svg,
+                 size=(width, height), window_title="",
+                 # subplot options
+                 grid=false, label="", legend=:none, title="",
+                 # axes
+                 formatter=l -> string(clusterlabel[mid .== l][1]),
+                 # x axis
+                 xlabel="Samples by cluster", xlims=(0, n), xticks=mid,
+                 # y axis
+                 ylabel="Samples by cluster", ylims=(0, n), yticks=mid,
+                 yflip=true)
+  Plots.plot!(p, fill(-2, 2, length(mcol)), fill(-0.5, 2, length(mcol)),
+              seriestype=:scatter, markershape=:rect, markercolor=mcol,
+              label=mlab, legend=:right)
+  Plots.plot!(p, rectangles, fillcolor=col, linealpha=0.0, linewidth=0.0,
+              linestyle=:dot, label="")
+
+  p
 end
 
 function plotC(site::Vector{Int},
                freq::Vector{Float64},
                C::Matrix{Float64};
-               width::Real=183.0,
-               height::Real=92.0)
+               width::Real=640.0,
+               height::Real=360.0)
   m = site[end]
   M = length(site)
 
@@ -198,42 +182,31 @@ function plotC(site::Vector{Int},
 
   weak[key] += noise[key]
 
-  majorfontsize = computefontsize(width, height)
-  minorfontsize = 0.8 * majorfontsize
+  mcol = ["#FFFFFF" "#808080" "#000000"]
+  mlab = ["Noise" "Weak signal" "Strong signal"]
 
-  keytitlefontsize = majorfontsize
-  keylabelfontsize = 0.8 * keytitlefontsize
-  padding = 1.0 * majorfontsize
+  p = Plots.plot(1:m, ones(Float64, m),
+                 seriestype=:path, linecolor=:black, fill=(0, :black),
+                 # plot options
+                 background_color=:white, html_output_format=:svg,
+                 size=(width, height), window_title="",
+                 # subplot options
+                 grid=false, label="", legend=:none, title="",
+                 # x axis
+                 xlabel="Site", xlims=(1, m),
+                 # y axis
+                 ylabel="Posterior probability", ylims=(0, 1))
+  Plots.plot!(p, 1:m, weak,
+              seriestype=:path, linecolor="#808080", fill=(0, "#808080"),
+              label="", legend=:none)
+  Plots.plot!(p, 1:m, noise,
+              seriestype=:path, linecolor=:white, fill=(0, :white),
+              label="", legend=:none)
+  Plots.plot!(p, fill(-2, 2, length(mcol)), fill(-0.5, 2, 3),
+              seriestype=:scatter, markershape=:rect, markercolor=mcol,
+              label=mlab, legend=:right)
 
-  Gadfly.plot(Gadfly.layer(x=repeat(1:m, outer=3),
-                           ymin=[zeros(Float64, m); noise; weak],
-                           ymax=[noise; weak; ones(Float64, m)],
-                           color=[fill("Noise", m);
-                                  fill("Weak", m);
-                                  fill("Strong", m)],
-                           Gadfly.Geom.ribbon),
-              Gadfly.Coord.cartesian(xmin=1, xmax=m, ymin=0, ymax=1),
-              Gadfly.Scale.x_continuous(minvalue=1, maxvalue=m),
-              Gadfly.Scale.y_continuous(minvalue=0, maxvalue=1),
-              Gadfly.Scale.color_discrete_manual(
-                Gadfly.@colorant_str("white"),
-                Gadfly.@colorant_str("gray"),
-                Gadfly.@colorant_str("black")),
-              Gadfly.Theme(default_color=Gadfly.@colorant_str("black"),
-                           background_color=Gadfly.@colorant_str("white"),
-                           panel_fill=Gadfly.@colorant_str("white"),
-                           grid_line_width=0Measures.mm,
-                           lowlight_color=c->c,
-                           lowlight_opacity=0.0,
-                           major_label_font_size=majorfontsize,
-                           minor_label_font_size=minorfontsize,
-                           key_title_font_size=keytitlefontsize,
-                           key_label_font_size=keylabelfontsize,
-                           plot_padding=padding),
-              Gadfly.Guide.xlabel("Site"),
-              Gadfly.Guide.ylabel("Posterior probability"),
-              Gadfly.Guide.title(""),
-              Gadfly.Guide.colorkey("Signal"))
+  p
 end
 
 function plotD(x::AminoAcidData,
@@ -241,8 +214,8 @@ function plotD(x::AminoAcidData,
                clusterorder::Vector{Int}=zeros(Int, 0),
                clusterlabel::Vector{String}=fill("", 0),
                linesep::Bool=true,
-               width::Real=183.0,
-               height::Real=92.0)
+               width::Real=640.0,
+               height::Real=360.0)
   (m, n) = size(x.data)
   M = length(x.ref)
 
@@ -274,40 +247,37 @@ function plotD(x::AminoAcidData,
   end
 
   # colors
-  colset = [("A", "Ala", Gadfly.@colorant_str("#FF3232"));
-            ("R", "Arg", Gadfly.@colorant_str("#FF7F00"));
-            ("N", "Asn", Gadfly.@colorant_str("#CAB2D6"));
-            ("D", "Asp", Gadfly.@colorant_str("#FDBF6F"));
-            ("C", "Cys", Gadfly.@colorant_str("#33A02C"));
-            ("E", "Glu", Gadfly.@colorant_str("#1F4E78"));
-            ("Q", "Gln", Gadfly.@colorant_str("#FF3300"));
-            ("G", "Gly", Gadfly.@colorant_str("#660066"));
-            ("H", "His", Gadfly.@colorant_str("#B2DF8A"));
-            ("I", "Ile", Gadfly.@colorant_str("#CC6600"));
-            ("L", "Leu", Gadfly.@colorant_str("#375623"));
-            ("K", "Lys", Gadfly.@colorant_str("#A6CEE3"));
-            ("M", "Met", Gadfly.@colorant_str("#CC3399"));
-            ("F", "Phe", Gadfly.@colorant_str("#FB9A99"));
-            ("P", "Pro", Gadfly.@colorant_str("#C81414"));
-            ("S", "Ser", Gadfly.@colorant_str("#1F78B4"));
-            ("T", "Thr", Gadfly.@colorant_str("#6A3D9A"));
-            ("W", "Trp", Gadfly.@colorant_str("#FFFF99"));
-            ("Y", "Tyr", Gadfly.@colorant_str("#FF66CC"));
-            ("V", "Val", Gadfly.@colorant_str("#993300"));
-            ("U", "Sec", Gadfly.@colorant_str("#00FFFF"));
-            ("O", "Pyl", Gadfly.@colorant_str("#FFFF00"));
-            ("B", "Asx", Gadfly.@colorant_str("#E4B9A3"));
-            ("Z", "Glx", Gadfly.@colorant_str("#8F413C"));
-            ("J", "Xle", Gadfly.@colorant_str("#825E12"));
-            ("X", "Xaa", Gadfly.@colorant_str("#000000"));
-            ("-",   "-", Gadfly.@colorant_str("#E0E0E0"));
-            ("*",   "*", Gadfly.@colorant_str("#000000"));
-            ( "",    "", Gadfly.@colorant_str("#FFFFFF"))]
+  colset = [("A", "Ala", "#FF3232");
+            ("R", "Arg", "#FF7F00");
+            ("N", "Asn", "#CAB2D6");
+            ("D", "Asp", "#FDBF6F");
+            ("C", "Cys", "#33A02C");
+            ("E", "Glu", "#1F4E78");
+            ("Q", "Gln", "#FF3300");
+            ("G", "Gly", "#660066");
+            ("H", "His", "#B2DF8A");
+            ("I", "Ile", "#CC6600");
+            ("L", "Leu", "#375623");
+            ("K", "Lys", "#A6CEE3");
+            ("M", "Met", "#CC3399");
+            ("F", "Phe", "#FB9A99");
+            ("P", "Pro", "#C81414");
+            ("S", "Ser", "#1F78B4");
+            ("T", "Thr", "#6A3D9A");
+            ("W", "Trp", "#FFFF99");
+            ("Y", "Tyr", "#FF66CC");
+            ("V", "Val", "#993300");
+            ("U", "Sec", "#00FFFF");
+            ("O", "Pyl", "#FFFF00");
+            ("B", "Asx", "#E4B9A3");
+            ("Z", "Glx", "#8F413C");
+            ("J", "Xle", "#825E12");
+            ("X", "Xaa", "#000000");
+            ("-",   "-", "#E0E0E0");
+            ("*",   "*", "#000000");
+            ( "",    "", "#FFFFFF")]
 
-  coltable = Dict(map(a -> (a[1], a[2]), colset))
-
-  label = map(a -> a[2], colset)
-  color = map(a -> a[3], colset)
+  coltable = Dict(map(a -> (a[1], a[3]), colset))
 
   # indices
   idx = 1
@@ -322,7 +292,7 @@ function plotD(x::AminoAcidData,
   w = 0
   flag = false
 
-  z = fill("", state.k * M)
+  z = fill("#FFFFFF", state.k * M)
 
   for j in 1:M
     if x.ref[j] == UInt8('.')
@@ -384,7 +354,7 @@ function plotD(x::AminoAcidData,
       if !processed[i, j]
         val = z[sub2ind((state.k, M), i, j)]
 
-        (imax, jmax) = expand(i, j, state.k, M, val, z, processed)
+        (imax, jmax) = expandrect(i, j, state.k, M, val, z, processed)
 
         push!(xmin, j - 1)
         push!(xmax, jmax)
@@ -404,46 +374,30 @@ function plotD(x::AminoAcidData,
     j += 1
   end
 
-  idx = findin(label, col)
+  rectangles = [Plots.Shape([(xmin[i], ymin[i]),
+                             (xmin[i], ymax[i]),
+                             (xmax[i], ymax[i]),
+                             (xmax[i], ymin[i])]) for i = 1:length(xmin)]
 
-  majorfontsize = computefontsize(width, height)
-  minorfontsize = 0.8 * majorfontsize
+  mcol = reshape(map(a -> a[3], colset[1:26]), 1, 26)
+  mlab = reshape(map(a -> a[2], colset[1:26]), 1, 26)
 
-  keytitlefontsize = majorfontsize
-  keylabelfontsize = 0.8 * keytitlefontsize
-  padding = 1.0 * majorfontsize
+  p = Plots.plot(rectangles,
+                 fillcolor=col, linecolor=col,
+                 # plot options
+                 background_color=:white, html_output_format=:svg,
+                 size=(width, height), window_title="",
+                 # subplot options
+                 grid=false, label="", legend=:none, title="",
+                 # x axis
+                 xlabel="Site", xlims=(1, M),
+                 # y axis
+                 ylabel="Cluster", ylims=(0, 1), yticks=yax, yflip=true,
+                 yformatter=l -> string(clusterlabel[yax .== l][1]))
+  Plots.plot!(p, fill(-2, 2, length(mcol)), fill(-0.5, 2, length(mcol)),
+              seriestype=:scatter, markershape=:rect, markercolor=mcol,
+              label=mlab, legend=:right)
+  Plots.plot!(p, v[2:state.k], seriestype=:hline, linecolor=:black, label="")
 
-  Gadfly.plot(Gadfly.layer(x=zeros(Float64, state.k - 1),
-                           y=v[2:state.k],
-                           xend=fill(float(M), state.k - 1),
-                           yend=v[2:state.k],
-                           Gadfly.Geom.segment),
-              Gadfly.layer(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
-                           color=col, Gadfly.Geom.rect),
-              Gadfly.Coord.cartesian(yflip=true,
-                                     xmin=0, xmax=M,
-                                     ymin=0, ymax=1),
-              Gadfly.Scale.x_continuous(minvalue=1, maxvalue=M),
-              Gadfly.Scale.y_continuous(minvalue=0, maxvalue=1,
-                                        labels=l ->
-                string(clusterlabel[yax .== l][1])),
-              Gadfly.Scale.color_discrete_manual(color[idx]...,
-                                                 levels=label[idx]),
-              Gadfly.Theme(default_color=Gadfly.@colorant_str("black"),
-                           background_color=Gadfly.@colorant_str("white"),
-                           panel_fill=Gadfly.@colorant_str("white"),
-                           grid_line_width=0Measures.mm,
-                           line_width=linesep ? 0.3Measures.mm : 0Measures.mm,
-                           lowlight_color=c->c,
-                           lowlight_opacity=0.0,
-                           major_label_font_size=majorfontsize,
-                           minor_label_font_size=minorfontsize,
-                           key_title_font_size=keytitlefontsize,
-                           key_label_font_size=keylabelfontsize,
-                           plot_padding=padding),
-              Gadfly.Guide.yticks(ticks=yax),
-              Gadfly.Guide.xlabel("Site"),
-              Gadfly.Guide.ylabel("Cluster"),
-              Gadfly.Guide.title(""),
-              Gadfly.Guide.colorkey("Amino Acid"))
+  p
 end

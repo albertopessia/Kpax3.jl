@@ -42,7 +42,8 @@ function runtests()
            "mcmc/biased_random_walk";
            "mcmc/posterior";
            "mcmc/diagnostics";
-           "estimate/write"
+           "estimate/write";
+           "plots/plots"
   ]
 
   for t in tests
