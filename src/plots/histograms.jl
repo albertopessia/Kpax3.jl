@@ -4,8 +4,8 @@ function plotk(k::Vector{Int},
                pk::Vector{Float64};
                xlim::UnitRange{Int}=1:0,
                xticks::Vector{Int}=zeros(Int, 0),
-               width::Real=89.0,
-               height::Real=55.0)
+               width::Real=640.0,
+               height::Real=360.0)
   x = if length(xlim) > 0
     collect(xlim)
   else
@@ -42,38 +42,17 @@ function plotk(k::Vector{Int},
 
   M = ceil(M * multiplier) / multiplier
 
-  ticks = if length(xticks) == 0
-    Gadfly.Guide.xticks(ticks=:auto)
-  else
-    Gadfly.Guide.xticks(ticks=xticks)
-  end
-
-  majorfontsize = computefontsize(width, height)
-  minorfontsize = 0.8 * majorfontsize
-
-  keytitlefontsize = majorfontsize
-  keylabelfontsize = 0.8 * keytitlefontsize
-  padding = 1.0 * majorfontsize
-  gridwidth = 0.1 * majorfontsize
-
-  Gadfly.plot(Gadfly.layer(x=x, y=y, Gadfly.Geom.bar),
-              Gadfly.Coord.cartesian(xmin=x[1] - 0.5, xmax=x[end] + 0.5,
-                                     ymin=0, ymax=M),
-              Gadfly.Theme(default_color=Gadfly.@colorant_str("black"),
-                           background_color=Gadfly.@colorant_str("white"),
-                           panel_fill=Gadfly.@colorant_str("white"),
-                           bar_spacing=1Measures.mm,
-                           plot_padding=0Measures.mm,
-                           lowlight_color=c->c,
-                           lowlight_opacity=0.0,
-                           major_label_font_size=majorfontsize,
-                           minor_label_font_size=minorfontsize,
-                           key_title_font_size=keytitlefontsize,
-                           key_label_font_size=keylabelfontsize,
-                           plot_padding=padding,
-                           grid_line_width=gridwidth),
-              Gadfly.Guide.xlabel("k", orientation=:horizontal),
-              Gadfly.Guide.ylabel("p(k | x)", orientation=:vertical),
-              Gadfly.Guide.title(""),
-              ticks)
+  Plots.bar(x, y,
+            # bar options
+            fillcolor=:black, orientation=:vertical,
+            # plot options
+            background_color=:white, html_output_format=:svg,
+            size=(width, height), window_title="",
+            # subplot options
+            grid=true, legend=:none, title="",
+            # x axis
+            xlabel="k", xlims=(x[1] - 0.5, x[end] + 0.5),
+            xticks=length(xticks) == 0 ? :auto : xticks,
+            # y axis
+            ylabel="p(k | x)", ylims=(0, M))
 end

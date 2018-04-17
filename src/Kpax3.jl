@@ -1,7 +1,5 @@
 # This file is part of Kpax3. License is MIT.
 
-__precompile__(true)
-
 module Kpax3
   #################
   # Load packages #
@@ -10,9 +8,9 @@ module Kpax3
   import Distances
   import FileIO
   import JLD
-  import Gadfly
-  import Measures
+  import Plots
   import StatsBase
+  import StatPlots
 
   ####################
   # Export functions #

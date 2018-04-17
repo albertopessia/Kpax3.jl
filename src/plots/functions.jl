@@ -43,12 +43,6 @@ function reorderunits(R::Vector{Int},
   (neworder, midpoint, seppoint)
 end
 
-function computefontsize(width::Real,
-                         height::Real)
-  # coefficients estimated with a linear model. They can be improved
-  Measures.Length(:mm, 1.8933 + 0.0039 * width + 0.0141 * height)
-end
-
 function expandsquarediag(j::Int,
                           n::Int,
                           val::String,
@@ -191,13 +185,13 @@ function expandrectverti(i::Int,
   imax
 end
 
-function expand(i::Int,
-                j::Int,
-                ni::Int,
-                nj::Int,
-                val::String,
-                z::Vector{String},
-                processed::BitArray{2})
+function expandrect(i::Int,
+                    j::Int,
+                    ni::Int,
+                    nj::Int,
+                    val::String,
+                    z::Vector{String},
+                    processed::BitArray{2})
   (imax, jmax) = expandsquare(i, j, ni, nj, val, z, processed)
 
   h = expandrecthoriz(i, j, imax, jmax, ni, nj, val, z, processed)
