@@ -1,6 +1,8 @@
 # This file is part of Kpax3. License is MIT.
 
 importall Base.Test
+importall Plots
+importall GR
 import Kpax3
 
 cd(dirname(@__FILE__))
