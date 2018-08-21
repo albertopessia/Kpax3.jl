@@ -3,7 +3,7 @@ Clustering 0.10
 Distances 0.7
 FileIO 1.0
 GR 0.32
-JLD2 1.0
+JLD2 0.1.0
 Plots 0.19
 SpecialFunctions 0.7
 StatsBase 0.25
