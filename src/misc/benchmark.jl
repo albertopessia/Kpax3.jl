@@ -26,12 +26,12 @@ function benchmark()
 
   # Run once, to force compilation.
   println("-- First run --")
-  srand(20150326)
+  Random.seed!(20150326)
   @time kpax3mcmc(x, partition, settings)
 
   # Run a second time, with profiling.
   println("-- Second run --")
-  srand(20150326)
+  Random.seed!(20150326)
   Profile.init(delay=0.01)
   Profile.clear()
   Profile.clear_malloc_data()
