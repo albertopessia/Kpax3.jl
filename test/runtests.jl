@@ -1,11 +1,6 @@
 # This file is part of Kpax3. License is MIT.
 
-# Tell Plots/GR that we are in a headless environment
-ENV["PLOTS_TEST"] = "true"
-ENV["GKSwstype"] = "100"
-
 using Distances
-using GR
 using Plots
 using Printf
 using Random
@@ -14,6 +9,12 @@ using Statistics
 using StatPlots
 using StatsBase
 using Test
+
+gr(size=(800, 600))
+
+# Tell Plots/GR that we are in a headless environment
+ENV["GKSwstype"] = "100"
+ENV["PLOTS_TEST"] = "true"
 
 cd(dirname(@__FILE__))
 
