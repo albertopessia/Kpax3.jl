@@ -4,7 +4,7 @@
 #
 # Kpax3 - Bayesian cluster analysis of categorical data
 #
-# Copyright (c) 2016-2017 Alberto Pessia <alberto.pessia@gmail.com>
+# Copyright (c) 2016-2018 Alberto Pessia <alberto.pessia@gmail.com>
 #
 # Kpax3 is free software: you can redistribute it and/or modify it under the
 # terms of the MIT License. Refer to LICENSE.md file for more info.
@@ -250,9 +250,10 @@ zika_data = CategoricalData(settings);
 #
 # Here, we will opt for the second option by using k-means. Choose a suitable
 # initial number of clusters for your dataset.
+using Clustering;
 k = 10;
-initial_partition = Clustering.kmeans(convert(Array{Float64},
-                                      zika_data.data), k).assignments;
+initial_partition = kmeans(convert(Array{Float64}, zika_data.data),
+                           k).assignments;
 
 # The csv file can be either a single column of integers (cluster indices)
 # representing the partition, or a two-column file where the first column
@@ -282,6 +283,7 @@ map_solution = kpax3ga(zika_data, initial_partition, settings);
 # Check the value of the log-posterior distribution (plus a constant)
 # Compare different solutions by this value and pick the one with the maximum
 # value.
+using Printf;
 @printf("Log-posterior value (plus a constant): %.4f\n", map_solution.logpp);
 
 ###############################################################################
@@ -386,9 +388,10 @@ writeresults(zika_data, mcmc_solution, mcmc_output_file, what=4, verbose=true);
 # Function signatures are shown in case you want to change default values.
 
 # Choose the default plotting backend. We recommend PlotlyJS. Install it with
-#   Pkg.add("PlotlyJS")
+#   ]add PlotlyJS
 #   Blink.AtomShell.install()
-Plots.plotlyjs();
+using Plots;
+plotlyjs();
 
 # For high quality figures, you can save all these plots to SVG format with the
 # following command:

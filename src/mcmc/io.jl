@@ -119,7 +119,7 @@ function processchain(x::AminoAcidData,
   # is the corresponding parameter of the posterior probability.
   #
   # Posterior expected value is p = a / sum(a) = (y + 1 / J) / (n + 1)
-  p = sum(float(x.data), 2)
+  p = sum(float(x.data), dims=2)
 
   key = 1
   idxstart = 1

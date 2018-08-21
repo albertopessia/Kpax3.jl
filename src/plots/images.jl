@@ -20,8 +20,8 @@ function plotP(R::Vector{Int},
 
   (ord, mid, sep) = reorderunits(R, P, clusterorder)
 
-  mid -= 0.5
-  sep -= 0.5
+  mid .-= 0.5
+  sep .-= 0.5
 
   N = n^2
 
@@ -77,7 +77,7 @@ function plotP(R::Vector{Int},
     push!(ymax, jmax)
     push!(col, val)
 
-    processed[j:jmax, j:jmax] = true
+    processed[j:jmax, j:jmax] .= true
     j = jmax + 1
   end
 
@@ -88,7 +88,7 @@ function plotP(R::Vector{Int},
     i = j + 1
     while i <= n
       if !processed[i, j]
-        val = z[sub2ind((n, n), i, j)]
+        val = z[LinearIndices((n, n))[i, j]]
 
         (imax, jmax) = expandrect(i, j, n, n, val, z, processed)
 
@@ -106,7 +106,7 @@ function plotP(R::Vector{Int},
         push!(ymax, jmax)
         push!(col, val)
 
-        processed[i:imax, j:jmax] = true
+        processed[i:imax, j:jmax] .= true
         i = imax + 1
       else
         while i <= n && processed[i, j]
@@ -125,11 +125,13 @@ function plotP(R::Vector{Int},
     yborder[:, i] = [sep[i]; sep[i + 1]; sep[i + 1]; sep[i]; sep[i]]
   end
 
-  rectangles = [Plots.Shape([(xmin[i], ymin[i]),
-                             (xmin[i], ymax[i]),
-                             (xmax[i], ymax[i]),
-                             (xmax[i], ymin[i])]) for i = 1:length(xmin)]
+  rectangles = reshape([Plots.Shape([(xmin[i], ymin[i]),
+                                     (xmin[i], ymax[i]),
+                                     (xmax[i], ymax[i]),
+                                     (xmax[i], ymin[i])])
+                        for i = 1:length(xmin)], 1, length(xmin))
 
+  pcol = reshape(col, 1, length(col))
   # create an empty plot and then add all the rectangles on top of it
   mcol = ["#FFFFFF" "#F0F0F0" "#BDBDBD" "#636363" "#000000"]
   mlab = ["[0.0, 0.2]" "(0.2, 0.4]" "(0.4, 0.6]" "(0.6, 0.8]" "(0.8, 1.0]"]
@@ -152,7 +154,7 @@ function plotP(R::Vector{Int},
   Plots.plot!(p, fill(-2, 2, length(mcol)), fill(-0.5, 2, length(mcol)),
               seriestype=:scatter, markershape=:rect, markercolor=mcol,
               label=mlab, legend=:right)
-  Plots.plot!(p, rectangles, fillcolor=col, linealpha=0.0, linewidth=0.0,
+  Plots.plot!(p, rectangles, fillcolor=pcol, linealpha=0.0, linewidth=0.0,
               linestyle=:dot, label="")
 
   p
@@ -197,7 +199,9 @@ function plotC(site::Vector{Int},
                  # y axis
                  ylabel="Posterior probability", ylims=(0, 1))
   Plots.plot!(p, 1:m, weak,
-              seriestype=:path, linecolor="#808080", fill=(0, "#808080"),
+              seriestype=:path,
+              linecolor="#808080",
+              fill=(0, "#808080"),
               label="", legend=:none)
   Plots.plot!(p, 1:m, noise,
               seriestype=:path, linecolor=:white, fill=(0, :white),
@@ -352,7 +356,7 @@ function plotD(x::AminoAcidData,
     i = 1
     while i <= state.k
       if !processed[i, j]
-        val = z[sub2ind((state.k, M), i, j)]
+        val = z[LinearIndices((state.k, M))[i, j]]
 
         (imax, jmax) = expandrect(i, j, state.k, M, val, z, processed)
 
@@ -362,7 +366,7 @@ function plotD(x::AminoAcidData,
         push!(ymax, v[imax + 1])
         push!(col, val)
 
-        processed[i:imax, j:jmax] = true
+        processed[i:imax, j:jmax] .= true
         i = imax + 1
       else
         while i <= state.k && processed[i, j]
@@ -374,16 +378,18 @@ function plotD(x::AminoAcidData,
     j += 1
   end
 
-  rectangles = [Plots.Shape([(xmin[i], ymin[i]),
-                             (xmin[i], ymax[i]),
-                             (xmax[i], ymax[i]),
-                             (xmax[i], ymin[i])]) for i = 1:length(xmin)]
+  rectangles = reshape([Plots.Shape([(xmin[i], ymin[i]),
+                                     (xmin[i], ymax[i]),
+                                     (xmax[i], ymax[i]),
+                                     (xmax[i], ymin[i])])
+                        for i = 1:length(xmin)], 1, length(xmin))
 
+  pcol = reshape(col, 1, length(col))
   mcol = reshape(map(a -> a[3], colset[1:26]), 1, 26)
   mlab = reshape(map(a -> a[2], colset[1:26]), 1, 26)
 
   p = Plots.plot(rectangles,
-                 fillcolor=col, linecolor=col,
+                 fillcolor=pcol, linecolor=pcol,
                  # plot options
                  background_color=:white, html_output_format=:svg,
                  size=(width, height), window_title="",

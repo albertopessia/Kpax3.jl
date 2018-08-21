@@ -47,70 +47,94 @@ end
 function logratiopriorrowmerge!(k::Real,
                                 ep::EwensPitmanPAUT,
                                 support::MCMCSupport)
-  support.lograR = lgamma(1 - ep.α) + lgamma(support.vi + support.vj - ep.α) -
-                   log(ep.θ + k * ep.α) - lgamma(support.vi - ep.α) -
-                   lgamma(support.vj - ep.α)
+  support.lograR = SpecialFunctions.lgamma(1 - ep.α) +
+                   SpecialFunctions.lgamma(support.vi + support.vj - ep.α) -
+                   log(ep.θ + k * ep.α) -
+                   SpecialFunctions.lgamma(support.vi - ep.α) -
+                   SpecialFunctions.lgamma(support.vj - ep.α)
   nothing
 end
 
 function logratiopriorrowmerge!(k::Real,
                                 ep::EwensPitmanPAZT,
                                 support::MCMCSupport)
-  support.lograR = lgamma(1 - ep.α) + lgamma(support.vi + support.vj - ep.α) -
-                   log(k) - log(ep.α) - lgamma(support.vi - ep.α) -
-                   lgamma(support.vj - ep.α)
+  support.lograR = SpecialFunctions.lgamma(1 - ep.α) +
+                   SpecialFunctions.lgamma(support.vi + support.vj - ep.α) -
+                   log(k) -
+                   log(ep.α) -
+                   SpecialFunctions.lgamma(support.vi - ep.α) -
+                   SpecialFunctions.lgamma(support.vj - ep.α)
   nothing
 end
 
 function logratiopriorrowmerge!(k::Real,
                                 ep::EwensPitmanZAPT,
                                 support::MCMCSupport)
-  support.lograR = lgamma(support.vi + support.vj) - log(ep.θ) -
-                   lgamma(support.vi) - lgamma(support.vj)
+  support.lograR = SpecialFunctions.lgamma(support.vi + support.vj) -
+                   log(ep.θ) -
+                   SpecialFunctions.lgamma(support.vi) -
+                   SpecialFunctions.lgamma(support.vj)
   nothing
 end
 
 function logratiopriorrowmerge!(k::Real,
                                 ep::EwensPitmanNAPT,
                                 support::MCMCSupport)
-  support.lograR = - log((k - ep.L) * ep.α * exp(lgamma(support.vi - ep.α) +
-                   lgamma(support.vj - ep.α) - lgamma(1 - ep.α) -
-                   lgamma(support.vi + support.vj - ep.α)))
+  support.lograR = - log(
+    (k - ep.L) * ep.α *
+    exp(SpecialFunctions.lgamma(support.vi - ep.α) +
+    SpecialFunctions.lgamma(support.vj - ep.α) -
+    SpecialFunctions.lgamma(1 - ep.α) -
+    SpecialFunctions.lgamma(support.vi + support.vj - ep.α))
+  )
+
   nothing
 end
 
 function logratiopriorrowsplit!(k::Real,
                                 ep::EwensPitmanPAUT,
                                 support::MCMCSupport)
-  support.lograR = log(ep.θ + (k - 1) * ep.α) - lgamma(1 - ep.α) +
-                   lgamma(support.vi - ep.α) + lgamma(support.vj - ep.α) -
-                   lgamma(support.vi + support.vj - ep.α)
+  support.lograR = log(ep.θ + (k - 1) * ep.α) -
+                   SpecialFunctions.lgamma(1 - ep.α) +
+                   SpecialFunctions.lgamma(support.vi - ep.α) +
+                   SpecialFunctions.lgamma(support.vj - ep.α) -
+                   SpecialFunctions.lgamma(support.vi + support.vj - ep.α)
   nothing
 end
 
 function logratiopriorrowsplit!(k::Real,
                                 ep::EwensPitmanPAZT,
                                 support::MCMCSupport)
-  support.lograR = log(k - 1) + log(ep.α) - lgamma(1 - ep.α) +
-                   lgamma(support.vi - ep.α) + lgamma(support.vj - ep.α) -
-                   lgamma(support.vi + support.vj - ep.α)
+  support.lograR = log(k - 1) +
+                   log(ep.α) -
+                   SpecialFunctions.lgamma(1 - ep.α) +
+                   SpecialFunctions.lgamma(support.vi - ep.α) +
+                   SpecialFunctions.lgamma(support.vj - ep.α) -
+                   SpecialFunctions.lgamma(support.vi + support.vj - ep.α)
   nothing
 end
 
 function logratiopriorrowsplit!(k::Real,
                                 ep::EwensPitmanZAPT,
                                 support::MCMCSupport)
-  support.lograR = log(ep.θ) + lgamma(support.vi) + lgamma(support.vj) -
-                   lgamma(support.vi + support.vj)
+  support.lograR = log(ep.θ) +
+                   SpecialFunctions.lgamma(support.vi) +
+                   SpecialFunctions.lgamma(support.vj) -
+                   SpecialFunctions.lgamma(support.vi + support.vj)
   nothing
 end
 
 function logratiopriorrowsplit!(k::Real,
                                 ep::EwensPitmanNAPT,
                                 support::MCMCSupport)
-  support.lograR = log((k - 1 - ep.L) * ep.α * exp(lgamma(support.vi - ep.α) +
-                   lgamma(support.vj - ep.α) - lgamma(1 - ep.α) -
-                   lgamma(support.vi + support.vj - ep.α)))
+  support.lograR = log(
+    (k - 1 - ep.L) * ep.α *
+    exp(SpecialFunctions.lgamma(support.vi - ep.α) +
+    SpecialFunctions.lgamma(support.vj - ep.α) -
+    SpecialFunctions.lgamma(1 - ep.α) -
+    SpecialFunctions.lgamma(support.vi + support.vj - ep.α))
+  )
+
   nothing
 end
 
@@ -171,7 +195,10 @@ end
 function logratiopriorrowmerge(k::Real,
                                vj::Real,
                                ep::EwensPitmanNAPT)
-  - log((k - ep.L) * ep.α * exp(lgamma(vj - ep.α) - lgamma(vj + 1 - ep.α)))
+  - log(
+    (k - ep.L) * ep.α *
+    exp(SpecialFunctions.lgamma(vj - ep.α) -
+        SpecialFunctions.lgamma(vj + 1 - ep.α)))
 end
 
 function logratiopriorrowmove(vi::Real,
@@ -183,5 +210,8 @@ end
 function logratiopriorrowsplit(k::Real,
                                vi::Real,
                                ep::EwensPitmanNAPT)
-  log((k - 1 - ep.L) * ep.α * exp(lgamma(vi - 1 - ep.α) - lgamma(vi - ep.α)))
+  log(
+    (k - 1 - ep.L) * ep.α *
+    exp(SpecialFunctions.lgamma(vi - 1 - ep.α) -
+        SpecialFunctions.lgamma(vi - ep.α)))
 end

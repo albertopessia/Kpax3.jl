@@ -27,11 +27,11 @@ function reorderunits(R::Vector{Int},
   h = 1
   u = 1
   for g in 1:k
-    idx = find(R .== clusterorder[g])
+    idx = findall(R .== clusterorder[g])
     u = length(idx)
     ord = sortperm(M[idx], rev=true)
 
-    copy!(neworder, h, idx[ord], 1, u)
+    copyto!(neworder, h, idx[ord], 1, u)
     midpoint[g] = (2 * h + u - 1) / 2
     seppoint[g] = h - 0.5
 
@@ -54,7 +54,7 @@ function expandsquarediag(j::Int,
   expand = true
 
   while expand && h < n
-    idx = sub2ind((n, n), j, h + 1)
+    idx = LinearIndices((n, n))[j, h + 1]
 
     i = j
     while expand && i <= h + 1
@@ -88,7 +88,7 @@ function expandsquare(i::Int,
   while expand && imax < ni && jmax < nj
     # check next column from imin to imax + 1
     imin = i
-    idx = sub2ind((ni, nj), imin, jmax + 1)
+    idx = LinearIndices((ni, nj))[imin, jmax + 1]
 
     while expand && imin <= imax + 1
       if processed[idx] || z[idx] != val
@@ -103,7 +103,7 @@ function expandsquare(i::Int,
     if expand
       jmin = j
       while expand && jmin <= jmax + 1
-        idx = sub2ind((ni, nj), imax + 1, jmin)
+        idx = LinearIndices((ni, nj))[imax + 1, jmin]
 
         if processed[idx] || z[idx] != val
           expand = false
@@ -134,7 +134,7 @@ function expandrecthoriz(i::Int,
   expand = true
 
   while expand && jmax < nj
-    idx = sub2ind((ni, nj), i, jmax + 1)
+    idx = LinearIndices((ni, nj))[i, jmax + 1]
 
     imin = i
     while expand && imin <= imax
@@ -168,7 +168,7 @@ function expandrectverti(i::Int,
   while expand && imax < ni
     jmin = j
     while expand && jmin <= jmax
-      idx = sub2ind((ni, nj), imax + 1, jmin)
+      idx = LinearIndices((ni, nj))[imax + 1, jmin]
 
       if processed[idx] || z[idx] != val
         expand = false

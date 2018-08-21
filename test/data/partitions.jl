@@ -96,10 +96,10 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 1
-    blocksize[:,  j] = [2, 0]
-    blockcount[:, j] = [0, 1]
+    blocksize[:,  j] .= [2, 0]
+    blockcount[:, j] .= [0, 1]
 
-    partition[:, i += 1] = [1, 1]
+    partition[:, i += 1] .= [1, 1]
 
     # k = 2
 
@@ -107,10 +107,10 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 2
-    blocksize[:,  j] = [1, 1]
-    blockcount[:, j] = [2, 0]
+    blocksize[:,  j] .= [1, 1]
+    blockcount[:, j] .= [2, 0]
 
-    partition[:, i += 1] = [1, 2]
+    partition[:, i += 1] .= [1, 2]
 
     Partition(n, B, C, k, index, blocksize, blockcount, partition)
   end
@@ -140,10 +140,10 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 1
-    blocksize[:,  j] = [3, 0, 0]
-    blockcount[:, j] = [0, 0, 1]
+    blocksize[:,  j] .= [3, 0, 0]
+    blockcount[:, j] .= [0, 0, 1]
 
-    partition[:, i += 1] = [1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1]
 
     # k = 2
 
@@ -151,12 +151,12 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 2
-    blocksize[:,  j] = [2, 1, 0]
-    blockcount[:, j] = [1, 1, 0]
+    blocksize[:,  j] .= [2, 1, 0]
+    blockcount[:, j] .= [1, 1, 0]
 
-    partition[:, i += 1] = [1, 1, 2]
-    partition[:, i += 1] = [1, 2, 1]
-    partition[:, i += 1] = [2, 1, 1]
+    partition[:, i += 1] .= [1, 1, 2]
+    partition[:, i += 1] .= [1, 2, 1]
+    partition[:, i += 1] .= [2, 1, 1]
 
     # k = 3
 
@@ -164,10 +164,10 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 3
-    blocksize[:,  j] = [1, 1, 1]
-    blockcount[:, j] = [3, 0, 0]
+    blocksize[:,  j] .= [1, 1, 1]
+    blockcount[:, j] .= [3, 0, 0]
 
-    partition[:, i += 1] = [1, 2, 3]
+    partition[:, i += 1] .= [1, 2, 3]
 
     Partition(n, B, C, k, index, blocksize, blockcount, partition)
   end
@@ -197,10 +197,10 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 1
-    blocksize[:,  j] = [4, 0, 0, 0]
-    blockcount[:, j] = [0, 0, 0, 1]
+    blocksize[:,  j] .= [4, 0, 0, 0]
+    blockcount[:, j] .= [0, 0, 0, 1]
 
-    partition[:, i += 1] = [1, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 1]
 
     # k = 2
 
@@ -208,24 +208,24 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 2
-    blocksize[:,  j] = [3, 1, 0, 0]
-    blockcount[:, j] = [1, 0, 1, 0]
+    blocksize[:,  j] .= [3, 1, 0, 0]
+    blockcount[:, j] .= [1, 0, 1, 0]
 
-    partition[:, i += 1] = [1, 1, 1, 2]
-    partition[:, i += 1] = [1, 1, 2, 1]
-    partition[:, i += 1] = [1, 2, 1, 1]
-    partition[:, i += 1] = [2, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 2]
+    partition[:, i += 1] .= [1, 1, 2, 1]
+    partition[:, i += 1] .= [1, 2, 1, 1]
+    partition[:, i += 1] .= [2, 1, 1, 1]
 
     # **|**
     j += 1
     index[j] = i + 1
     k[j] = 2
-    blocksize[:,  j] = [2, 2, 0, 0]
-    blockcount[:, j] = [0, 2, 0, 0]
+    blocksize[:,  j] .= [2, 2, 0, 0]
+    blockcount[:, j] .= [0, 2, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 2, 2]
-    partition[:, i += 1] = [1, 2, 1, 2]
-    partition[:, i += 1] = [1, 2, 2, 1]
+    partition[:, i += 1] .= [1, 1, 2, 2]
+    partition[:, i += 1] .= [1, 2, 1, 2]
+    partition[:, i += 1] .= [1, 2, 2, 1]
 
     # k = 3
 
@@ -233,15 +233,15 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 3
-    blocksize[:,  j] = [2, 1, 1, 0]
-    blockcount[:, j] = [2, 1, 0, 0]
+    blocksize[:,  j] .= [2, 1, 1, 0]
+    blockcount[:, j] .= [2, 1, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 2, 3]
-    partition[:, i += 1] = [1, 2, 1, 3]
-    partition[:, i += 1] = [1, 2, 3, 1]
-    partition[:, i += 1] = [2, 1, 1, 3]
-    partition[:, i += 1] = [2, 1, 3, 1]
-    partition[:, i += 1] = [2, 3, 1, 1]
+    partition[:, i += 1] .= [1, 1, 2, 3]
+    partition[:, i += 1] .= [1, 2, 1, 3]
+    partition[:, i += 1] .= [1, 2, 3, 1]
+    partition[:, i += 1] .= [2, 1, 1, 3]
+    partition[:, i += 1] .= [2, 1, 3, 1]
+    partition[:, i += 1] .= [2, 3, 1, 1]
 
     # k = 4
 
@@ -249,10 +249,10 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 4
-    blocksize[:,  j] = [1, 1, 1, 1]
-    blockcount[:, j] = [4, 0, 0, 0]
+    blocksize[:,  j] .= [1, 1, 1, 1]
+    blockcount[:, j] .= [4, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 2, 3, 4]
+    partition[:, i += 1] .= [1, 2, 3, 4]
 
     Partition(n, B, C, k, index, blocksize, blockcount, partition)
   end
@@ -282,10 +282,10 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 1
-    blocksize[:,  j] = [5, 0, 0, 0, 0]
-    blockcount[:, j] = [0, 0, 0, 0, 1]
+    blocksize[:,  j] .= [5, 0, 0, 0, 0]
+    blockcount[:, j] .= [0, 0, 0, 0, 1]
 
-    partition[:, i += 1] = [1, 1, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 1, 1]
 
     # k = 2
 
@@ -293,32 +293,32 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 2
-    blocksize[:,  j] = [4, 1, 0, 0, 0]
-    blockcount[:, j] = [1, 0, 0, 1, 0]
+    blocksize[:,  j] .= [4, 1, 0, 0, 0]
+    blockcount[:, j] .= [1, 0, 0, 1, 0]
 
-    partition[:, i += 1] = [1, 1, 1, 1, 2]
-    partition[:, i += 1] = [1, 1, 1, 2, 1]
-    partition[:, i += 1] = [1, 1, 2, 1, 1]
-    partition[:, i += 1] = [1, 2, 1, 1, 1]
-    partition[:, i += 1] = [2, 1, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 1, 2]
+    partition[:, i += 1] .= [1, 1, 1, 2, 1]
+    partition[:, i += 1] .= [1, 1, 2, 1, 1]
+    partition[:, i += 1] .= [1, 2, 1, 1, 1]
+    partition[:, i += 1] .= [2, 1, 1, 1, 1]
 
     # ***|**
     j += 1
     index[j] = i + 1
     k[j] = 2
-    blocksize[:,  j] = [3, 2, 0, 0, 0]
-    blockcount[:, j] = [0, 1, 1, 0, 0]
+    blocksize[:,  j] .= [3, 2, 0, 0, 0]
+    blockcount[:, j] .= [0, 1, 1, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 1, 2, 2]
-    partition[:, i += 1] = [1, 1, 2, 1, 2]
-    partition[:, i += 1] = [1, 2, 1, 1, 2]
-    partition[:, i += 1] = [2, 1, 1, 1, 2]
-    partition[:, i += 1] = [1, 1, 2, 2, 1]
-    partition[:, i += 1] = [1, 2, 1, 2, 1]
-    partition[:, i += 1] = [2, 1, 1, 2, 1]
-    partition[:, i += 1] = [1, 2, 2, 1, 1]
-    partition[:, i += 1] = [2, 1, 2, 1, 1]
-    partition[:, i += 1] = [2, 2, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 2, 2]
+    partition[:, i += 1] .= [1, 1, 2, 1, 2]
+    partition[:, i += 1] .= [1, 2, 1, 1, 2]
+    partition[:, i += 1] .= [2, 1, 1, 1, 2]
+    partition[:, i += 1] .= [1, 1, 2, 2, 1]
+    partition[:, i += 1] .= [1, 2, 1, 2, 1]
+    partition[:, i += 1] .= [2, 1, 1, 2, 1]
+    partition[:, i += 1] .= [1, 2, 2, 1, 1]
+    partition[:, i += 1] .= [2, 1, 2, 1, 1]
+    partition[:, i += 1] .= [2, 2, 1, 1, 1]
 
     # k = 3
 
@@ -326,42 +326,42 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 3
-    blocksize[:,  j] = [2, 2, 1, 0, 0]
-    blockcount[:, j] = [1, 2, 0, 0, 0]
+    blocksize[:,  j] .= [2, 2, 1, 0, 0]
+    blockcount[:, j] .= [1, 2, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 2, 2, 3]
-    partition[:, i += 1] = [1, 1, 2, 3, 2]
-    partition[:, i += 1] = [1, 1, 3, 2, 2]
-    partition[:, i += 1] = [1, 2, 1, 2, 3]
-    partition[:, i += 1] = [1, 2, 1, 3, 2]
-    partition[:, i += 1] = [1, 3, 1, 2, 2]
-    partition[:, i += 1] = [1, 2, 2, 1, 3]
-    partition[:, i += 1] = [1, 2, 3, 1, 2]
-    partition[:, i += 1] = [1, 3, 2, 1, 2]
-    partition[:, i += 1] = [1, 2, 2, 3, 1]
-    partition[:, i += 1] = [1, 2, 3, 2, 1]
-    partition[:, i += 1] = [1, 3, 2, 2, 1]
-    partition[:, i += 1] = [3, 1, 1, 2, 2]
-    partition[:, i += 1] = [3, 1, 2, 1, 2]
-    partition[:, i += 1] = [3, 1, 2, 2, 1]
+    partition[:, i += 1] .= [1, 1, 2, 2, 3]
+    partition[:, i += 1] .= [1, 1, 2, 3, 2]
+    partition[:, i += 1] .= [1, 1, 3, 2, 2]
+    partition[:, i += 1] .= [1, 2, 1, 2, 3]
+    partition[:, i += 1] .= [1, 2, 1, 3, 2]
+    partition[:, i += 1] .= [1, 3, 1, 2, 2]
+    partition[:, i += 1] .= [1, 2, 2, 1, 3]
+    partition[:, i += 1] .= [1, 2, 3, 1, 2]
+    partition[:, i += 1] .= [1, 3, 2, 1, 2]
+    partition[:, i += 1] .= [1, 2, 2, 3, 1]
+    partition[:, i += 1] .= [1, 2, 3, 2, 1]
+    partition[:, i += 1] .= [1, 3, 2, 2, 1]
+    partition[:, i += 1] .= [3, 1, 1, 2, 2]
+    partition[:, i += 1] .= [3, 1, 2, 1, 2]
+    partition[:, i += 1] .= [3, 1, 2, 2, 1]
 
     # ***|*|*
     j += 1
     index[j] = i + 1
     k[j] = 3
-    blocksize[:,  j] = [3, 1, 1, 0, 0]
-    blockcount[:, j] = [2, 0, 1, 0, 0]
+    blocksize[:,  j] .= [3, 1, 1, 0, 0]
+    blockcount[:, j] .= [2, 0, 1, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 1, 2, 3]
-    partition[:, i += 1] = [1, 1, 2, 1, 3]
-    partition[:, i += 1] = [1, 1, 2, 3, 1]
-    partition[:, i += 1] = [1, 2, 1, 1, 3]
-    partition[:, i += 1] = [1, 2, 1, 3, 1]
-    partition[:, i += 1] = [1, 2, 3, 1, 1]
-    partition[:, i += 1] = [2, 1, 1, 1, 3]
-    partition[:, i += 1] = [2, 1, 1, 3, 1]
-    partition[:, i += 1] = [2, 1, 3, 1, 1]
-    partition[:, i += 1] = [2, 3, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 2, 3]
+    partition[:, i += 1] .= [1, 1, 2, 1, 3]
+    partition[:, i += 1] .= [1, 1, 2, 3, 1]
+    partition[:, i += 1] .= [1, 2, 1, 1, 3]
+    partition[:, i += 1] .= [1, 2, 1, 3, 1]
+    partition[:, i += 1] .= [1, 2, 3, 1, 1]
+    partition[:, i += 1] .= [2, 1, 1, 1, 3]
+    partition[:, i += 1] .= [2, 1, 1, 3, 1]
+    partition[:, i += 1] .= [2, 1, 3, 1, 1]
+    partition[:, i += 1] .= [2, 3, 1, 1, 1]
 
     # k = 4
 
@@ -369,19 +369,19 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 4
-    blocksize[:,  j] = [2, 1, 1, 1, 0]
-    blockcount[:, j] = [3, 1, 0, 0, 0]
+    blocksize[:,  j] .= [2, 1, 1, 1, 0]
+    blockcount[:, j] .= [3, 1, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 2, 3, 4]
-    partition[:, i += 1] = [1, 2, 1, 3, 4]
-    partition[:, i += 1] = [1, 2, 3, 1, 4]
-    partition[:, i += 1] = [1, 2, 3, 4, 1]
-    partition[:, i += 1] = [2, 1, 1, 3, 4]
-    partition[:, i += 1] = [2, 1, 3, 1, 4]
-    partition[:, i += 1] = [2, 1, 3, 4, 1]
-    partition[:, i += 1] = [2, 3, 1, 1, 4]
-    partition[:, i += 1] = [2, 3, 1, 4, 1]
-    partition[:, i += 1] = [2, 3, 4, 1, 1]
+    partition[:, i += 1] .= [1, 1, 2, 3, 4]
+    partition[:, i += 1] .= [1, 2, 1, 3, 4]
+    partition[:, i += 1] .= [1, 2, 3, 1, 4]
+    partition[:, i += 1] .= [1, 2, 3, 4, 1]
+    partition[:, i += 1] .= [2, 1, 1, 3, 4]
+    partition[:, i += 1] .= [2, 1, 3, 1, 4]
+    partition[:, i += 1] .= [2, 1, 3, 4, 1]
+    partition[:, i += 1] .= [2, 3, 1, 1, 4]
+    partition[:, i += 1] .= [2, 3, 1, 4, 1]
+    partition[:, i += 1] .= [2, 3, 4, 1, 1]
 
     # k = 5
 
@@ -389,10 +389,10 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 5
-    blocksize[:,  j] = [1, 1, 1, 1, 1]
-    blockcount[:, j] = [5, 0, 0, 0, 0]
+    blocksize[:,  j] .= [1, 1, 1, 1, 1]
+    blockcount[:, j] .= [5, 0, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 2, 3, 4, 5]
+    partition[:, i += 1] .= [1, 2, 3, 4, 5]
 
     Partition(n, B, C, k, index, blocksize, blockcount, partition)
   end
@@ -422,10 +422,10 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 1
-    blocksize[:,  j] = [6, 0, 0, 0, 0, 0]
-    blockcount[:, j] = [0, 0, 0, 0, 0, 6]
+    blocksize[:,  j] .= [6, 0, 0, 0, 0, 0]
+    blockcount[:, j] .= [0, 0, 0, 0, 0, 6]
 
-    partition[:, i += 1] = [1, 1, 1, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 1, 1, 1]
 
     # k = 2
 
@@ -433,56 +433,56 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 2
-    blocksize[:,  j] = [5, 1, 0, 0, 0, 0]
-    blockcount[:, j] = [1, 0, 0, 0, 1, 0]
+    blocksize[:,  j] .= [5, 1, 0, 0, 0, 0]
+    blockcount[:, j] .= [1, 0, 0, 0, 1, 0]
 
-    partition[:, i += 1] = [1, 1, 1, 1, 1, 2]
-    partition[:, i += 1] = [1, 1, 1, 1, 2, 1]
-    partition[:, i += 1] = [1, 1, 1, 2, 1, 1]
-    partition[:, i += 1] = [1, 1, 2, 1, 1, 1]
-    partition[:, i += 1] = [1, 2, 1, 1, 1, 1]
-    partition[:, i += 1] = [2, 1, 1, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 1, 1, 2]
+    partition[:, i += 1] .= [1, 1, 1, 1, 2, 1]
+    partition[:, i += 1] .= [1, 1, 1, 2, 1, 1]
+    partition[:, i += 1] .= [1, 1, 2, 1, 1, 1]
+    partition[:, i += 1] .= [1, 2, 1, 1, 1, 1]
+    partition[:, i += 1] .= [2, 1, 1, 1, 1, 1]
 
     # ****|**
     j += 1
     index[j] = i + 1
     k[j] = 2
-    blocksize[:,  j] = [4, 2, 0, 0, 0, 0]
-    blockcount[:, j] = [0, 1, 0, 1, 0, 0]
+    blocksize[:,  j] .= [4, 2, 0, 0, 0, 0]
+    blockcount[:, j] .= [0, 1, 0, 1, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 1, 1, 2, 2]
-    partition[:, i += 1] = [1, 1, 1, 2, 1, 2]
-    partition[:, i += 1] = [1, 1, 1, 2, 2, 1]
-    partition[:, i += 1] = [1, 1, 2, 1, 1, 2]
-    partition[:, i += 1] = [1, 1, 2, 1, 2, 1]
-    partition[:, i += 1] = [1, 1, 2, 2, 1, 1]
-    partition[:, i += 1] = [1, 2, 1, 1, 1, 2]
-    partition[:, i += 1] = [1, 2, 1, 1, 2, 1]
-    partition[:, i += 1] = [1, 2, 1, 2, 1, 1]
-    partition[:, i += 1] = [1, 2, 2, 1, 1, 1]
-    partition[:, i += 1] = [2, 1, 1, 1, 1, 2]
-    partition[:, i += 1] = [2, 1, 1, 1, 2, 1]
-    partition[:, i += 1] = [2, 1, 1, 2, 1, 1]
-    partition[:, i += 1] = [2, 1, 2, 1, 1, 1]
-    partition[:, i += 1] = [2, 2, 1, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 1, 2, 2]
+    partition[:, i += 1] .= [1, 1, 1, 2, 1, 2]
+    partition[:, i += 1] .= [1, 1, 1, 2, 2, 1]
+    partition[:, i += 1] .= [1, 1, 2, 1, 1, 2]
+    partition[:, i += 1] .= [1, 1, 2, 1, 2, 1]
+    partition[:, i += 1] .= [1, 1, 2, 2, 1, 1]
+    partition[:, i += 1] .= [1, 2, 1, 1, 1, 2]
+    partition[:, i += 1] .= [1, 2, 1, 1, 2, 1]
+    partition[:, i += 1] .= [1, 2, 1, 2, 1, 1]
+    partition[:, i += 1] .= [1, 2, 2, 1, 1, 1]
+    partition[:, i += 1] .= [2, 1, 1, 1, 1, 2]
+    partition[:, i += 1] .= [2, 1, 1, 1, 2, 1]
+    partition[:, i += 1] .= [2, 1, 1, 2, 1, 1]
+    partition[:, i += 1] .= [2, 1, 2, 1, 1, 1]
+    partition[:, i += 1] .= [2, 2, 1, 1, 1, 1]
 
     # ***|***
     j += 1
     index[j] = i + 1
     k[j] = 2
-    blocksize[:,  j] = [3, 3, 0, 0, 0, 0]
-    blockcount[:, j] = [0, 0, 2, 0, 0, 0]
+    blocksize[:,  j] .= [3, 3, 0, 0, 0, 0]
+    blockcount[:, j] .= [0, 0, 2, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 1, 2, 2, 2]
-    partition[:, i += 1] = [1, 1, 2, 1, 2, 2]
-    partition[:, i += 1] = [1, 1, 2, 2, 1, 2]
-    partition[:, i += 1] = [1, 1, 2, 2, 2, 1]
-    partition[:, i += 1] = [1, 2, 1, 1, 2, 2]
-    partition[:, i += 1] = [1, 2, 1, 2, 1, 2]
-    partition[:, i += 1] = [1, 2, 1, 2, 2, 1]
-    partition[:, i += 1] = [1, 2, 2, 1, 1, 2]
-    partition[:, i += 1] = [1, 2, 2, 1, 2, 1]
-    partition[:, i += 1] = [1, 2, 2, 2, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 2, 2, 2]
+    partition[:, i += 1] .= [1, 1, 2, 1, 2, 2]
+    partition[:, i += 1] .= [1, 1, 2, 2, 1, 2]
+    partition[:, i += 1] .= [1, 1, 2, 2, 2, 1]
+    partition[:, i += 1] .= [1, 2, 1, 1, 2, 2]
+    partition[:, i += 1] .= [1, 2, 1, 2, 1, 2]
+    partition[:, i += 1] .= [1, 2, 1, 2, 2, 1]
+    partition[:, i += 1] .= [1, 2, 2, 1, 1, 2]
+    partition[:, i += 1] .= [1, 2, 2, 1, 2, 1]
+    partition[:, i += 1] .= [1, 2, 2, 2, 1, 1]
 
     # k = 3
 
@@ -490,115 +490,115 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 3
-    blocksize[:,  j] = [4, 1, 1, 0, 0, 0]
-    blockcount[:, j] = [2, 0, 0, 1, 0, 0]
+    blocksize[:,  j] .= [4, 1, 1, 0, 0, 0]
+    blockcount[:, j] .= [2, 0, 0, 1, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 1, 1, 2, 3]
-    partition[:, i += 1] = [1, 1, 1, 2, 1, 3]
-    partition[:, i += 1] = [1, 1, 1, 2, 3, 1]
-    partition[:, i += 1] = [1, 1, 2, 1, 1, 3]
-    partition[:, i += 1] = [1, 1, 2, 1, 3, 1]
-    partition[:, i += 1] = [1, 1, 2, 3, 1, 1]
-    partition[:, i += 1] = [1, 2, 1, 1, 1, 3]
-    partition[:, i += 1] = [1, 2, 1, 1, 3, 1]
-    partition[:, i += 1] = [1, 2, 1, 3, 1, 1]
-    partition[:, i += 1] = [1, 2, 3, 1, 1, 1]
-    partition[:, i += 1] = [2, 1, 1, 1, 1, 3]
-    partition[:, i += 1] = [2, 1, 1, 1, 3, 1]
-    partition[:, i += 1] = [2, 1, 1, 3, 1, 1]
-    partition[:, i += 1] = [2, 1, 3, 1, 1, 1]
-    partition[:, i += 1] = [2, 3, 1, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 1, 2, 3]
+    partition[:, i += 1] .= [1, 1, 1, 2, 1, 3]
+    partition[:, i += 1] .= [1, 1, 1, 2, 3, 1]
+    partition[:, i += 1] .= [1, 1, 2, 1, 1, 3]
+    partition[:, i += 1] .= [1, 1, 2, 1, 3, 1]
+    partition[:, i += 1] .= [1, 1, 2, 3, 1, 1]
+    partition[:, i += 1] .= [1, 2, 1, 1, 1, 3]
+    partition[:, i += 1] .= [1, 2, 1, 1, 3, 1]
+    partition[:, i += 1] .= [1, 2, 1, 3, 1, 1]
+    partition[:, i += 1] .= [1, 2, 3, 1, 1, 1]
+    partition[:, i += 1] .= [2, 1, 1, 1, 1, 3]
+    partition[:, i += 1] .= [2, 1, 1, 1, 3, 1]
+    partition[:, i += 1] .= [2, 1, 1, 3, 1, 1]
+    partition[:, i += 1] .= [2, 1, 3, 1, 1, 1]
+    partition[:, i += 1] .= [2, 3, 1, 1, 1, 1]
 
     # ***|**|*
     j += 1
     index[j] = i + 1
     k[j] = 3
-    blocksize[:,  j] = [3, 2, 1, 0, 0, 0]
-    blockcount[:, j] = [1, 1, 1, 0, 0, 0]
+    blocksize[:,  j] .= [3, 2, 1, 0, 0, 0]
+    blockcount[:, j] .= [1, 1, 1, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 1, 2, 2, 3]
-    partition[:, i += 1] = [1, 1, 1, 2, 3, 2]
-    partition[:, i += 1] = [1, 1, 1, 3, 2, 2]
-    partition[:, i += 1] = [1, 1, 2, 1, 2, 3]
-    partition[:, i += 1] = [1, 1, 2, 1, 3, 2]
-    partition[:, i += 1] = [1, 1, 3, 1, 2, 2]
-    partition[:, i += 1] = [1, 1, 2, 2, 1, 3]
-    partition[:, i += 1] = [1, 1, 2, 3, 1, 2]
-    partition[:, i += 1] = [1, 1, 3, 2, 1, 2]
-    partition[:, i += 1] = [1, 1, 2, 2, 3, 1]
-    partition[:, i += 1] = [1, 1, 2, 3, 2, 1]
-    partition[:, i += 1] = [1, 1, 3, 2, 2, 1]
-    partition[:, i += 1] = [1, 2, 1, 1, 2, 3]
-    partition[:, i += 1] = [1, 2, 1, 1, 3, 2]
-    partition[:, i += 1] = [1, 3, 1, 1, 2, 2]
-    partition[:, i += 1] = [1, 2, 1, 2, 1, 3]
-    partition[:, i += 1] = [1, 2, 1, 3, 1, 2]
-    partition[:, i += 1] = [1, 3, 1, 2, 1, 2]
-    partition[:, i += 1] = [1, 2, 1, 2, 3, 1]
-    partition[:, i += 1] = [1, 2, 1, 3, 2, 1]
-    partition[:, i += 1] = [1, 3, 1, 2, 2, 1]
-    partition[:, i += 1] = [1, 2, 2, 1, 1, 3]
-    partition[:, i += 1] = [1, 2, 3, 1, 1, 2]
-    partition[:, i += 1] = [1, 3, 2, 1, 1, 2]
-    partition[:, i += 1] = [1, 2, 2, 1, 3, 1]
-    partition[:, i += 1] = [1, 2, 3, 1, 2, 1]
-    partition[:, i += 1] = [1, 3, 2, 1, 2, 1]
-    partition[:, i += 1] = [1, 2, 2, 3, 1, 1]
-    partition[:, i += 1] = [1, 2, 3, 2, 1, 1]
-    partition[:, i += 1] = [1, 3, 2, 2, 1, 1]
-    partition[:, i += 1] = [2, 1, 1, 1, 2, 3]
-    partition[:, i += 1] = [2, 1, 1, 1, 3, 2]
-    partition[:, i += 1] = [3, 1, 1, 1, 2, 2]
-    partition[:, i += 1] = [2, 1, 1, 2, 1, 3]
-    partition[:, i += 1] = [2, 1, 1, 3, 1, 2]
-    partition[:, i += 1] = [3, 1, 1, 2, 1, 2]
-    partition[:, i += 1] = [2, 1, 1, 2, 3, 1]
-    partition[:, i += 1] = [2, 1, 1, 3, 2, 1]
-    partition[:, i += 1] = [3, 1, 1, 2, 2, 1]
-    partition[:, i += 1] = [2, 1, 2, 1, 1, 3]
-    partition[:, i += 1] = [2, 1, 3, 1, 1, 2]
-    partition[:, i += 1] = [3, 1, 2, 1, 1, 2]
-    partition[:, i += 1] = [2, 1, 2, 1, 3, 1]
-    partition[:, i += 1] = [2, 1, 3, 1, 2, 1]
-    partition[:, i += 1] = [3, 1, 2, 1, 2, 1]
-    partition[:, i += 1] = [2, 1, 2, 3, 1, 1]
-    partition[:, i += 1] = [2, 1, 3, 2, 1, 1]
-    partition[:, i += 1] = [3, 1, 2, 2, 1, 1]
-    partition[:, i += 1] = [2, 2, 1, 1, 1, 3]
-    partition[:, i += 1] = [2, 3, 1, 1, 1, 2]
-    partition[:, i += 1] = [3, 2, 1, 1, 1, 2]
-    partition[:, i += 1] = [2, 2, 1, 1, 3, 1]
-    partition[:, i += 1] = [2, 3, 1, 1, 2, 1]
-    partition[:, i += 1] = [3, 2, 1, 1, 2, 1]
-    partition[:, i += 1] = [2, 2, 1, 3, 1, 1]
-    partition[:, i += 1] = [2, 3, 1, 2, 1, 1]
-    partition[:, i += 1] = [3, 2, 1, 2, 1, 1]
-    partition[:, i += 1] = [2, 2, 3, 1, 1, 1]
-    partition[:, i += 1] = [2, 3, 2, 1, 1, 1]
-    partition[:, i += 1] = [3, 2, 2, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 2, 2, 3]
+    partition[:, i += 1] .= [1, 1, 1, 2, 3, 2]
+    partition[:, i += 1] .= [1, 1, 1, 3, 2, 2]
+    partition[:, i += 1] .= [1, 1, 2, 1, 2, 3]
+    partition[:, i += 1] .= [1, 1, 2, 1, 3, 2]
+    partition[:, i += 1] .= [1, 1, 3, 1, 2, 2]
+    partition[:, i += 1] .= [1, 1, 2, 2, 1, 3]
+    partition[:, i += 1] .= [1, 1, 2, 3, 1, 2]
+    partition[:, i += 1] .= [1, 1, 3, 2, 1, 2]
+    partition[:, i += 1] .= [1, 1, 2, 2, 3, 1]
+    partition[:, i += 1] .= [1, 1, 2, 3, 2, 1]
+    partition[:, i += 1] .= [1, 1, 3, 2, 2, 1]
+    partition[:, i += 1] .= [1, 2, 1, 1, 2, 3]
+    partition[:, i += 1] .= [1, 2, 1, 1, 3, 2]
+    partition[:, i += 1] .= [1, 3, 1, 1, 2, 2]
+    partition[:, i += 1] .= [1, 2, 1, 2, 1, 3]
+    partition[:, i += 1] .= [1, 2, 1, 3, 1, 2]
+    partition[:, i += 1] .= [1, 3, 1, 2, 1, 2]
+    partition[:, i += 1] .= [1, 2, 1, 2, 3, 1]
+    partition[:, i += 1] .= [1, 2, 1, 3, 2, 1]
+    partition[:, i += 1] .= [1, 3, 1, 2, 2, 1]
+    partition[:, i += 1] .= [1, 2, 2, 1, 1, 3]
+    partition[:, i += 1] .= [1, 2, 3, 1, 1, 2]
+    partition[:, i += 1] .= [1, 3, 2, 1, 1, 2]
+    partition[:, i += 1] .= [1, 2, 2, 1, 3, 1]
+    partition[:, i += 1] .= [1, 2, 3, 1, 2, 1]
+    partition[:, i += 1] .= [1, 3, 2, 1, 2, 1]
+    partition[:, i += 1] .= [1, 2, 2, 3, 1, 1]
+    partition[:, i += 1] .= [1, 2, 3, 2, 1, 1]
+    partition[:, i += 1] .= [1, 3, 2, 2, 1, 1]
+    partition[:, i += 1] .= [2, 1, 1, 1, 2, 3]
+    partition[:, i += 1] .= [2, 1, 1, 1, 3, 2]
+    partition[:, i += 1] .= [3, 1, 1, 1, 2, 2]
+    partition[:, i += 1] .= [2, 1, 1, 2, 1, 3]
+    partition[:, i += 1] .= [2, 1, 1, 3, 1, 2]
+    partition[:, i += 1] .= [3, 1, 1, 2, 1, 2]
+    partition[:, i += 1] .= [2, 1, 1, 2, 3, 1]
+    partition[:, i += 1] .= [2, 1, 1, 3, 2, 1]
+    partition[:, i += 1] .= [3, 1, 1, 2, 2, 1]
+    partition[:, i += 1] .= [2, 1, 2, 1, 1, 3]
+    partition[:, i += 1] .= [2, 1, 3, 1, 1, 2]
+    partition[:, i += 1] .= [3, 1, 2, 1, 1, 2]
+    partition[:, i += 1] .= [2, 1, 2, 1, 3, 1]
+    partition[:, i += 1] .= [2, 1, 3, 1, 2, 1]
+    partition[:, i += 1] .= [3, 1, 2, 1, 2, 1]
+    partition[:, i += 1] .= [2, 1, 2, 3, 1, 1]
+    partition[:, i += 1] .= [2, 1, 3, 2, 1, 1]
+    partition[:, i += 1] .= [3, 1, 2, 2, 1, 1]
+    partition[:, i += 1] .= [2, 2, 1, 1, 1, 3]
+    partition[:, i += 1] .= [2, 3, 1, 1, 1, 2]
+    partition[:, i += 1] .= [3, 2, 1, 1, 1, 2]
+    partition[:, i += 1] .= [2, 2, 1, 1, 3, 1]
+    partition[:, i += 1] .= [2, 3, 1, 1, 2, 1]
+    partition[:, i += 1] .= [3, 2, 1, 1, 2, 1]
+    partition[:, i += 1] .= [2, 2, 1, 3, 1, 1]
+    partition[:, i += 1] .= [2, 3, 1, 2, 1, 1]
+    partition[:, i += 1] .= [3, 2, 1, 2, 1, 1]
+    partition[:, i += 1] .= [2, 2, 3, 1, 1, 1]
+    partition[:, i += 1] .= [2, 3, 2, 1, 1, 1]
+    partition[:, i += 1] .= [3, 2, 2, 1, 1, 1]
 
     # **|**|**
     j += 1
     index[j] = i + 1
     k[j] = 3
-    blocksize[:,  j] = [2, 2, 2, 0, 0, 0]
-    blockcount[:, j] = [0, 3, 0, 0, 0, 0]
+    blocksize[:,  j] .= [2, 2, 2, 0, 0, 0]
+    blockcount[:, j] .= [0, 3, 0, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 2, 2, 3, 3]
-    partition[:, i += 1] = [1, 1, 2, 3, 2, 3]
-    partition[:, i += 1] = [1, 1, 2, 3, 3, 2]
-    partition[:, i += 1] = [1, 2, 1, 2, 3, 3]
-    partition[:, i += 1] = [1, 2, 1, 3, 2, 3]
-    partition[:, i += 1] = [1, 2, 1, 3, 3, 2]
-    partition[:, i += 1] = [1, 2, 2, 1, 3, 3]
-    partition[:, i += 1] = [1, 2, 3, 1, 2, 3]
-    partition[:, i += 1] = [1, 2, 3, 1, 3, 2]
-    partition[:, i += 1] = [1, 2, 2, 3, 1, 3]
-    partition[:, i += 1] = [1, 2, 3, 2, 1, 3]
-    partition[:, i += 1] = [1, 2, 3, 3, 1, 2]
-    partition[:, i += 1] = [1, 2, 2, 3, 3, 1]
-    partition[:, i += 1] = [1, 2, 3, 2, 3, 1]
-    partition[:, i += 1] = [1, 2, 3, 3, 2, 1]
+    partition[:, i += 1] .= [1, 1, 2, 2, 3, 3]
+    partition[:, i += 1] .= [1, 1, 2, 3, 2, 3]
+    partition[:, i += 1] .= [1, 1, 2, 3, 3, 2]
+    partition[:, i += 1] .= [1, 2, 1, 2, 3, 3]
+    partition[:, i += 1] .= [1, 2, 1, 3, 2, 3]
+    partition[:, i += 1] .= [1, 2, 1, 3, 3, 2]
+    partition[:, i += 1] .= [1, 2, 2, 1, 3, 3]
+    partition[:, i += 1] .= [1, 2, 3, 1, 2, 3]
+    partition[:, i += 1] .= [1, 2, 3, 1, 3, 2]
+    partition[:, i += 1] .= [1, 2, 2, 3, 1, 3]
+    partition[:, i += 1] .= [1, 2, 3, 2, 1, 3]
+    partition[:, i += 1] .= [1, 2, 3, 3, 1, 2]
+    partition[:, i += 1] .= [1, 2, 2, 3, 3, 1]
+    partition[:, i += 1] .= [1, 2, 3, 2, 3, 1]
+    partition[:, i += 1] .= [1, 2, 3, 3, 2, 1]
 
     # k = 4
 
@@ -606,82 +606,82 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 4
-    blocksize[:,  j] = [3, 1, 1, 1, 0, 0]
-    blockcount[:, j] = [3, 0, 1, 0, 0, 0]
+    blocksize[:,  j] .= [3, 1, 1, 1, 0, 0]
+    blockcount[:, j] .= [3, 0, 1, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 1, 2, 3, 4]
-    partition[:, i += 1] = [1, 1, 2, 1, 3, 4]
-    partition[:, i += 1] = [1, 1, 2, 3, 1, 4]
-    partition[:, i += 1] = [1, 1, 2, 3, 4, 1]
-    partition[:, i += 1] = [1, 2, 1, 1, 3, 4]
-    partition[:, i += 1] = [1, 2, 1, 3, 1, 4]
-    partition[:, i += 1] = [1, 2, 1, 3, 4, 1]
-    partition[:, i += 1] = [1, 2, 3, 1, 1, 4]
-    partition[:, i += 1] = [1, 2, 3, 1, 4, 1]
-    partition[:, i += 1] = [1, 2, 3, 4, 1, 1]
-    partition[:, i += 1] = [2, 1, 1, 1, 3, 4]
-    partition[:, i += 1] = [2, 1, 1, 3, 1, 4]
-    partition[:, i += 1] = [2, 1, 1, 3, 4, 1]
-    partition[:, i += 1] = [2, 1, 3, 1, 1, 4]
-    partition[:, i += 1] = [2, 1, 3, 1, 4, 1]
-    partition[:, i += 1] = [2, 1, 3, 4, 1, 1]
-    partition[:, i += 1] = [2, 3, 1, 1, 1, 4]
-    partition[:, i += 1] = [2, 3, 1, 1, 4, 1]
-    partition[:, i += 1] = [2, 3, 1, 4, 1, 1]
-    partition[:, i += 1] = [2, 3, 4, 1, 1, 1]
+    partition[:, i += 1] .= [1, 1, 1, 2, 3, 4]
+    partition[:, i += 1] .= [1, 1, 2, 1, 3, 4]
+    partition[:, i += 1] .= [1, 1, 2, 3, 1, 4]
+    partition[:, i += 1] .= [1, 1, 2, 3, 4, 1]
+    partition[:, i += 1] .= [1, 2, 1, 1, 3, 4]
+    partition[:, i += 1] .= [1, 2, 1, 3, 1, 4]
+    partition[:, i += 1] .= [1, 2, 1, 3, 4, 1]
+    partition[:, i += 1] .= [1, 2, 3, 1, 1, 4]
+    partition[:, i += 1] .= [1, 2, 3, 1, 4, 1]
+    partition[:, i += 1] .= [1, 2, 3, 4, 1, 1]
+    partition[:, i += 1] .= [2, 1, 1, 1, 3, 4]
+    partition[:, i += 1] .= [2, 1, 1, 3, 1, 4]
+    partition[:, i += 1] .= [2, 1, 1, 3, 4, 1]
+    partition[:, i += 1] .= [2, 1, 3, 1, 1, 4]
+    partition[:, i += 1] .= [2, 1, 3, 1, 4, 1]
+    partition[:, i += 1] .= [2, 1, 3, 4, 1, 1]
+    partition[:, i += 1] .= [2, 3, 1, 1, 1, 4]
+    partition[:, i += 1] .= [2, 3, 1, 1, 4, 1]
+    partition[:, i += 1] .= [2, 3, 1, 4, 1, 1]
+    partition[:, i += 1] .= [2, 3, 4, 1, 1, 1]
 
     # **|**|*|*
     j += 1
     index[j] = i + 1
     k[j] = 4
-    blocksize[:,  j] = [2, 2, 1, 1, 0, 0]
-    blockcount[:, j] = [2, 2, 0, 0, 0, 0]
+    blocksize[:,  j] .= [2, 2, 1, 1, 0, 0]
+    blockcount[:, j] .= [2, 2, 0, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 2, 2, 3, 4]
-    partition[:, i += 1] = [1, 1, 2, 3, 2, 4]
-    partition[:, i += 1] = [1, 1, 2, 3, 4, 2]
-    partition[:, i += 1] = [1, 1, 3, 2, 2, 4]
-    partition[:, i += 1] = [1, 1, 3, 2, 4, 2]
-    partition[:, i += 1] = [1, 1, 3, 4, 2, 2]
-    partition[:, i += 1] = [1, 2, 1, 2, 3, 4]
-    partition[:, i += 1] = [1, 2, 1, 3, 2, 4]
-    partition[:, i += 1] = [1, 2, 1, 3, 4, 2]
-    partition[:, i += 1] = [1, 3, 1, 2, 2, 4]
-    partition[:, i += 1] = [1, 3, 1, 2, 4, 2]
-    partition[:, i += 1] = [1, 3, 1, 4, 2, 2]
-    partition[:, i += 1] = [1, 2, 2, 1, 3, 4]
-    partition[:, i += 1] = [1, 2, 3, 1, 2, 4]
-    partition[:, i += 1] = [1, 2, 3, 1, 4, 2]
-    partition[:, i += 1] = [1, 3, 2, 1, 2, 4]
-    partition[:, i += 1] = [1, 3, 2, 1, 4, 2]
-    partition[:, i += 1] = [1, 3, 4, 1, 2, 2]
-    partition[:, i += 1] = [1, 2, 2, 3, 1, 4]
-    partition[:, i += 1] = [1, 2, 3, 2, 1, 4]
-    partition[:, i += 1] = [1, 2, 3, 4, 1, 2]
-    partition[:, i += 1] = [1, 3, 2, 2, 1, 4]
-    partition[:, i += 1] = [1, 3, 2, 4, 1, 2]
-    partition[:, i += 1] = [1, 3, 4, 2, 1, 2]
-    partition[:, i += 1] = [1, 2, 2, 3, 4, 1]
-    partition[:, i += 1] = [1, 2, 3, 2, 4, 1]
-    partition[:, i += 1] = [1, 2, 3, 4, 2, 1]
-    partition[:, i += 1] = [1, 3, 2, 2, 4, 1]
-    partition[:, i += 1] = [1, 3, 2, 4, 2, 1]
-    partition[:, i += 1] = [1, 3, 4, 2, 2, 1]
-    partition[:, i += 1] = [3, 1, 1, 2, 2, 4]
-    partition[:, i += 1] = [3, 1, 1, 2, 4, 2]
-    partition[:, i += 1] = [3, 1, 1, 4, 2, 2]
-    partition[:, i += 1] = [3, 1, 2, 1, 2, 4]
-    partition[:, i += 1] = [3, 1, 2, 1, 4, 2]
-    partition[:, i += 1] = [3, 1, 4, 1, 2, 2]
-    partition[:, i += 1] = [3, 1, 2, 2, 1, 4]
-    partition[:, i += 1] = [3, 1, 2, 4, 1, 2]
-    partition[:, i += 1] = [3, 1, 4, 2, 1, 2]
-    partition[:, i += 1] = [3, 1, 2, 2, 4, 1]
-    partition[:, i += 1] = [3, 1, 2, 4, 2, 1]
-    partition[:, i += 1] = [3, 1, 4, 2, 2, 1]
-    partition[:, i += 1] = [3, 4, 1, 1, 2, 2]
-    partition[:, i += 1] = [3, 4, 1, 2, 1, 2]
-    partition[:, i += 1] = [3, 4, 1, 2, 2, 1]
+    partition[:, i += 1] .= [1, 1, 2, 2, 3, 4]
+    partition[:, i += 1] .= [1, 1, 2, 3, 2, 4]
+    partition[:, i += 1] .= [1, 1, 2, 3, 4, 2]
+    partition[:, i += 1] .= [1, 1, 3, 2, 2, 4]
+    partition[:, i += 1] .= [1, 1, 3, 2, 4, 2]
+    partition[:, i += 1] .= [1, 1, 3, 4, 2, 2]
+    partition[:, i += 1] .= [1, 2, 1, 2, 3, 4]
+    partition[:, i += 1] .= [1, 2, 1, 3, 2, 4]
+    partition[:, i += 1] .= [1, 2, 1, 3, 4, 2]
+    partition[:, i += 1] .= [1, 3, 1, 2, 2, 4]
+    partition[:, i += 1] .= [1, 3, 1, 2, 4, 2]
+    partition[:, i += 1] .= [1, 3, 1, 4, 2, 2]
+    partition[:, i += 1] .= [1, 2, 2, 1, 3, 4]
+    partition[:, i += 1] .= [1, 2, 3, 1, 2, 4]
+    partition[:, i += 1] .= [1, 2, 3, 1, 4, 2]
+    partition[:, i += 1] .= [1, 3, 2, 1, 2, 4]
+    partition[:, i += 1] .= [1, 3, 2, 1, 4, 2]
+    partition[:, i += 1] .= [1, 3, 4, 1, 2, 2]
+    partition[:, i += 1] .= [1, 2, 2, 3, 1, 4]
+    partition[:, i += 1] .= [1, 2, 3, 2, 1, 4]
+    partition[:, i += 1] .= [1, 2, 3, 4, 1, 2]
+    partition[:, i += 1] .= [1, 3, 2, 2, 1, 4]
+    partition[:, i += 1] .= [1, 3, 2, 4, 1, 2]
+    partition[:, i += 1] .= [1, 3, 4, 2, 1, 2]
+    partition[:, i += 1] .= [1, 2, 2, 3, 4, 1]
+    partition[:, i += 1] .= [1, 2, 3, 2, 4, 1]
+    partition[:, i += 1] .= [1, 2, 3, 4, 2, 1]
+    partition[:, i += 1] .= [1, 3, 2, 2, 4, 1]
+    partition[:, i += 1] .= [1, 3, 2, 4, 2, 1]
+    partition[:, i += 1] .= [1, 3, 4, 2, 2, 1]
+    partition[:, i += 1] .= [3, 1, 1, 2, 2, 4]
+    partition[:, i += 1] .= [3, 1, 1, 2, 4, 2]
+    partition[:, i += 1] .= [3, 1, 1, 4, 2, 2]
+    partition[:, i += 1] .= [3, 1, 2, 1, 2, 4]
+    partition[:, i += 1] .= [3, 1, 2, 1, 4, 2]
+    partition[:, i += 1] .= [3, 1, 4, 1, 2, 2]
+    partition[:, i += 1] .= [3, 1, 2, 2, 1, 4]
+    partition[:, i += 1] .= [3, 1, 2, 4, 1, 2]
+    partition[:, i += 1] .= [3, 1, 4, 2, 1, 2]
+    partition[:, i += 1] .= [3, 1, 2, 2, 4, 1]
+    partition[:, i += 1] .= [3, 1, 2, 4, 2, 1]
+    partition[:, i += 1] .= [3, 1, 4, 2, 2, 1]
+    partition[:, i += 1] .= [3, 4, 1, 1, 2, 2]
+    partition[:, i += 1] .= [3, 4, 1, 2, 1, 2]
+    partition[:, i += 1] .= [3, 4, 1, 2, 2, 1]
 
     # k = 5
 
@@ -689,24 +689,24 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 5
-    blocksize[:,  j] = [2, 1, 1, 1, 1, 0]
-    blockcount[:, j] = [4, 1, 0, 0, 0, 0]
+    blocksize[:,  j] .= [2, 1, 1, 1, 1, 0]
+    blockcount[:, j] .= [4, 1, 0, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 1, 2, 3, 4, 5]
-    partition[:, i += 1] = [1, 2, 1, 3, 4, 5]
-    partition[:, i += 1] = [1, 2, 3, 1, 4, 5]
-    partition[:, i += 1] = [1, 2, 3, 4, 1, 5]
-    partition[:, i += 1] = [1, 2, 3, 4, 5, 1]
-    partition[:, i += 1] = [2, 1, 1, 3, 4, 5]
-    partition[:, i += 1] = [2, 1, 3, 1, 4, 5]
-    partition[:, i += 1] = [2, 1, 3, 4, 1, 5]
-    partition[:, i += 1] = [2, 1, 3, 4, 5, 1]
-    partition[:, i += 1] = [2, 3, 1, 1, 4, 5]
-    partition[:, i += 1] = [2, 3, 1, 4, 1, 5]
-    partition[:, i += 1] = [2, 3, 1, 4, 5, 1]
-    partition[:, i += 1] = [2, 3, 4, 1, 1, 5]
-    partition[:, i += 1] = [2, 3, 4, 1, 5, 1]
-    partition[:, i += 1] = [2, 3, 4, 5, 1, 1]
+    partition[:, i += 1] .= [1, 1, 2, 3, 4, 5]
+    partition[:, i += 1] .= [1, 2, 1, 3, 4, 5]
+    partition[:, i += 1] .= [1, 2, 3, 1, 4, 5]
+    partition[:, i += 1] .= [1, 2, 3, 4, 1, 5]
+    partition[:, i += 1] .= [1, 2, 3, 4, 5, 1]
+    partition[:, i += 1] .= [2, 1, 1, 3, 4, 5]
+    partition[:, i += 1] .= [2, 1, 3, 1, 4, 5]
+    partition[:, i += 1] .= [2, 1, 3, 4, 1, 5]
+    partition[:, i += 1] .= [2, 1, 3, 4, 5, 1]
+    partition[:, i += 1] .= [2, 3, 1, 1, 4, 5]
+    partition[:, i += 1] .= [2, 3, 1, 4, 1, 5]
+    partition[:, i += 1] .= [2, 3, 1, 4, 5, 1]
+    partition[:, i += 1] .= [2, 3, 4, 1, 1, 5]
+    partition[:, i += 1] .= [2, 3, 4, 1, 5, 1]
+    partition[:, i += 1] .= [2, 3, 4, 5, 1, 1]
 
     # k = 6
 
@@ -714,10 +714,10 @@ module TestPartition
     j += 1
     index[j] = i + 1
     k[j] = 6
-    blocksize[:,  j] = [1, 1, 1, 1, 1, 1]
-    blockcount[:, j] = [6, 0, 0, 0, 0, 0]
+    blocksize[:,  j] .= [1, 1, 1, 1, 1, 1]
+    blockcount[:, j] .= [6, 0, 0, 0, 0, 0]
 
-    partition[:, i += 1] = [1, 2, 3, 4, 5, 6]
+    partition[:, i += 1] .= [1, 2, 3, 4, 5, 6]
 
     Partition(n, B, C, k, index, blocksize, blockcount, partition)
   end

@@ -115,11 +115,11 @@ function test_local_mode()
   R = [1; 1; 1; 1; 1; 1]
   k = 1
   C = zeros(UInt8, 6, 4)
-  C[1, :] = 0x01
+  C[1, :] .= 0x01
   cl = [1; 0; 0; 0; 0; 0]
   v = [6; 0; 0; 0; 0; 0]
   n1s = zeros(Float64, 6, 4)
-  n1s[1, :] = sum(float(data), 2)'
+  n1s[1, :] .= vec(sum(float(data), dims=2))
 
   s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
   Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
@@ -143,7 +143,7 @@ function test_local_mode()
   cl = [1; 2; 0; 0; 0; 0]
   v = [4; 2; 0; 0; 0; 0]
   n1s = zeros(Float64, 6, 4)
-  n1s[1:2, :] = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2))'
+  n1s[1:2, :] .= permutedims(hcat(sum(float(data[:, R .== 1]), dims=2), sum(float(data[:, R .== 2]), dims=2)))
 
   s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
   Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
@@ -167,7 +167,7 @@ function test_local_mode()
   cl = [1; 2; 3; 0; 0; 0]
   v = [2; 2; 2; 0; 0; 0]
   n1s = zeros(Float64, 6, 4)
-  n1s[1:3, :] = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2), sum(float(data[:, R .== 3]), 2))'
+  n1s[1:3, :] .= permutedims(hcat(sum(float(data[:, R .== 1]), dims=2), sum(float(data[:, R .== 2]), dims=2), sum(float(data[:, R .== 3]), dims=2)))
 
   s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
   Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
@@ -191,7 +191,7 @@ function test_local_mode()
   cl = [1; 2; 3; 4; 0; 0]
   v = [2; 2; 1; 1; 0; 0]
   n1s = zeros(Float64, 6, 4)
-  n1s[1:4, :] = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2), sum(float(data[:, R .== 3]), 2), sum(float(data[:, R .== 4]), 2))'
+  n1s[1:4, :] .= permutedims(hcat(sum(float(data[:, R .== 1]), dims=2), sum(float(data[:, R .== 2]), dims=2), sum(float(data[:, R .== 3]), dims=2), sum(float(data[:, R .== 4]), dims=2)))
 
   s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
   Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
@@ -215,7 +215,7 @@ function test_local_mode()
   cl = [1; 2; 3; 4; 5; 0]
   v = [1; 1; 2; 1; 1; 0]
   n1s = zeros(Float64, 6, 4)
-  n1s[1:5, :] = hcat(sum(float(data[:, R .== 1]), 2), sum(float(data[:, R .== 2]), 2), sum(float(data[:, R .== 3]), 2), sum(float(data[:, R .== 4]), 2), sum(float(data[:, R .== 5]), 2))'
+  n1s[1:5, :] .= permutedims(hcat(sum(float(data[:, R .== 1]), dims=2), sum(float(data[:, R .== 2]), dims=2), sum(float(data[:, R .== 3]), dims=2), sum(float(data[:, R .== 4]), dims=2), sum(float(data[:, R .== 5]), dims=2)))
 
   s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
   Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)
@@ -237,7 +237,7 @@ function test_local_mode()
   C = UInt8[1 1 2 2; 1 1 2 2 ; 1 1 2 2; 1 1 2 2; 1 1 2 2; 1 1 2 2]
   cl = [1; 2; 3; 4; 5; 6]
   v = [1; 1; 1; 1; 1; 1]
-  n1s = float(data)'
+  n1s = permutedims(float(data))
 
   s = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
   Kpax3.computelocalmode!(s.v, s.n1s, s.C, s.cl, s.k, s.logpC, priorC)

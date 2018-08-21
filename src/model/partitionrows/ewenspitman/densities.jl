@@ -15,13 +15,16 @@ function logdPriorRow(p::Vector{Int},
     end
   end
 
-  logp = (k - 1) * log(ep.α) + lgamma(ep.θ / ep.α + k) -
-         lgamma(ep.θ / ep.α + 1) + lgamma(ep.θ + 1) - lgamma(ep.θ + n) -
-         k * lgamma(1 - ep.α)
+  logp = (k - 1) * log(ep.α) +
+         SpecialFunctions.lgamma(ep.θ / ep.α + k) -
+         SpecialFunctions.lgamma(ep.θ / ep.α + 1) +
+         SpecialFunctions.lgamma(ep.θ + 1) -
+         SpecialFunctions.lgamma(ep.θ + n) -
+         k * SpecialFunctions.lgamma(1 - ep.α)
 
   for a in 1:n
     if m[a] > 0
-      logp += lgamma(m[a] - ep.α)
+      logp += SpecialFunctions.lgamma(m[a] - ep.α)
     end
   end
 
@@ -32,13 +35,16 @@ function logdPriorRow(n::Int,
                       k::Int,
                       m::Vector{Int},
                       ep::EwensPitmanPAUT)
-  logp = (k - 1) * log(ep.α) + lgamma(ep.θ / ep.α + k) -
-         lgamma(ep.θ / ep.α + 1) + lgamma(ep.θ + 1) - lgamma(ep.θ + n) -
-         k * lgamma(1 - ep.α)
+  logp = (k - 1) * log(ep.α) +
+         SpecialFunctions.lgamma(ep.θ / ep.α + k) -
+         SpecialFunctions.lgamma(ep.θ / ep.α + 1) +
+         SpecialFunctions.lgamma(ep.θ + 1) -
+         SpecialFunctions.lgamma(ep.θ + n) -
+         k * SpecialFunctions.lgamma(1 - ep.α)
 
   for a in 1:length(m)
     if m[a] > 0
-      logp += lgamma(m[a] - ep.α)
+      logp += SpecialFunctions.lgamma(m[a] - ep.α)
     end
   end
 
@@ -60,11 +66,14 @@ function logdPriorRow(p::Vector{Int},
     end
   end
 
-  logp = (k - 1) * log(ep.α) + lgamma(k) - lgamma(n) - k * lgamma(1 - ep.α)
+  logp = (k - 1) * log(ep.α) +
+         SpecialFunctions.lgamma(k) -
+         SpecialFunctions.lgamma(n) -
+         k * SpecialFunctions.lgamma(1 - ep.α)
 
   for a in 1:n
     if m[a] > 0
-      logp += lgamma(m[a] - ep.α)
+      logp += SpecialFunctions.lgamma(m[a] - ep.α)
     end
   end
 
@@ -75,11 +84,14 @@ function logdPriorRow(n::Int,
                       k::Int,
                       m::Vector{Int},
                       ep::EwensPitmanPAZT)
-  logp = (k - 1) * log(ep.α) + lgamma(k) - lgamma(n) - k * lgamma(1 - ep.α)
+  logp = (k - 1) * log(ep.α) +
+         SpecialFunctions.lgamma(k) -
+         SpecialFunctions.lgamma(n) -
+         k * SpecialFunctions.lgamma(1 - ep.α)
 
   for a in 1:length(m)
     if m[a] > 0
-      logp += lgamma(m[a] - ep.α)
+      logp += SpecialFunctions.lgamma(m[a] - ep.α)
     end
   end
 
@@ -101,11 +113,13 @@ function logdPriorRow(p::Vector{Int},
     end
   end
 
-  logp = k * log(ep.θ) + lgamma(ep.θ) - lgamma(ep.θ + n)
+  logp = k * log(ep.θ) +
+         SpecialFunctions.lgamma(ep.θ) -
+         SpecialFunctions.lgamma(ep.θ + n)
 
   for a in 1:n
     if m[a] > 0
-      logp += lgamma(m[a])
+      logp += SpecialFunctions.lgamma(m[a])
     end
   end
 
@@ -116,11 +130,13 @@ function logdPriorRow(n::Int,
                       k::Int,
                       m::Vector{Int},
                       ep::EwensPitmanZAPT)
-  logp = k * log(ep.θ) + lgamma(ep.θ) - lgamma(ep.θ + n)
+  logp = k * log(ep.θ) +
+         SpecialFunctions.lgamma(ep.θ) -
+         SpecialFunctions.lgamma(ep.θ + n)
 
   for a in 1:length(m)
     if m[a] > 0
-      logp += lgamma(m[a])
+      logp += SpecialFunctions.lgamma(m[a])
     end
   end
 
@@ -142,18 +158,20 @@ function logdPriorRow(p::Vector{Int},
     end
   end
 
-  log(prod((1:(k - 1)) - ep.L) * ep.α^(k - 1) *
-      exp(sum(lgamma.(m[m .> 0] - ep.α)) - k * lgamma(1 - ep.α)) /
-      prod((1:(n - 1)) - ep.α * ep.L))
+  log(prod((1:(k - 1)) .- ep.L) * ep.α^(k - 1) *
+      exp(sum(SpecialFunctions.lgamma.(m[m .> 0] .- ep.α)) -
+          k * SpecialFunctions.lgamma(1 - ep.α)) /
+      prod((1:(n - 1)) .- ep.α * ep.L))
 end
 
 function logdPriorRow(n::Int,
                       k::Int,
                       m::Vector{Int},
                       ep::EwensPitmanNAPT)
-  log(prod((1:(k - 1)) - ep.L) * ep.α^(k - 1) *
-      exp(sum(lgamma.(m[m .> 0] - ep.α)) - k * lgamma(1 - ep.α)) /
-      prod((1:(n - 1)) - ep.α * ep.L))
+  log(prod((1:(k - 1)) .- ep.L) * ep.α^(k - 1) *
+      exp(sum(SpecialFunctions.lgamma.(m[m .> 0] .- ep.α)) -
+          k * SpecialFunctions.lgamma(1 - ep.α)) /
+      prod((1:(n - 1)) .- ep.α * ep.L))
 end
 
 """

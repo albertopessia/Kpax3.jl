@@ -4,7 +4,7 @@ function test_plotk()
   (k, pk) = Kpax3.readposteriork("../build/mcmc_6")
   p = Kpax3.plotk(k, pk, xticks=[1; 2; 3; 4; 5; 6], width=800, height=600)
 
-  png(p, "../build/MCMC_posterior_k.png")
+  Plots.png(p, "../build/MCMC_posterior_k.png")
 
   nothing
 end
@@ -16,7 +16,7 @@ function test_plotC()
 
   p = Kpax3.plotC(site, freq, C, width=800, height=600)
 
-  png(p, "../build/MCMC_posterior_column_classifier.png")
+  Plots.png(p, "../build/MCMC_posterior_column_classifier.png")
 
   nothing
 end
@@ -31,7 +31,7 @@ function test_plotD()
   p = Kpax3.plotD(x, state, clusterorder=[4; 2; 1; 3],
                   clusterlabel=["d"; "b"; "a"; "c"], width=800, height=600)
 
-  png(p, "../build/MCMC_posterior_dataset.png")
+  Plots.png(p, "../build/MCMC_posterior_dataset.png")
 
   nothing
 end
@@ -45,7 +45,7 @@ function test_plotP()
   p = Kpax3.plotP(R, P, clusterorder=[4; 2; 1; 3],
                   clusterlabel=["d"; "b"; "a"; "c"], width=800.0, height=800.0)
 
-  png(p, "../build/MCMC_posterior_probability_matrix.png")
+  Plots.png(p, "../build/MCMC_posterior_probability_matrix.png")
 
   nothing
 end
@@ -78,8 +78,8 @@ function test_plotdensity()
   q = Kpax3.plotdensity(entropy_C, maxlag=50, main="Density",
                         width=800, height=600)
 
-  png(p, "../build/MCMC_posterior_density_R.png")
-  png(q, "../build/MCMC_posterior_density_C.png")
+  Plots.png(p, "../build/MCMC_posterior_density_R.png")
+  Plots.png(q, "../build/MCMC_posterior_density_C.png")
 
   nothing
 end
@@ -93,8 +93,8 @@ function test_plotjump()
   p = Kpax3.plotjump(avgd_R, main="Jump distance", width=800, height=600)
   q = Kpax3.plotjump(avgd_C, main="Jump distance", width=800, height=600)
 
-  png(p, "../build/MCMC_posterior_jump_R.png")
-  png(q, "../build/MCMC_posterior_jump_C.png")
+  Plots.png(p, "../build/MCMC_posterior_jump_R.png")
+  Plots.png(q, "../build/MCMC_posterior_jump_C.png")
 
   nothing
 end
@@ -110,8 +110,8 @@ function test_plotdgn()
   q = Kpax3.plotdgn(entropy_C, avgd_C, main="Sample Partition", maxlag=50,
                     width=800, height=600)
 
-  png(p, "../build/MCMC_posterior_diagnosis_R.png")
-  png(q, "../build/MCMC_posterior_diagnosis_C.png")
+  Plots.png(p, "../build/MCMC_posterior_diagnosis_R.png")
+  Plots.png(q, "../build/MCMC_posterior_diagnosis_C.png")
 
   nothing
 end
