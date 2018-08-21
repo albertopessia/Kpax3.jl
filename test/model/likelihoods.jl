@@ -3,7 +3,7 @@
 function test_likelihoods_marginal()
   for (α, β) in ([0.1, 0.1], [0.5, 0.5], [1.0, 1.0], [10.0, 10.0], [100.0, 100.0], [0.2, 0.1], [1.0, 0.5], [2.0, 1.0], [20.0, 10.0], [200.0, 100.0], [0.1, 0.2], [0.5, 1.0], [1.0, 2.0], [10.0, 20.0], [100.0, 200.0])
     for (n, y) in ([1.0, 0.0], [1.0, 1.0], [5.0, 0.0], [5.0, 1.0], [5.0,  3.0], [5.0,  5.0], [10.0, 0.0], [10.0, 1.0], [10.0,  5.0], [10.0, 10.0], [100.0, 0.0], [100.0, 1.0], [100.0, 10.0], [100.0, 100.0])
-      logp = lgamma(α + y) + lgamma(β + n - y) - lgamma(α + β + n) + lgamma(α + β) - lgamma(α) - lgamma(β)
+      logp = SpecialFunctions.lgamma(α + y) + SpecialFunctions.lgamma(β + n - y) - SpecialFunctions.lgamma(α + β + n) + SpecialFunctions.lgamma(α + β) - SpecialFunctions.lgamma(α) - SpecialFunctions.lgamma(β)
 
       logcp0 = log(β + n - y) - log(α + β + n)
       logcp1 = log(α + y) - log(α + β + n)
@@ -39,12 +39,12 @@ function test_likelihoods_marginal()
       qx = Kpax3.condmarglik([fill(0x01, n1s); fill(0x00, m - n1s)], y, n, a, b)
       logqx = Kpax3.logcondmarglik([fill(0x01, n1s); fill(0x00, m - n1s)], y, n, a, b)
 
-      logp = lgamma.(a + y) + lgamma.(b + n - y) - lgamma.(a + b + n) + lgamma.(a + b) - lgamma.(a) - lgamma.(b)
+      logp = SpecialFunctions.lgamma.(a .+ y) .+ SpecialFunctions.lgamma.(b .+ n .- y) .- SpecialFunctions.lgamma.(a .+ b .+ n) .+ SpecialFunctions.lgamma.(a .+ b) .- SpecialFunctions.lgamma.(a) .- SpecialFunctions.lgamma.(b)
 
-      logcp0 = log.(b + n - y) - log.(a + b + n)
-      logcp1 = log.(a + y) - log.(a + b + n)
+      logcp0 = log.(b .+ n .- y) .- log.(a .+ b .+ n)
+      logcp1 = log.(a .+ y) .- log.(a .+ b .+ n)
 
-      logcpx = log.([a[1:n1s] + y[1:n1s]; b[(n1s + 1):m] + n - y[(n1s + 1):m]]) - log.(a + b + n)
+      logcpx = log.([a[1:n1s] .+ y[1:n1s]; b[(n1s + 1):m] .+ n .- y[(n1s + 1):m]]) - log.(a .+ b .+ n)
 
       for i in 1:m
         @test isapprox(q[i], exp(logp[i]), atol=ε)
@@ -100,7 +100,7 @@ function test_likelihoods_loglik()
   R = [1; 1; 1; 4; 6; 6]
 
   state = Kpax3.AminoAcidState(data, R, priorR, priorC, settings)
-  copy!(state.R, R)
+  copyto!(state.R, R)
 
   # fill C with harmless wrong values, just in case
   state.C = UInt8[1 1 1 4 2 1 3 3 1 1 1 1 1 1 1 1 1 2;
@@ -117,9 +117,9 @@ function test_likelihoods_loglik()
   state.v = [3; 0; 0; 1; 0; 2]
 
   state.n1s = zeros(Float64, n, m)
-  state.n1s[1, :] = vec(sum(float(data[:, R .== 1]), 2))
-  state.n1s[4, :] = vec(sum(float(data[:, R .== 4]), 2))
-  state.n1s[6, :] = vec(sum(float(data[:, R .== 6]), 2))
+  state.n1s[1, :] .= vec(sum(float(data[:, R .== 1]), dims=2))
+  state.n1s[4, :] .= vec(sum(float(data[:, R .== 4]), dims=2))
+  state.n1s[6, :] .= vec(sum(float(data[:, R .== 6]), dims=2))
 
   state.unit = Vector{Int}[zeros(Int, n) for g in 1:n]
   state.unit[1] = [1; 2; 3; 0; 0; 0]
@@ -190,20 +190,20 @@ function test_likelihoods_logmarginal()
   C = ones(UInt8, len, m)
 
   emptycluster = trues(len)
-  emptycluster[g] = false
+  emptycluster[g] .= false
 
   cl = zeros(Int, len)
-  cl[1:k] = g
+  cl[1:k] .= g
 
   v = zeros(Int, len)
-  v[g] = [2; 2; 2]
+  v[g] .= [2; 2; 2]
 
   n1s = zeros(Float64, len, m)
-  n1s[1, :] = vec(sum(float(data[:, R .== 1]), 2))
-  n1s[3, :] = vec(sum(float(data[:, R .== 3]), 2))
-  n1s[5, :] = vec(sum(float(data[:, R .== 5]), 2))
+  n1s[1, :] .= vec(sum(float(data[:, R .== 1]), dims=2))
+  n1s[3, :] .= vec(sum(float(data[:, R .== 3]), dims=2))
+  n1s[5, :] .= vec(sum(float(data[:, R .== 5]), dims=2))
 
-  unit = Vector{Int}[sum(R .== g) > 0 ? find(R .== g) : [0] for g in 1:n]
+  unit = Vector{Int}[sum(R .== g) > 0 ? findall(R .== g) : [0] for g in 1:n]
 
   logpR = -6.5792512120101012129680384532548487186431884765625
   logpC = [-9.1948612277878307708078864379785954952239990234375;

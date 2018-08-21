@@ -33,7 +33,7 @@ function test_traceR()
     read!(fpR, R0)
 
     k[T] = k0[1]
-    copy!(R, 1 + n * (T - 1), Kpax3.normalizepartition(R0, n), 1, n)
+    copyto!(R, 1 + n * (T - 1), Kpax3.normalizepartition(R0, n), 1, n)
 
     for i in 1:n
       v[R[i, T], T] += 1
@@ -57,7 +57,7 @@ function test_traceR()
   for t in 1:(N - l)
     z[t] = Kpax3.jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
-  @test isapprox(avgd[l], mean(z), atol=ε)
+  @test isapprox(avgd[l], Statistics.mean(z), atol=ε)
 
   # test lag 5
   l = 5
@@ -65,7 +65,7 @@ function test_traceR()
   for t in 1:(N - l)
     z[t] = Kpax3.jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
-  @test isapprox(avgd[l], mean(z), atol=ε)
+  @test isapprox(avgd[l], Statistics.mean(z), atol=ε)
 
   # test lag 13
   l = 13
@@ -73,7 +73,7 @@ function test_traceR()
   for t in 1:(N - l)
     z[t] = Kpax3.jaccard(R[:, t], k[t], R[:, t+l], k[t+l], n)
   end
-  @test isapprox(avgd[l], mean(z), atol=ε)
+  @test isapprox(avgd[l], Statistics.mean(z), atol=ε)
 
   nothing
 end
@@ -108,7 +108,7 @@ function test_traceC()
   T = 1
   while !eof(fpC)
     readbytes!(fpC, C0, m)
-    copy!(C, 1 + m * (T - 1), C0, 1, m)
+    copyto!(C, 1 + m * (T - 1), C0, 1, m)
 
     fill!(v0, 0.0)
     for b in 1:m
@@ -142,7 +142,7 @@ function test_traceC()
   for t in 1:(N - l)
     z[t] = Distances.hamming(C[:, t], C[:, t + l]) / m
   end
-  @test isapprox(avgd[l], mean(z), atol=ε)
+  @test isapprox(avgd[l], Statistics.mean(z), atol=ε)
 
   # test lag 5
   l = 5
@@ -151,7 +151,7 @@ function test_traceC()
     z[t] = Distances.hamming(C[:, t], C[:, t + l]) / m
   end
 
-  @test isapprox(avgd[l], mean(z), atol=ε)
+  @test isapprox(avgd[l], Statistics.mean(z), atol=ε)
 
   # test lag 13
   l = 13
@@ -160,7 +160,7 @@ function test_traceC()
     z[t] = Distances.hamming(C[:, t], C[:, t + l]) / m
   end
 
-  @test isapprox(avgd[l], mean(z), atol=ε)
+  @test isapprox(avgd[l], Statistics.mean(z), atol=ε)
 
   nothing
 end

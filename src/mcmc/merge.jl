@@ -128,7 +128,7 @@ function performmerge!(hi::Int,
   end
 
   resize!(state.unit[hi], vi)
-  copy!(state.unit[hi], state.v[hi] + 1, state.unit[hj], 1, state.v[hj])
+  copyto!(state.unit[hi], state.v[hi] + 1, state.unit[hj], 1, state.v[hj])
 
   state.v[hi] = vi
 

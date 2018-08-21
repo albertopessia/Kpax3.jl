@@ -5,10 +5,12 @@ module Kpax3
   # Load packages #
   #################
   import Clustering
+  import DelimitedFiles
   import Distances
   import FileIO
-  import JLD
   import Plots
+  import Printf
+  import SpecialFunctions
   import StatsBase
   import StatPlots
 

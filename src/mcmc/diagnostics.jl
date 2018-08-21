@@ -46,7 +46,7 @@ function traceR(fileroot::String;
     read!(fpR, k)
     read!(fpR, R)
 
-    copy!(p, normalizepartition(R, n))
+    copyto!(p, normalizepartition(R, n))
 
     fill!(v, 0.0)
     for i in 1:n
@@ -61,7 +61,7 @@ function traceR(fileroot::String;
     entropy[T] -= z / n
 
     kset[t] = k[1]
-    copy!(pset, 1 + n * (t - 1), p, 1, n)
+    copyto!(pset, 1 + n * (t - 1), p, 1, n)
 
     # compute all the lags starting from this point going backward
     l = 1
@@ -82,7 +82,7 @@ function traceR(fileroot::String;
     read!(fpR, k)
     read!(fpR, R)
 
-    copy!(p, normalizepartition(R, n))
+    copyto!(p, normalizepartition(R, n))
 
     fill!(v, 0.0)
     for i in 1:n
@@ -97,7 +97,7 @@ function traceR(fileroot::String;
     entropy[T] -= z / n
 
     kset[t] = k[1]
-    copy!(pset, 1 + n * (t - 1), p, 1, n)
+    copyto!(pset, 1 + n * (t - 1), p, 1, n)
 
     # compute all the lags starting from this point going backward
     l = 1
@@ -197,7 +197,7 @@ function traceC(fileroot::String;
 
     entropy[T] -= (ct[1] + ct[2] + ct[3]) / m
 
-    copy!(cset, 1 + m * (t - 1), C, 1, m)
+    copyto!(cset, 1 + m * (t - 1), C, 1, m)
 
     # compute all the lags starting from this point going backward
     l = 1
@@ -237,7 +237,7 @@ function traceC(fileroot::String;
 
     entropy[T] -= (ct[1] + ct[2] + ct[3]) / m
 
-    copy!(cset, 1 + m * (t - 1), C, 1, m)
+    copyto!(cset, 1 + m * (t - 1), C, 1, m)
 
     # compute all the lags starting from this point going backward
     l = 1
@@ -287,7 +287,7 @@ function imsevar(ac::Vector{Float64},
   old = s
   cur = 0.0
   m = 0
-  for m in 1:u
+  for outer m in 1:u
     cur = ac[2 * m + 1] + ac[2 * m + 2]
 
     if cur <= 0.0

@@ -34,7 +34,7 @@ function test_mcmc_logmarglikmerge()
   state1 = Kpax3.AminoAcidState(data, [1; 1; 1; 2; 3; 3], priorR, priorC, settings)
   support1 = Kpax3.MCMCSupport(state1, priorC)
 
-  ni = vec(sum(float(data[:, [4; 5; 6]]), 2))
+  ni = vec(sum(float(data[:, [4; 5; 6]]), dims=2))
   vi = 3
 
   Kpax3.updatelogmargliki!(ni, vi, priorC, support1)
@@ -85,10 +85,10 @@ function test_mcmc_logmargliksplit()
   state1 = Kpax3.AminoAcidState(data, [1; 1; 1; 2; 2; 2], priorR, priorC, settings)
   support1 = Kpax3.MCMCSupport(state1, priorC)
 
-  support1.ni = vec(sum(float(data[:, 4]), 2))
+  support1.ni = vec(sum(float(data[:, 4]), dims=2))
   support1.vi = 1
 
-  support1.nj = vec(sum(float(data[:, [5; 6]]), 2))
+  support1.nj = vec(sum(float(data[:, [5; 6]]), dims=2))
   support1.vj = 2
 
   Kpax3.updatelogmargliki!(priorC, support1)

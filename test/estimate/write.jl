@@ -19,17 +19,17 @@ function test_write_results()
 
   Kpax3.writeresults(x, state, "../build/test_results", what=4)
 
-  y1 = readstring("../build/test_results_partition.csv")
-  y2 = parse(Float64, strip(readstring("../build/test_results_logposterior_value.txt")))
-  y3 = readstring("../build/test_results_attributes.csv")
-  y4 = readstring("../build/test_results_characteristic.csv")
-  y5 = readstring("../build/test_results_dataset.txt")
+  y1 = read("../build/test_results_partition.csv", String)
+  y2 = parse(Float64, strip(read("../build/test_results_logposterior_value.txt", String)))
+  y3 = read("../build/test_results_attributes.csv", String)
+  y4 = read("../build/test_results_characteristic.csv", String)
+  y5 = read("../build/test_results_dataset.txt", String)
 
-  @test y1 == readstring(partition)
+  @test y1 == read(partition, String)
   @test isapprox(y2, state.logpp, rtol=ε)
-  @test y3 == readstring("data/output_fasta_proper_aa_attributes.csv")
-  @test y4 == readstring("data/output_fasta_proper_aa_characteristic.csv")
-  @test y5 == readstring("data/output_fasta_proper_aa_dataset.txt")
+  @test y3 == read("data/output_fasta_proper_aa_attributes.csv", String)
+  @test y4 == read("data/output_fasta_proper_aa_characteristic.csv", String)
+  @test y5 == read("data/output_fasta_proper_aa_dataset.txt", String)
 
   nothing
 end

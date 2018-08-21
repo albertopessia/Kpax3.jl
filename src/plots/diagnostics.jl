@@ -26,15 +26,15 @@ function plottrace(entropy::Vector{Float64};
     eff = min(nsim, ess(variid, mcvar, nsim))
 
     effstr = if eff <= 100000
-      @sprintf("%d", eff)
+      Printf.@sprintf("%d", eff)
     else
-      @sprintf("%.3e", eff)
+      Printf.@sprintf("%.3e", eff)
     end
 
     sestr = if 0.001 <= mcse <= 1000
-      @sprintf("%.3f", mcse)
+      Printf.@sprintf("%.3f", mcse)
     else
-      @sprintf("%.3e", mcse)
+      Printf.@sprintf("%.3e", mcse)
     end
 
     string(main, " (mcse = ", sestr, ", ESS = ", effstr, ")")
@@ -72,15 +72,15 @@ function plotdensity(entropy::Vector{Float64};
     eff = min(nsim, ess(variid, mcvar, nsim))
 
     effstr = if eff <= 100000
-      @sprintf("%d", eff)
+      Printf.@sprintf("%d", eff)
     else
-      @sprintf("%.3e", eff)
+      Printf.@sprintf("%.3e", eff)
     end
 
     sestr = if 0.001 <= mcse <= 1000
-      @sprintf("%.3f", mcse)
+      Printf.@sprintf("%.3f", mcse)
     else
-      @sprintf("%.3e", mcse)
+      Printf.@sprintf("%.3e", mcse)
     end
 
     string(main, " (mcse = ", sestr, ", ESS = ", effstr, ")")
