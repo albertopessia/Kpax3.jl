@@ -29,7 +29,7 @@ number of SNPs.
 possesses value `j`, `0` otherwise.
 
 The value associated with column `j` can be obtained by `val[j]` while the SNP
-position by `find(ref == 29)[key[j]]`.
+position by `findall(ref == 29)[key[j]]`.
 
 ## References
 
@@ -87,7 +87,7 @@ number of SNPs.
 possesses value `j`, `0` otherwise.
 
 The value associated with column `j` can be obtained by `val[j]` while the SNP
-position by `find(ref == 29)[key[j]]`.
+position by `findall(ref == 29)[key[j]]`.
 
 ## References
 
@@ -96,9 +96,9 @@ Bayesian identification of cluster-defining amino acid positions in large
 sequence datasets. _Microbial Genomics_ **1**(1).
 <http://dx.doi.org/10.1099/mgen.0.000025>.
 """
-# generalize AminoAcidData to represent generic categorical data. Code must be
-# refactored
 struct AminoAcidData{T} <: KData
+  # generalize AminoAcidData to represent generic categorical data. Code must
+  # be refactored
   data::Matrix{UInt8}
   id::Vector{String}
   ref::Vector{T}
@@ -147,7 +147,7 @@ the total number of polymorphic columns.
 possesses value `j`, `0` otherwise.
 
 The value associated with column `j` can be obtained by `val[j]` while the
-polymorphic position by `find(ref == ".")[key[j]]`.
+polymorphic position by `findall(ref == ".")[key[j]]`.
 
 ## References
 
@@ -156,16 +156,6 @@ Bayesian identification of cluster-defining amino acid positions in large
 sequence datasets. _Microbial Genomics_ **1**(1).
 <http://dx.doi.org/10.1099/mgen.0.000025>.
 """
-#=
-struct CategoricalData <: KData
-  data::Matrix{UInt8}
-  id::Vector{String}
-  ref::Vector{String}
-  val::Vector{String}
-  key::Vector{Int}
-end
-=#
-
 function CategoricalData(settings::KSettings)
   (data, id, ref) = readdata(settings.ifile, ',', settings.misscsv,
                              settings.verbose, settings.verbosestep)
@@ -175,3 +165,13 @@ function CategoricalData(settings::KSettings)
   # return an AminoAcidData object until the code has been refactored
   AminoAcidData(bindata, id, ref, val, key)
 end
+
+#=
+struct CategoricalData <: KData
+  data::Matrix{UInt8}
+  id::Vector{String}
+  ref::Vector{String}
+  val::Vector{String}
+  key::Vector{Int}
+end
+=#

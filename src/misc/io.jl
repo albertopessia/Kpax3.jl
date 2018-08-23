@@ -1,7 +1,8 @@
 # This file is part of Kpax3. License is MIT.
 
 function readposteriork(fileroot::String)
-  d = readcsv(string(fileroot, "_posterior_k.csv"), String, header=true)
+  fp = string(fileroot, "_posterior_k.csv")
+  d = DelimitedFiles.readdlm(fp, ',', String, header=true)
 
   len = size(d[1], 1)
 
@@ -17,7 +18,8 @@ function readposteriork(fileroot::String)
 end
 
 function readposteriorP(fileroot::String)
-  d = readcsv(string(fileroot, "_posterior_R.csv"), String, header=true)
+  fp = string(fileroot, "_posterior_R.csv")
+  d = DelimitedFiles.readdlm(fp, ',', String, header=true)
 
   len = size(d[1], 1)
   n = convert(Int, (1 + sqrt(1 + 8 * len)) / 2)
@@ -40,7 +42,8 @@ function readposteriorP(fileroot::String)
 end
 
 function readposteriorC(fileroot::String)
-  d = readcsv(string(fileroot, "_posterior_C.csv"), String, header=true)
+  fp = string(fileroot, "_posterior_C.csv")
+  d = DelimitedFiles.readdlm(fp, ',', String, header=true)
 
   len = size(d[1], 1)
 

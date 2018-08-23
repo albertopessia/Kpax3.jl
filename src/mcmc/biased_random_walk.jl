@@ -177,7 +177,7 @@ function performbrwmove!(i::Int,
     support.lp[4, hj, b] = support.lpj[4, b]
   end
 
-  copy!(state.unit[hi], 1, support.ui, 1, support.vi)
+  copyto!(state.unit[hi], 1, support.ui, 1, support.vi)
 
   resize!(state.unit[hj], state.v[hj])
   state.unit[hj][state.v[hj]] = i
@@ -230,7 +230,7 @@ function performbrwsplit!(i::Int,
     support.lp[4, hj, b] = support.lpj[4, b]
   end
 
-  copy!(state.unit[hi], 1, support.ui, 1, support.vi)
+  copyto!(state.unit[hi], 1, support.ui, 1, support.vi)
 
   resize!(state.unit[hj], 1)
   state.unit[hj][1] = i

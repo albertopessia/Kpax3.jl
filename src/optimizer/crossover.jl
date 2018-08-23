@@ -35,7 +35,7 @@ function crossover!(R1::Vector{Int},
         support.oj.R[a] = support.oi.R[a]
 
         # we need to decide where to put a: an existing cluster or a new one?
-        copy!(w, 1, support.oi.v, 1, a - 1)
+        copyto!(w, 1, support.oi.v, 1, a - 1)
         w[a] = 1
         g = StatsBase.sample(StatsBase.ProbabilityWeights(w[1:a], a))
 
@@ -49,7 +49,7 @@ function crossover!(R1::Vector{Int},
       support.oi.R[a] = support.oj.R[a]
 
       # we need to decide where to put a: an existing cluster or a new one?
-      copy!(w, 1, support.oj.v, 1, a - 1)
+      copyto!(w, 1, support.oj.v, 1, a - 1)
       w[a] = 1
       g = StatsBase.sample(StatsBase.ProbabilityWeights(w[1:a], a))
 

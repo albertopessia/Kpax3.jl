@@ -199,7 +199,7 @@ function categorical2binary(data::Matrix{String},
   end
 
   bindata = zeros(UInt8, m, n)
-  val = Array{String}(m)
+  val = Array{String}(undef, m)
   key = zeros(Int, m)
 
   j = 0
@@ -208,7 +208,7 @@ function categorical2binary(data::Matrix{String},
 
     for s in obs
       j += 1
-      bindata[j, data[row, :] .== s] = 0x01
+      bindata[j, data[row, :] .== s] .= 0x01
       val[j] = s
       key[j] = row
     end

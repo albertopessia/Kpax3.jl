@@ -1,35 +1,30 @@
 # This file is part of Kpax3. License is MIT.
 
 """
-# Read a FASTA formatted file
-
-## Description
+  readfasta(ifile::String, protein::Bool, miss::Vector{UInt8}, l::Int,
+verbose::Bool, verbosestep::Int)
 
 Read data in FASTA format and convert it to an integer matrix. Sequences are
 required to be aligned. Only polymorphic columns are stored.
 
-## Usage
-
-readfasta(ifile, protein, miss, l, verbose, verbosestep)
-
 ## Arguments
 
-* `ifile` Path to the input data file
-* `protein` `true` if reading protein data or `false` if reading DNA data
-* `miss` Characters (as `UInt8`) to be considered missing. Use
+- `ifile` Path to the input data file
+- `protein` `true` if reading protein data or `false` if reading DNA data
+- `miss` Characters (as `UInt8`) to be considered missing. Use
 `miss = zeros(UInt8, 1)` if all characters are to be considered valid. Default
 characters for `miss` are:
 
-  - DNA data: _?, \*, #, -, b, d, h, k, m, n, r, s, v, w, x, y, j, z_
-  - Protein data: _?, \*, #, -, b, j, x, z_
+    - DNA data: _?, \\*, #, -, b, d, h, k, m, n, r, s, v, w, x, y, j, z_
+    - Protein data: _?, \\*, #, -, b, j, x, z_
 
-* `l` Sequence length. If unknown, it is better to choose a value which is
+- `l` Sequence length. If unknown, it is better to choose a value which is
 surely greater than the real sequence length. If `l` is found to be
 insufficient, the array size is dynamically increased (not recommended from a
 performance point of view). Default value should be sufficient for most
 datasets
-* `verbose` If `true`, print status reports
-* `verbosestep` Print a status report every `verbosestep` read sequences
+- `verbose` If `true`, print status reports
+- `verbosestep` Print a status report every `verbosestep` read sequences
 
 ## Details
 
@@ -105,9 +100,9 @@ converted to 't' when reading DNA data. Conversion tables are the following:
 
 A tuple containing the following variables:
 
-* `data` Multiple Sequence Alignment (MSA) encoded as a UInt8 matrix
-* `id` Units' ids
-* `ref` Reference sequence, i.e. a vector of the same length of the original
+- `data` Multiple Sequence Alignment (MSA) encoded as a UInt8 matrix
+- `id` Units' ids
+- `ref` Reference sequence, i.e. a vector of the same length of the original
 sequences storing the values of homogeneous sites. SNPs are instead represented
 by a value of 46 ('.')
 """
@@ -125,7 +120,7 @@ function readfasta(ifile::String,
   # note: this function has been written with a huge dataset in mind
   f = open(ifile, "r")
 
-  s = strip(readuntil(f, '>'))
+  s = strip(readuntil(f, '>', keep=true))
   if length(s) == 0
     close(f)
     throw(KFASTAError("No sequence was found."))
@@ -171,8 +166,8 @@ function readfasta(ifile::String,
 
         # do we have enough space to store the first sequence?
         if w > length(tmpseqref)
-          tmpseqref = copy!(zeros(UInt8, w + l), tmpseqref)
-          tmpmissseqref = copy!(falses(w + l), tmpmissseqref)
+          tmpseqref = copyto!(zeros(UInt8, w + l), tmpseqref)
+          tmpmissseqref = copyto!(falses(w + l), tmpmissseqref)
         end
 
         for c in s
@@ -206,8 +201,8 @@ function readfasta(ifile::String,
   # at least a sequence has been found
   n = 1
 
-  seqref = copy!(zeros(UInt8, seqlen), 1, tmpseqref, 1, seqlen)
-  missseqref = copy!(falses(seqlen), 1, tmpmissseqref, 1, seqlen)
+  seqref = copyto!(zeros(UInt8, seqlen), 1, tmpseqref, 1, seqlen)
+  missseqref = copyto!(falses(seqlen), 1, tmpmissseqref, 1, seqlen)
 
   if s[1] == '>'
     if length(s) > 1
@@ -334,7 +329,7 @@ function readfasta(ifile::String,
   end
 
   data = zeros(UInt8, m, n)
-  id = Array{String}(n)
+  id = Array{String}(undef, n)
   enc = zeros(UInt8, 127)
 
   h1 = 0
@@ -473,7 +468,7 @@ function readdata(ifile::String,
   pol = falses(p)
 
   # missing values
-  missobs = indexin(obsref, miss) .> 0
+  missobs = indexin(obsref, miss) .!= nothing
 
   # count the observations and check that they are all the same length
   for line in eachline(f)
@@ -522,8 +517,8 @@ function readdata(ifile::String,
             p - 1, " total columns.\nProcessing data...")
   end
 
-  data = Array{String}(m, n)
-  id = Array{String}(n)
+  data = Array{String}(undef, m, n)
+  id = Array{String}(undef, n)
 
   # go back at the beginning of the file and start again
   seekstart(f)

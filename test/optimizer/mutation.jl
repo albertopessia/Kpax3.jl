@@ -39,8 +39,8 @@ function test_mutation()
   tmp = zeros(Float64, length(pr))
 
   for i in 1:N
-    copy!(o.R, R)
-    copy!(o.v, v)
+    copyto!(o.R, R)
+    copyto!(o.v, v)
 
     Kpax3.mutation!(o, mrate)
 

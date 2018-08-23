@@ -79,7 +79,7 @@ function test_settings_constructor()
   @test settings.burnin == burnin
   @test settings.tstep == tstep
   @test isa(settings.op, StatsBase.ProbabilityWeights)
-  @test StatsBase.values(settings.op) == op
+  @test values(settings.op) == op
 
   settings = Kpax3.KSettings(ifile, ofile, protein=true, miss=zeros(UInt8, 0))
 
@@ -101,7 +101,7 @@ function test_settings_constructor()
   @test !settings.protein
   @test settings.miss == UInt8['?', '*', '#', 'b', 'd', 'h', 'k', 'm', 'n', 'r', 's', 'v', 'w', 'x', 'y', 'j', 'z']
 
-  settings = Kpax3.KSettings(ifile, ofile, misscsv=Array{String}(0))
+  settings = Kpax3.KSettings(ifile, ofile, misscsv=Array{String}(undef, 0))
 
   @test settings.misscsv == [""]
 

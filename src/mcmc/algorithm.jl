@@ -117,7 +117,7 @@ end
 
 function kpax3mcmc(settings::KSettings)
   if settings.verbose
-    @printf("Computing pairwise distances... ")
+    Printf.@printf("Computing pairwise distances... ")
   end
 
   tmp = zeros(UInt8, length(settings.miss))
@@ -130,7 +130,7 @@ function kpax3mcmc(settings::KSettings)
   end
 
   miss = if idx > 0
-           copy!(zeros(UInt8, idx), 1, tmp, 1, idx)
+           copyto!(zeros(UInt8, idx), 1, tmp, 1, idx)
          else
            zeros(UInt8, 1)
          end
@@ -154,7 +154,7 @@ function kpax3mcmc(settings::KSettings)
   end
 
   if settings.verbose
-    @printf("done.\n")
+    Printf.@printf("done.\n")
   end
 
   # expected number of cluster approximately between cbrt(n) and sqrt(n)
@@ -174,13 +174,13 @@ function kpax3mcmc(settings::KSettings)
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
 
   if settings.verbose
-    @printf("Processing Markov Chain output... ")
+    Printf.@printf("Processing Markov Chain output... ")
   end
 
   processchain(x, settings.ofile)
 
   if settings.verbose
-    @printf("done.\n")
+    Printf.@printf("done.\n")
   end
 
   nothing
@@ -224,13 +224,13 @@ function kpax3mcmc(x::AminoAcidData,
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
 
   if settings.verbose
-    @printf("Processing Markov Chain output... ")
+    Printf.@printf("Processing Markov Chain output... ")
   end
 
   processchain(x, settings.ofile)
 
   if settings.verbose
-    @printf("done.\n")
+    Printf.@printf("done.\n")
   end
 
   nothing
@@ -274,13 +274,13 @@ function kpax3mcmc(x::AminoAcidData,
   kpax3mcmc!(x.data, priorR, priorC, settings, support, state)
 
   if settings.verbose
-    @printf("Processing Markov Chain output... ")
+    Printf.@printf("Processing Markov Chain output... ")
   end
 
   processchain(x, settings.ofile)
 
   if settings.verbose
-    @printf("done.\n")
+    Printf.@printf("done.\n")
   end
 
   nothing

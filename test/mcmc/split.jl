@@ -358,10 +358,10 @@ function test_mcmc_updatelogmarglik()
   S = 3
   u = 4
 
-  ni = vec(sum(float(data[:, [1; 2; 3]]), 2))
+  ni = vec(sum(float(data[:, [1; 2; 3]]), dims=2))
   vi = 3
 
-  nj = vec(sum(float(data[:, [4; 5]]), 2))
+  nj = vec(sum(float(data[:, [4; 5]]), dims=2))
   vj = 2
 
   lpi = zeros(Float64, 4, m)

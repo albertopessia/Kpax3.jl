@@ -44,7 +44,7 @@ function test_mcmc_brw_init()
   @test support.ni == float(data[:, 5])
 
   @test support.vj == 4
-  @test support.nj == vec(sum(data[:, [1; 2; 3; 4]], 2))
+  @test support.nj == vec(sum(data[:, [1; 2; 3; 4]], dims=2))
 
   # --------------------------------
   # move unit 3 into its own cluster
@@ -74,7 +74,7 @@ function test_mcmc_brw_init()
   @test support.lp == lp
 
   @test support.vi == 2
-  @test support.ni == vec(sum(data[:, [1; 2]], 2))
+  @test support.ni == vec(sum(data[:, [1; 2]], dims=2))
 
   @test support.vj == 1
   @test support.nj == float(data[:, 3])
@@ -93,7 +93,7 @@ function test_mcmc_brw_init()
   Kpax3.initsupportbrwmerge!(i, hj, data, support, state)
 
   @test support.vj == 3
-  @test support.nj == vec(sum(data[:, [4; 5; 6]], 2))
+  @test support.nj == vec(sum(data[:, [4; 5; 6]], dims=2))
 
   nothing
 end
@@ -226,8 +226,8 @@ function test_mcmc_brw()
   state1.R = [3; 3; 3; 2; 2; 4]
 
   state1.emptycluster[1] = true
-  state1.emptycluster[2:4] = false
-  state1.cl[1:3] = [2; 3; 4]
+  state1.emptycluster[2:4] .= false
+  state1.cl[1:3] .= [2; 3; 4]
   state1.k = 3
 
   state1.v[2:4] = copy(state1.v[1:3])

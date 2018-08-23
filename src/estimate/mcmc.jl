@@ -6,7 +6,7 @@ function kpax3Restimate(fileroot::String)
 
   n = length(id)
 
-  D = 1.0 - P
+  D = 1.0 .- P
 
   R = zeros(Int, n)
   estimate = ones(Int, n)
@@ -16,10 +16,10 @@ function kpax3Restimate(fileroot::String)
   niter = 0
   for g in k
     try
-      copy!(estimate, Clustering.kmedoids(D, g).assignments)
+      copyto!(estimate, Clustering.kmedoids(D, g).assignments)
     catch
       StatsBase.sample!(1:g, estimate, replace=true)
-      estimate[StatsBase.sample(1:n, g, replace=false)] = collect(1:g)
+      estimate[StatsBase.sample(1:n, g, replace=false)] .= collect(1:g)
     end
 
     niter = 0
@@ -28,14 +28,14 @@ function kpax3Restimate(fileroot::String)
 
       if lossnew < lossold
         lossold = lossnew
-        copy!(R, estimate)
+        copyto!(R, estimate)
       end
 
       try
-        copy!(estimate, Clustering.kmedoids(D, g).assignments)
+        copyto!(estimate, Clustering.kmedoids(D, g).assignments)
       catch
         StatsBase.sample!(1:g, estimate, replace=true)
-        estimate[StatsBase.sample(1:n, g, replace=false)] = collect(1:g)
+        estimate[StatsBase.sample(1:n, g, replace=false)] .= collect(1:g)
       end
 
       niter += 1

@@ -7,7 +7,7 @@ function kpax3ga!(x::AminoAcidData,
                   settings::KSettings,
                   support::GASupport)
   if settings.verbose
-    @printf("Initializing Genetic Algorithm... ")
+    Printf.@printf("Initializing Genetic Algorithm... ")
   end
 
   # check if we can write to the backup file
@@ -42,10 +42,11 @@ function kpax3ga!(x::AminoAcidData,
   newpopulation = AminoAcidStateList(settings.popsize, population.state[idx])
 
   if settings.verbose
-    @printf("done\n")
-    @printf("Current number of clusters: %d\n", beststate.k)
-    @printf("Current log-posterior (plus a constant): %.4f\n", beststate.logpp)
-    @printf("Stochastic optimization is now running...\n")
+    Printf.@printf("done\n")
+    Printf.@printf("Current number of clusters: %d\n", beststate.k)
+    Printf.@printf("Current log-posterior (plus a constant): %.4f\n",
+                   beststate.logpp)
+    Printf.@printf("Stochastic optimization is now running...\n")
   end
 
   iter = 0
@@ -62,7 +63,7 @@ function kpax3ga!(x::AminoAcidData,
 
     # now create Nrand random solutions starting from the best one
     while i <= Nrand
-      copy!(R, newpopulation.state[1].R)
+      copyto!(R, newpopulation.state[1].R)
       modifypartition!(R, newpopulation.state[1].k)
 
       newpopulation.state[i] = AminoAcidState(x.data, R, priorR, priorC,
@@ -78,11 +79,11 @@ function kpax3ga!(x::AminoAcidData,
       if rand() <= settings.xrate
         crossover!(population.state[i1].R, population.state[i2].R, support)
       else
-        copy!(support.oi.R, population.state[i1].R)
-        copy!(support.oi.v, population.state[i1].v)
+        copyto!(support.oi.R, population.state[i1].R)
+        copyto!(support.oi.v, population.state[i1].v)
 
-        copy!(support.oj.R, population.state[i2].R)
-        copy!(support.oj.v, population.state[i2].v)
+        copyto!(support.oj.R, population.state[i2].R)
+        copyto!(support.oj.v, population.state[i2].v)
       end
 
       mutation!(support.oi, settings.mrate)
@@ -109,9 +110,9 @@ function kpax3ga!(x::AminoAcidData,
       gap = 0
 
       if settings.verbose
-        @printf("Found a better solution! ")
-        @printf("Log-posterior (plus a constant) for %d clusters: %.4f\n",
-                beststate.k, beststate.logpp)
+        Printf.@printf("Found a better solution! ")
+        Printf.@printf("Log-posterior (plus a constant) for %d clusters: %.4f\n",
+                       beststate.k, beststate.logpp)
       end
     else
       gap += 1
