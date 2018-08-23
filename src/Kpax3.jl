@@ -1,18 +1,18 @@
 # This file is part of Kpax3. License is MIT.
 
-__precompile__(true)
-
 module Kpax3
   #################
   # Load packages #
   #################
   import Clustering
+  import DelimitedFiles
   import Distances
   import FileIO
-  import JLD
-  import Gadfly
-  import Measures
+  import Plots
+  import Printf
+  import SpecialFunctions
   import StatsBase
+  import StatPlots
 
   ####################
   # Export functions #

@@ -4,7 +4,7 @@
 #
 # Kpax3 - Bayesian cluster analysis of categorical data
 #
-# Copyright (c) 2016-2017 Alberto Pessia <alberto.pessia@gmail.com>
+# Copyright (c) 2016-2018 Alberto Pessia <alberto.pessia@gmail.com>
 #
 # Kpax3 is free software: you can redistribute it and/or modify it under the
 # terms of the MIT License. Refer to LICENSE.md file for more info.
@@ -250,9 +250,10 @@ zika_data = CategoricalData(settings);
 #
 # Here, we will opt for the second option by using k-means. Choose a suitable
 # initial number of clusters for your dataset.
+using Clustering;
 k = 10;
-initial_partition = Clustering.kmeans(convert(Array{Float64},
-                                      zika_data.data), k).assignments;
+initial_partition = kmeans(convert(Array{Float64}, zika_data.data),
+                           k).assignments;
 
 # The csv file can be either a single column of integers (cluster indices)
 # representing the partition, or a two-column file where the first column
@@ -282,6 +283,7 @@ map_solution = kpax3ga(zika_data, initial_partition, settings);
 # Check the value of the log-posterior distribution (plus a constant)
 # Compare different solutions by this value and pick the one with the maximum
 # value.
+using Printf;
 @printf("Log-posterior value (plus a constant): %.4f\n", map_solution.logpp);
 
 ###############################################################################
@@ -382,19 +384,23 @@ writeresults(zika_data, mcmc_solution, mcmc_output_file, what=4, verbose=true);
 ###############################################################################
 #
 # In the following, we will use the MAP estimate as the reference partition.
-
-# To change the default plot size for a SVGJS, use the command
-#   Gadfly.set_default_plot_size(width * 1Measures.mm, height * 1Measures.mm);
 #
+# Function signatures are shown in case you want to change default values.
+
+# Choose the default plotting backend. We recommend PlotlyJS. Install it with
+#   ]add PlotlyJS
+#   Blink.AtomShell.install()
+using Plots;
+plotlyjs();
+
 # For high quality figures, you can save all these plots to SVG format with the
 # following command:
-#   Gadfly.draw(Gadfly.SVG("path_to_figure.svg",
-#                          width * 1Measures.mm, height * 1Measures.mm),
-#               plotfunction(plot_parameters, width=width, height=height));
+#   Plots.savefig(plotfunction(plot_parameters, width=width, height=height),
+#                 "path_to_figure.svg");
 # where 'width' and 'height' are Float64 to be set according to your needs and
 # 'plotfunction' is the corresponding desired plot.
 #
-# Other backends can be found at: http://gadflyjl.org/stable/man/backends.html
+# 'Plots.savefig' chooses file type automatically by the extension.
 
 # Plot the complete dataset, highlighting clusters and polymorphic sites
 # function plotD(x::AminoAcidData,
@@ -402,9 +408,9 @@ writeresults(zika_data, mcmc_solution, mcmc_output_file, what=4, verbose=true);
 #                clusterorder::Vector{Int}=zeros(Int, 0),
 #                clusterlabel::Vector{String}=fill("", 0),
 #                linesep::Bool=true,
-#                width::Real=183.0,
-#                height::Real=92.0)
-plotD(zika_data, map_solution);
+#                width::Real=640.0,
+#                height::Real=360.0)
+plotD(zika_data, map_solution)
 
 # Load posterior probabilities:
 (k, pk) = readposteriork(output_file);
@@ -420,45 +426,38 @@ plotD(zika_data, map_solution);
 (entropy_R, avgd_R) = traceR(output_file, maxlag=50);
 (entropy_C, avgd_C) = traceC(output_file, maxlag=50);
 
-# Function signatures are shown in case you want to change default values.
-# Vector 'ac' is autocovariance vector (leave it to default value).
-#
-
 # function plottrace(entropy::Vector{Float64};
-#                    ac::Vector{Float64}=zeros(Float64, 0),
 #                    maxlag::Int=200,
 #                    M::Int=20000,
 #                    main::String="",
-#                    width::Real=183.0,
-#                    height::Real=92.0)
+#                    width::Real=640.0,
+#                    height::Real=360.0)
 plottrace(entropy_R)
 plottrace(entropy_C)
 
 # function plotdensity(entropy::Vector{Float64};
-#                      ac::Vector{Float64}=zeros(Float64, 0),
 #                      maxlag::Int=200,
 #                      main::String="",
-#                      width::Real=183.0,
-#                      height::Real=92.0)
+#                      width::Real=640.0,
+#                      height::Real=360.0)
 plotdensity(entropy_R)
 plotdensity(entropy_C)
 
 # function plotjump(avgd::Vector{Float64};
 #                   main::String="",
-#                   width::Real=183.0,
-#                   height::Real=92.0)
+#                   width::Real=640.0,
+#                   height::Real=360.0)
 plotjump(avgd_R)
 plotjump(avgd_C)
 
 # you can put them in a single plot
 # function plotdgn(entropy::Vector{Float64},
 #                  avgd::Vector{Float64};
-#                  ac::Vector{Float64}=zeros(Float64, 0),
 #                  maxlag::Int=200,
 #                  M::Int=20000,
 #                  main::String="",
-#                  width::Real=183.0,
-#                  height::Real=92.0)
+#                  width::Real=640.0,
+#                  height::Real=360.0)
 plotdgn(entropy_R, avgd_R)
 plotdgn(entropy_C, avgd_C)
 
@@ -467,8 +466,8 @@ plotdgn(entropy_C, avgd_C)
 #                pk::Vector{Float64};
 #                xlim::UnitRange{Int}=1:0,
 #                xticks::Vector{Int}=zeros(Int, 0),
-#                width::Real=89.0,
-#                height::Real=55.0)
+#                width::Real=640.0,
+#                height::Real=360.0)
 plotk(k, pk)
 
 # Posterior distribution of adjacency matrix
@@ -477,8 +476,8 @@ plotk(k, pk)
 #                clusterorder::Vector{Int}=zeros(Int, 0),
 #                clusterlabel::Vector{String}=fill("", 0),
 #                linesep::Bool=true,
-#                width::Real=89.0,
-#                height::Real=89.0)
+#                width::Real=640.0,
+#                height::Real=640.0)
 plotP(map_solution.R, P)
 
 # Posterior distribution of features types (not a very informative plot in this
@@ -486,6 +485,6 @@ plotP(map_solution.R, P)
 # function plotC(site::Vector{Int},
 #                freq::Vector{Float64},
 #                C::Matrix{Float64};
-#                width::Real=183.0,
-#                height::Real=92.0)
+#                width::Real=640.0,
+#                height::Real=360.0)
 plotC(site, freq, C)

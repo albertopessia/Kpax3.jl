@@ -36,18 +36,18 @@ function test_state_constructor()
   maxclust = max(k, min(n, settings.maxclust))
 
   emptycluster = trues(maxclust)
-  emptycluster[1:k] = false
+  emptycluster[1:k] .= false
 
   cl = zeros(Int, maxclust)
-  cl[1:k] = find(.!emptycluster)
+  cl[1:k] .= findall(.!emptycluster)
 
   v = zeros(Int, maxclust)
-  v[1:k] = [2; 2; 2]
+  v[1:k] .= [2; 2; 2]
 
   n1s = zeros(Float64, maxclust, m)
-  n1s[1, :] = vec(sum(float(data[:, R .== 13]), 2))
-  n1s[2, :] = vec(sum(float(data[:, R .== 42]), 2))
-  n1s[3, :] = vec(sum(float(data[:, R .== 76]), 2))
+  n1s[1, :] .= vec(sum(float(data[:, R .== 13]), dims=2))
+  n1s[2, :] .= vec(sum(float(data[:, R .== 42]), dims=2))
+  n1s[3, :] .= vec(sum(float(data[:, R .== 76]), dims=2))
 
   priorR = Kpax3.EwensPitman(settings.α, settings.θ)
   priorC = Kpax3.AminoAcidPriorCol(data, settings.γ, settings.r)
@@ -66,7 +66,7 @@ function test_state_constructor()
 
   @test state.v == v
   @test state.n1s == n1s
-  @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:maxclust]
+  @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ? findall(state.R .== g) : [0] for g in 1:maxclust]
 
   @test state.logpR == Kpax3.logdPriorRow(n, k, v, priorR)
   @test isapprox(state.logpC[1], Kpax3.logpriorC(state.C, state.cl, state.k, priorC), atol=ε)
@@ -107,10 +107,10 @@ function test_state_constructor()
 
   v = [2; 2; 1; 1]
   n1s = zeros(Float64, maxclust, m)
-  n1s[1, :] = vec(sum(float(x.data[:, R .== 1]), 2))
-  n1s[2, :] = vec(sum(float(x.data[:, R .== 2]), 2))
-  n1s[3, :] = vec(sum(float(x.data[:, R .== 3]), 2))
-  n1s[4, :] = vec(sum(float(x.data[:, R .== 4]), 2))
+  n1s[1, :] .= vec(sum(float(x.data[:, R .== 1]), dims=2))
+  n1s[2, :] .= vec(sum(float(x.data[:, R .== 2]), dims=2))
+  n1s[3, :] .= vec(sum(float(x.data[:, R .== 3]), dims=2))
+  n1s[4, :] .= vec(sum(float(x.data[:, R .== 4]), dims=2))
 
   @test state.R == R
 
@@ -124,7 +124,7 @@ function test_state_constructor()
 
   @test state.v == v
   @test state.n1s == n1s
-  @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:maxclust]
+  @test state.unit == Vector{Int}[sum(state.R .== g) > 0 ? findall(state.R .== g) : [0] for g in 1:maxclust]
 
   @test state.logpR == Kpax3.logdPriorRow(n, k, v, priorR)
   @test isapprox(state.logpC[1], Kpax3.logpriorC(state.C, state.cl, state.k, priorC), atol=ε)
@@ -194,7 +194,7 @@ function test_state_resizestate()
   k = state.k
 
   C = zeros(UInt8, len, m)
-  C[1, :] = copy(vec(state.C[1, :]))
+  C[1, :] .= copy(vec(state.C[1, :]))
 
   emptycluster = trues(len)
   emptycluster[1] = false
@@ -206,9 +206,9 @@ function test_state_resizestate()
   v[1] = 6
 
   n1s = zeros(Float64, len, m)
-  n1s[1, :] = copy(vec(state.n1s[1, :]))
+  n1s[1, :] .= copy(vec(state.n1s[1, :]))
 
-  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:len]
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? findall(state.R .== g) : [0] for g in 1:len]
 
   logpR = state.logpR
   logpC = copy(state.logpC)
@@ -245,7 +245,7 @@ function test_state_resizestate()
   k = state.k
 
   C = zeros(UInt8, len, m)
-  C[1, :] = copy(vec(state.C[1, :]))
+  C[1, :] .= copy(vec(state.C[1, :]))
 
   emptycluster = trues(len)
   emptycluster[1] = false
@@ -257,9 +257,9 @@ function test_state_resizestate()
   v[1] = 6
 
   n1s = zeros(Float64, len, m)
-  n1s[1, :] = copy(vec(state.n1s[1, :]))
+  n1s[1, :] .= copy(vec(state.n1s[1, :]))
 
-  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:len]
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? findall(state.R .== g) : [0] for g in 1:len]
 
   logpR = state.logpR
   logpC = copy(state.logpC)
@@ -296,7 +296,7 @@ function test_state_resizestate()
   k = state.k
 
   C = zeros(UInt8, len, m)
-  C[1, :] = copy(vec(state.C[1, :]))
+  C[1, :] .= copy(vec(state.C[1, :]))
 
   emptycluster = trues(len)
   emptycluster[1] = false
@@ -308,9 +308,9 @@ function test_state_resizestate()
   v[1] = 6
 
   n1s = zeros(Float64, len, m)
-  n1s[1, :] = copy(vec(state.n1s[1, :]))
+  n1s[1, :] .= copy(vec(state.n1s[1, :]))
 
-  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:len]
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? findall(state.R .== g) : [0] for g in 1:len]
 
   logpR = state.logpR
   logpC = copy(state.logpC)
@@ -347,7 +347,7 @@ function test_state_resizestate()
   k = state.k
 
   C = zeros(UInt8, len, m)
-  C[1, :] = copy(vec(state.C[1, :]))
+  C[1, :] .= copy(vec(state.C[1, :]))
 
   emptycluster = trues(len)
   emptycluster[1] = false
@@ -359,9 +359,9 @@ function test_state_resizestate()
   v[1] = 6
 
   n1s = zeros(Float64, len, m)
-  n1s[1, :] = copy(vec(state.n1s[1, :]))
+  n1s[1, :] .= copy(vec(state.n1s[1, :]))
 
-  unit = Vector{Int}[sum(state.R .== g) > 0 ? find(state.R .== g) : [0] for g in 1:len]
+  unit = Vector{Int}[sum(state.R .== g) > 0 ? findall(state.R .== g) : [0] for g in 1:len]
 
   logpR = state.logpR
   logpC = copy(state.logpC)
@@ -426,20 +426,20 @@ function test_state_copy_basic()
   C = ones(UInt8, len, m)
 
   emptycluster = trues(len)
-  emptycluster[g] = false
+  emptycluster[g] .= false
 
   cl = zeros(Int, len)
-  cl[1:k] = g
+  cl[1:k] .= g
 
   v = zeros(Int, len)
-  v[g] = [2; 2; 2]
+  v[g] .= [2; 2; 2]
 
   n1s = zeros(Float64, len, m)
-  n1s[1, :] = vec(sum(float(data[:, R .== 1]), 2))
-  n1s[3, :] = vec(sum(float(data[:, R .== 3]), 2))
-  n1s[5, :] = vec(sum(float(data[:, R .== 5]), 2))
+  n1s[1, :] .= vec(sum(float(data[:, R .== 1]), dims=2))
+  n1s[3, :] .= vec(sum(float(data[:, R .== 3]), dims=2))
+  n1s[5, :] .= vec(sum(float(data[:, R .== 5]), dims=2))
 
-  unit = Vector{Int}[sum(R .== g) > 0 ? find(R .== g) : [0] for g in 1:n]
+  unit = Vector{Int}[sum(R .== g) > 0 ? findall(R .== g) : [0] for g in 1:n]
 
   logpR = -6.5792512120101012129680384532548487186431884765625
   logpC = [-9.1948612277878307708078864379785954952239990234375;
@@ -471,9 +471,9 @@ function test_state_copy_basic()
   state1.cl = [1; 2; 3; 0; 0]
   state1.k = 3
   state1.v = [4; 1; 1; 0; 2]
-  state1.n1s[1, :] = vec(sum(float(data[:, state1.R .== 1]), 2))
-  state1.n1s[2, :] = vec(sum(float(data[:, state1.R .== 2]), 2))
-  state1.n1s[3, :] = vec(sum(float(data[:, state1.R .== 3]), 2))
+  state1.n1s[1, :] .= vec(sum(float(data[:, state1.R .== 1]), dims=2))
+  state1.n1s[2, :] .= vec(sum(float(data[:, state1.R .== 2]), dims=2))
+  state1.n1s[3, :] .= vec(sum(float(data[:, state1.R .== 3]), dims=2))
   state1.unit[1] = [1; 2; 3; 4]
   state1.unit[2] = [5; 0]
   state1.unit[3] = [6]
@@ -539,20 +539,20 @@ function test_state_copy_with_resize()
   C = ones(UInt8, len, m)
 
   emptycluster = trues(len)
-  emptycluster[g] = false
+  emptycluster[g] .= false
 
   cl = zeros(Int, len)
-  cl[1:k] = g
+  cl[1:k] .= g
 
   v = zeros(Int, len)
-  v[g] = [2; 2; 2]
+  v[g] .= [2; 2; 2]
 
   n1s = zeros(Float64, len, m)
-  n1s[1, :] = vec(sum(float(data[:, R .== 1]), 2))
-  n1s[3, :] = vec(sum(float(data[:, R .== 3]), 2))
-  n1s[5, :] = vec(sum(float(data[:, R .== 5]), 2))
+  n1s[1, :] .= vec(sum(float(data[:, R .== 1]), dims=2))
+  n1s[3, :] .= vec(sum(float(data[:, R .== 3]), dims=2))
+  n1s[5, :] .= vec(sum(float(data[:, R .== 5]), dims=2))
 
-  unit = Vector{Int}[sum(R .== g) > 0 ? find(R .== g) : [0] for g in 1:n]
+  unit = Vector{Int}[sum(R .== g) > 0 ? findall(R .== g) : [0] for g in 1:n]
 
   logpR = -6.5792512120101012129680384532548487186431884765625
   logpC = [-9.1948612277878307708078864379785954952239990234375;
@@ -592,10 +592,10 @@ function test_state_copy_with_resize()
   state1.k = 4
   state1.v = [1; 0; 2; 2; 1; 0]
   fill!(state1.n1s, 0.0)
-  state1.n1s[1, :] = vec(sum(float(data[:, state1.R .== 1]), 2))
-  state1.n1s[3, :] = vec(sum(float(data[:, state1.R .== 3]), 2))
-  state1.n1s[4, :] = vec(sum(float(data[:, state1.R .== 4]), 2))
-  state1.n1s[5, :] = vec(sum(float(data[:, state1.R .== 5]), 2))
+  state1.n1s[1, :] .= vec(sum(float(data[:, state1.R .== 1]), dims=2))
+  state1.n1s[3, :] .= vec(sum(float(data[:, state1.R .== 3]), dims=2))
+  state1.n1s[4, :] .= vec(sum(float(data[:, state1.R .== 4]), dims=2))
+  state1.n1s[5, :] .= vec(sum(float(data[:, state1.R .== 5]), dims=2))
   state1.unit[1] = [1; 0; 0; 0; 0; 0]
   state1.unit[2] = [0; 0; 0; 0; 0; 0]
   state1.unit[3] = [2; 3; 0; 0; 0; 0]
@@ -665,20 +665,20 @@ function test_state_copy_without_resize()
   C = ones(UInt8, len, m)
 
   emptycluster = trues(len)
-  emptycluster[g] = false
+  emptycluster[g] .= false
 
   cl = zeros(Int, len)
-  cl[1:k] = g
+  cl[1:k] .= g
 
   v = zeros(Int, len)
-  v[g] = [2; 2; 2]
+  v[g] .= [2; 2; 2]
 
   n1s = zeros(Float64, len, m)
-  n1s[1, :] = vec(sum(float(data[:, R .== 1]), 2))
-  n1s[3, :] = vec(sum(float(data[:, R .== 3]), 2))
-  n1s[5, :] = vec(sum(float(data[:, R .== 5]), 2))
+  n1s[1, :] .= vec(sum(float(data[:, R .== 1]), dims=2))
+  n1s[3, :] .= vec(sum(float(data[:, R .== 3]), dims=2))
+  n1s[5, :] .= vec(sum(float(data[:, R .== 5]), dims=2))
 
-  unit = Vector{Int}[sum(R .== g) > 0 ? find(R .== g) : [0] for g in 1:n]
+  unit = Vector{Int}[sum(R .== g) > 0 ? findall(R .== g) : [0] for g in 1:n]
 
   logpR = -6.5792512120101012129680384532548487186431884765625
   logpC = [-9.1948612277878307708078864379785954952239990234375;
@@ -717,10 +717,10 @@ function test_state_copy_without_resize()
   state1.k = 4
   state1.v = [1; 0; 2; 2; 1; 0]
   fill!(state1.n1s, 0.0)
-  state1.n1s[1, :] = vec(sum(float(data[:, state1.R .== 1]), 2))
-  state1.n1s[3, :] = vec(sum(float(data[:, state1.R .== 3]), 2))
-  state1.n1s[4, :] = vec(sum(float(data[:, state1.R .== 4]), 2))
-  state1.n1s[5, :] = vec(sum(float(data[:, state1.R .== 5]), 2))
+  state1.n1s[1, :] .= vec(sum(float(data[:, state1.R .== 1]), dims=2))
+  state1.n1s[3, :] .= vec(sum(float(data[:, state1.R .== 3]), dims=2))
+  state1.n1s[4, :] .= vec(sum(float(data[:, state1.R .== 4]), dims=2))
+  state1.n1s[5, :] .= vec(sum(float(data[:, state1.R .== 5]), dims=2))
   state1.unit[1] = [1; 0; 0; 0; 0; 0]
   state1.unit[2] = [0; 0; 0; 0; 0; 0]
   state1.unit[3] = [2; 3; 0; 0; 0; 0]

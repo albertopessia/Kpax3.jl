@@ -15,7 +15,7 @@ function mutation!(o::KOffspring,
       o.v[o.R[a]] -= 1
       t = o.v[o.R[a]]
 
-      copy!(w, o.v)
+      copyto!(w, o.v)
 
       # do not put i back into its cluster
       if t > 0

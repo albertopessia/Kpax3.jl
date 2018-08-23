@@ -1,18 +1,25 @@
 language: julia
+
 os:
   - linux
   - osx
+
 julia:
-  - 0.6
+  - 1.0
+
 addons:
   apt:
     packages:
-    - hdf5-tools
+      - hdf5-tools
+      - qt5-default
+
 notifications:
   email: false
+
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.clone(pwd()); Pkg.build("Kpax3");'
-  - julia --check-bounds=yes -e 'Pkg.test("Kpax3", coverage=true);'
+  - julia -e 'import Pkg; Pkg.add(Pkg.PackageSpec(path=pwd())); Pkg.build("Kpax3");'
+  - julia --check-bounds=yes -e 'import Pkg; Pkg.test("Kpax3", coverage=true);'
+
 after_success:
-  - julia -e 'cd(Pkg.dir("Kpax3")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder());'
+  - julia -e 'import Pkg; import Kpax3; cd(joinpath(dirname(pathof(Kpax3)), "..")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder());'

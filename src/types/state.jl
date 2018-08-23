@@ -95,7 +95,7 @@ function copystate(x::AminoAcidState)
   v = copy(x.v)
   n1s = copy(x.n1s)
 
-  unit = Array{Vector{Int}}(length(x.unit))
+  unit = Array{Vector{Int}}(undef, length(x.unit))
   for l in 1:length(x.unit)
     unit[l] = copy(x.unit[l])
   end
@@ -114,7 +114,7 @@ function copystate!(dest::AminoAcidState,
   resizestate!(dest, src.cl[src.k])
 
   if length(dest.R) == length(src.R)
-    copy!(dest.R, src.R)
+    copyto!(dest.R, src.R)
   else
     dest.R = copy(src.R)
   end
@@ -140,7 +140,7 @@ function copystate!(dest::AminoAcidState,
       resize!(dest.unit[g], src.v[g])
     end
 
-    copy!(dest.unit[g], 1, src.unit[g], 1, src.v[g])
+    copyto!(dest.unit[g], 1, src.unit[g], 1, src.v[g])
   end
 
   for b in 2:size(dest.C, 2)
@@ -184,20 +184,20 @@ function initializestate(data::Matrix{UInt8},
   # TODO: remove the hack once kmedoids is fixed
 
   if settings.verbose
-    @printf("Log-posterior (plus a constant) for one cluster: %.4f.\n",
-            s.logpp)
-    @printf("Now scanning %d to %d clusters.\n", kset[1], kset[end])
+    Printf.@printf("Log-posterior (plus a constant) for one cluster: %.4f.\n",
+                   s.logpp)
+    Printf.@printf("Now scanning %d to %d clusters.\n", kset[1], kset[end])
   end
 
   niter = 0
   for k in kset
     if settings.verbose && (k % 10 == 0)
-      @printf("Total number of clusters = %d.\n", k)
+      Printf.@printf("Total number of clusters = %d.\n", k)
     end
 
     fill!(R, 0)
     try
-      copy!(R, Clustering.kmedoids(D, k).assignments)
+      copyto!(R, Clustering.kmedoids(D, k).assignments)
     catch
       StatsBase.sample!(1:k, R, replace=true)
       R[StatsBase.sample(1:n, k, replace=false)] = collect(1:k)
@@ -208,7 +208,7 @@ function initializestate(data::Matrix{UInt8},
     niter = 0
     while niter < 10
       try
-        copy!(R, Clustering.kmedoids(D, k).assignments)
+        copyto!(R, Clustering.kmedoids(D, k).assignments)
       catch
         StatsBase.sample!(1:k, R, replace=true)
         R[StatsBase.sample(1:n, k, replace=false)] = collect(1:k)
@@ -227,9 +227,9 @@ function initializestate(data::Matrix{UInt8},
       copystate!(s, t1)
 
       if settings.verbose
-        @printf("Found a better solution! ")
-        @printf("Log-posterior (plus a constant) for %d clusters: %.4f.\n", k,
-                s.logpp)
+        Printf.@printf("Found a better solution! ")
+        Printf.@printf("Log-posterior (plus a constant) for %d clusters: %.4f.\n",
+                       k, s.logpp)
       end
     end
   end
@@ -245,7 +245,7 @@ function updatestate!(state::AminoAcidState,
                       settings::KSettings)
   (m, n) = size(data)
 
-  copy!(state.R, normalizepartition(R, n))
+  copyto!(state.R, normalizepartition(R, n))
   k = maximum(state.R)
 
   resizestate!(state, k, settings)

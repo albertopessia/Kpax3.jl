@@ -7,16 +7,16 @@ Kpax3 is a [Julia](http://julialang.org/) package for inferring the group struct
 ## Reference
 To know more about the underlying statistical model, refer to the following publications (the first is the primary citation if you use the package):
 
-Pessia, A. and Corander, J. (2018). Kpax3: Bayesian bi-clustering of large sequence datasets. Bioinformatics. _Submitted_
+Pessia, A. and Corander, J. (2018). Kpax3: Bayesian bi-clustering of large sequence datasets. *Bioinformatics*, **34**(12): 2132–2133. doi: [10.1093/bioinformatics/bty056](https://doi.org/10.1093/bioinformatics/bty056)
 
-Pessia, A., Grad, Y., Cobey, S., Puranen, J. S., and Corander, J. (2015) K-Pax2: Bayesian identification of cluster-defining amino acid positions in large sequence datasets. _Microbial Genomics_ **1**(1). doi: [10.1099/mgen.0.000025](http://doi.org/10.1099/mgen.0.000025)
+Pessia, A., Grad, Y., Cobey, S., Puranen, J. S., and Corander, J. (2015) K-Pax2: Bayesian identification of cluster-defining amino acid positions in large sequence datasets. *Microbial Genomics*, **1**(1). doi: [10.1099/mgen.0.000025](http://doi.org/10.1099/mgen.0.000025)
 
 ## Installation
-Kpax3 can be installed from within Julia by typing
+Kpax3 can be easily installed from within Julia:
 
-```julia
-Pkg.add("Kpax3")
-```
+- Enter the Pkg REPL-mode by pressing  `]` in the Julia REPL
+- Issue the command `add Kpax3`
+- Press the Backspace key to return to the Julia REPL
 
 ## Usage
 The best way to learn how to use Kpax3 is by following the instructions in the [fasta tutorial](tutorial/Kpax3_fasta_tutorial.jl) (for genetic sequences) or in the [csv tutorial](tutorial/Kpax3_csv_tutorial.jl) (for general categorical data).

@@ -74,28 +74,28 @@ function test_partition_cols_constructor()
   r2 = 100.0
 
   A1 = zeros(Float64, 4, m)
-  A1[1, :] = (r1 + 1.0) * (n1s + 0.5) / (n + 1)
-  A1[2, :] = 1.0
-  A1[3, :] = 1.0
-  A1[4, :] = r1
+  A1[1, :] .= (r1 + 1.0) .* (n1s .+ 0.5) ./ (n + 1)
+  A1[2, :] .= 1.0
+  A1[3, :] .= 1.0
+  A1[4, :] .= r1
 
   B1 = zeros(Float64, 4, m)
-  B1[1, :] = (r1 + 1.0) - A1[1, :]
-  B1[2, :] = 1.0
-  B1[3, :] = r1
-  B1[4, :] = 1.0
+  B1[1, :] .= (r1 + 1.0) .- A1[1, :]
+  B1[2, :] .= 1.0
+  B1[3, :] .= r1
+  B1[4, :] .= 1.0
 
   A2 = zeros(Float64, 4, m)
-  A2[1, :] = n1s + 0.5
-  A2[2, :] = 1.0
-  A2[3, :] = 1.0
-  A2[4, :] = r2
+  A2[1, :] .= n1s .+ 0.5
+  A2[2, :] .= 1.0
+  A2[3, :] .= 1.0
+  A2[4, :] .= r2
 
   B2 = zeros(Float64, 4, m)
-  B2[1, :] = n - n1s + 0.5
-  B2[2, :] = 1.0
-  B2[3, :] = r2
-  B2[4, :] = 1.0
+  B2[1, :] .= n .- n1s .+ 0.5
+  B2[2, :] .= 1.0
+  B2[3, :] .= r2
+  B2[4, :] .= 1.0
 
   for k in 1:n
     for γ in ([1.0; 0.0; 0.0], [0.0; 1.0; 0.0], [0.0; 0.0; 1.0], [0.4; 0.3; 0.3], [0.5; 0.3; 0.2], [0.7; 0.2; 0.1], [0.1; 0.1; 0.1], [0.3; 0.1; 0.1], [0.0; 0.2; 0.1])
@@ -170,13 +170,13 @@ function test_partition_cols_functions()
   end
 
   M = maximum(logp1)
-  p1 = exp(M + log(sum(exp.(logp1 - M))))
+  p1 = exp(M + log(sum(exp.(logp1 .- M))))
 
   M = maximum(logp2)
-  p2 = exp(M + log(sum(exp.(logp2 - M))))
+  p2 = exp(M + log(sum(exp.(logp2 .- M))))
 
   M = maximum(logp3)
-  p3 = exp(M + log(sum(exp.(logp3 - M))))
+  p3 = exp(M + log(sum(exp.(logp3 .- M))))
 
   @test isapprox(p1, 1.0, atol=ε)
   @test isapprox(p2, 1.0, atol=ε)
@@ -193,7 +193,7 @@ function test_partition_cols_functions()
   end
 
   M = maximum(logp4)
-  p4 = exp(M + log(sum(exp.(logp4 - M))))
+  p4 = exp(M + log(sum(exp.(logp4 .- M))))
 
   @test isapprox(p4, 1.0, atol=ε)
 

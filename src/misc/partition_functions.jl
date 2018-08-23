@@ -3,7 +3,7 @@
 function initializepartition(settings::KSettings;
                              kset::UnitRange{Int}=1:0)
   if settings.verbose
-    @printf("Computing pairwise distances... ")
+    Printf.@printf("Computing pairwise distances... ")
   end
 
   tmp = zeros(UInt8, length(settings.miss))
@@ -16,7 +16,7 @@ function initializepartition(settings::KSettings;
   end
 
   miss = if idx > 0
-           copy!(zeros(UInt8, idx), 1, tmp, 1, idx)
+           copyto!(zeros(UInt8, idx), 1, tmp, 1, idx)
          else
            zeros(UInt8, 1)
          end
@@ -40,7 +40,7 @@ function initializepartition(settings::KSettings;
   end
 
   if settings.verbose
-    @printf("done\n")
+    Printf.@printf("done\n")
   end
 
   # expected number of cluster approximately between cbrt(n) and sqrt(n)
@@ -67,7 +67,7 @@ function initializepartition(settings::KSettings;
          end
 
   if settings.verbose
-    @printf("Initializing partition...\n")
+    Printf.@printf("Initializing partition...\n")
   end
 
   missval = if (length(settings.miss) == 1) && (settings.miss[1] == 0x00)
@@ -86,7 +86,7 @@ function initializepartition(settings::KSettings;
   s = initializestate(bindata, D, kset, priorR, priorC, settings)
 
   if settings.verbose
-    @printf("Initialization done.\n")
+    Printf.@printf("Initialization done.\n")
   end
 
   normalizepartition(s.R, n)
@@ -122,7 +122,7 @@ function initializepartition(data::Matrix{UInt8},
          end
 
   if settings.verbose
-    @printf("Initializing partition...\n")
+    Printf.@printf("Initializing partition...\n")
   end
 
   priorR = EwensPitman(settings.α, settings.θ)
@@ -131,7 +131,7 @@ function initializepartition(data::Matrix{UInt8},
   s = initializestate(data, D, kset, priorR, priorC, settings)
 
   if settings.verbose
-    @printf("Initialization done.\n")
+    Printf.@printf("Initialization done.\n")
   end
 
   normalizepartition(s.R, n)
@@ -149,12 +149,12 @@ function normalizepartition(partition::Vector{Int},
                              " instead of ", n, ".")))
   end
 
-  indexin(partition, sort(unique(partition)))
+  map(Int, indexin(partition, sort(unique(partition))))
 end
 
 function normalizepartition(ifile::String,
                             n::Int)
-  d = readcsv(ifile, Int)
+  d = DelimitedFiles.readdlm(ifile, ',', Int)
 
   if size(d, 2) != 1
     throw(KInputError(string("Too many columns found in file ", ifile, ".")))
@@ -165,12 +165,12 @@ function normalizepartition(ifile::String,
                              "size: ", length(d), " instead of ", n, ".")))
   end
 
-  indexin(d[:, 1], sort(unique(d[:, 1])))
+  map(Int, indexin(d[:, 1], sort(unique(d[:, 1]))))
 end
 
 function normalizepartition(ifile::String,
                             id::Vector{String})
-  d = readcsv(ifile, String)
+  d = DelimitedFiles.readdlm(ifile, ',', String)
 
   if size(d, 1) != length(id)
     throw(KInputError(string("Partition length is not equal to the sample ",
@@ -180,9 +180,9 @@ function normalizepartition(ifile::String,
 
   if size(d, 2) == 1
     partition = [parse(Int, x) for x in d[:, 1]]
-    indexin(partition, sort(unique(partition)))
+    map(Int, indexin(partition, sort(unique(partition))))
   elseif size(d, 2) == 2
-    idx = indexin(id, [x::String for x in d[:, 1]])
+    idx = map(Int, indexin(id, [x::String for x in d[:, 1]]))
     partition = [parse(Int, x) for x in d[:, 2]]
 
     for i in 1:length(idx)
@@ -191,7 +191,7 @@ function normalizepartition(ifile::String,
       end
     end
 
-    indexin(partition, sort(unique(partition)))[idx]
+    map(Int, indexin(partition, sort(unique(partition)))[idx])
   else
     throw(KInputError(string("Too many columns found in file ", ifile, ".")))
   end

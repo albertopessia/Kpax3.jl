@@ -41,7 +41,7 @@ function KSettings(ifile::String,
                    ofile::String;
                    protein::Bool=true,
                    miss::Vector{UInt8}=zeros(UInt8, 0),
-                   misscsv::Vector{String}=Array{String}(0),
+                   misscsv::Vector{String}=Array{String}(undef, 0),
                    l::Int=100000000,
                    alpha::Real=0.5,
                    theta::Real=-0.25,
