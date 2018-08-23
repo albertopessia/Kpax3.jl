@@ -1,7 +1,5 @@
 # This file is part of Kpax3. License is MIT.
 
-__precompile__(true)
-
 module TestPartition
 
   export Partition
