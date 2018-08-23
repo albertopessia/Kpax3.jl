@@ -1,16 +1,26 @@
 # This file is part of Kpax3. License is MIT.
 
+# Tell Plots/GR that we are in a headless environment
+ENV["GKSwstype"] = "100"
+ENV["PLOTS_TEST"] = "true"
+
 using Distances
+using GR
+using Plots
 using Printf
 using Random
 using SpecialFunctions
 using Statistics
+using StatPlots
 using StatsBase
 using Test
 
+gr(size=(800, 600))
+
 cd(dirname(@__FILE__))
 
-import Kpax3
+#import Kpax3
+include("../src/Kpax3.jl")
 
 ε = 1.0e-13
 Random.seed!(1427371200)
@@ -51,8 +61,7 @@ function runtests()
     "mcmc/posterior";
     "mcmc/diagnostics";
     "estimate/write";
-    # plots should be checked manually to see if they produce what we expect
-    #"plots/plots"
+    "plots/plots"
   ]
 
   for t in tests
