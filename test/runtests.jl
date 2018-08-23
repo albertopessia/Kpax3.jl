@@ -1,12 +1,10 @@
 # This file is part of Kpax3. License is MIT.
 
 using Distances
-using Plots
 using Printf
 using Random
 using SpecialFunctions
 using Statistics
-using StatPlots
 using StatsBase
 using Test
 
