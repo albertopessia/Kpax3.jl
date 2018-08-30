@@ -5,13 +5,11 @@ ENV["GKSwstype"] = "100"
 ENV["PLOTS_TEST"] = "true"
 
 using Distances
-using GR
 using Plots
 using Printf
 using Random
 using SpecialFunctions
 using Statistics
-using StatPlots
 using StatsBase
 using Test
 

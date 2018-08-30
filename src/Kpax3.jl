@@ -8,11 +8,11 @@ module Kpax3
   import DelimitedFiles
   import Distances
   import FileIO
-  import Plots
+  import KernelDensity
   import Printf
+  import RecipesBase
   import SpecialFunctions
   import StatsBase
-  import StatPlots
 
   ####################
   # Export functions #

@@ -387,15 +387,14 @@ writeresults(zika_data, mcmc_solution, mcmc_output_file, what=4, verbose=true);
 #
 # Function signatures are shown in case you want to change default values.
 
-# Choose the default plotting backend. We recommend PlotlyJS. Install it with
-#   ]add PlotlyJS
-#   Blink.AtomShell.install()
+# Choose the default plotting backend, such as GR. Install them with
+#   ]add Plots GR
 using Plots;
-plotlyjs();
+gr();
 
 # For high quality figures, you can save all these plots to SVG format with the
 # following command:
-#   Plots.savefig(plotfunction(plot_parameters, width=width, height=height),
+#   Plots.savefig(plotfunction(plot_parameters, size=(width, height),
 #                 "path_to_figure.svg");
 # where 'width' and 'height' are Float64 to be set according to your needs and
 # 'plotfunction' is the corresponding desired plot.
@@ -403,14 +402,11 @@ plotlyjs();
 # 'Plots.savefig' chooses file type automatically by the extension.
 
 # Plot the complete dataset, highlighting clusters and polymorphic sites
-# function plotD(x::AminoAcidData,
-#                state::AminoAcidState;
-#                clusterorder::Vector{Int}=zeros(Int, 0),
-#                clusterlabel::Vector{String}=fill("", 0),
-#                linesep::Bool=true,
-#                width::Real=640.0,
-#                height::Real=360.0)
-plotD(zika_data, map_solution)
+# function kpax3plotd(x::AminoAcidData,
+#                     state::AminoAcidState;
+#                     clusterorder=:auto,
+#                     clusterlabel=:auto)
+kpax3plotd(zika_data, map_solution)
 
 # Load posterior probabilities:
 (k, pk) = readposteriork(output_file);
@@ -426,65 +422,39 @@ plotD(zika_data, map_solution)
 (entropy_R, avgd_R) = traceR(output_file, maxlag=50);
 (entropy_C, avgd_C) = traceC(output_file, maxlag=50);
 
-# function plottrace(entropy::Vector{Float64};
-#                    maxlag::Int=200,
-#                    M::Int=20000,
-#                    main::String="",
-#                    width::Real=640.0,
-#                    height::Real=360.0)
-plottrace(entropy_R)
-plottrace(entropy_C)
+# function kpax3plottrace(entropy::Vector{Float64};
+#                         maxlag=200,
+#                         M=20000,
+#                         main="")
+kpax3plottrace(entropy_R)
+kpax3plottrace(entropy_C)
 
-# function plotdensity(entropy::Vector{Float64};
-#                      maxlag::Int=200,
-#                      main::String="",
-#                      width::Real=640.0,
-#                      height::Real=360.0)
-plotdensity(entropy_R)
-plotdensity(entropy_C)
+# function kpax3plotdensity(entropy::Vector{Float64};
+#                           maxlag=200,
+#                           main="")
+kpax3plotdensity(entropy_R)
+kpax3plotdensity(entropy_C)
 
-# function plotjump(avgd::Vector{Float64};
-#                   main::String="",
-#                   width::Real=640.0,
-#                   height::Real=360.0)
-plotjump(avgd_R)
-plotjump(avgd_C)
-
-# you can put them in a single plot
-# function plotdgn(entropy::Vector{Float64},
-#                  avgd::Vector{Float64};
-#                  maxlag::Int=200,
-#                  M::Int=20000,
-#                  main::String="",
-#                  width::Real=640.0,
-#                  height::Real=360.0)
-plotdgn(entropy_R, avgd_R)
-plotdgn(entropy_C, avgd_C)
+# function kpax3plotjump(avgd::Vector{Float64};
+#                        main="")
+kpax3plotjump(avgd_R)
+kpax3plotjump(avgd_C)
 
 # Posterior distribution of the number of clusters
-# function plotk(k::Vector{Int},
-#                pk::Vector{Float64};
-#                xlim::UnitRange{Int}=1:0,
-#                xticks::Vector{Int}=zeros(Int, 0),
-#                width::Real=640.0,
-#                height::Real=360.0)
-plotk(k, pk)
+# function kpax3plotk(k::Vector{Int},
+#                     pk::Vector{Float64})
+kpax3plotk(k, pk)
 
 # Posterior distribution of adjacency matrix
-# function plotP(R::Vector{Int},
-#                P::Matrix{Float64};
-#                clusterorder::Vector{Int}=zeros(Int, 0),
-#                clusterlabel::Vector{String}=fill("", 0),
-#                linesep::Bool=true,
-#                width::Real=640.0,
-#                height::Real=640.0)
-plotP(map_solution.R, P)
+# function kpax3plotp(R::Vector{Int},
+#                     P::Matrix{Float64};
+#                     clusterorder=:auto,
+#                     clusterlabel=:auto)
+kpax3plotp(map_solution.R, P)
 
 # Posterior distribution of features types (not a very informative plot in this
 # case because of few polymorphic sites compared to the length of the genome)
-# function plotC(site::Vector{Int},
-#                freq::Vector{Float64},
-#                C::Matrix{Float64};
-#                width::Real=640.0,
-#                height::Real=360.0)
-plotC(site, freq, C)
+# function kpax3plotc(site::Vector{Int},
+#                     freq::Vector{Float64},
+#                     C::Matrix{Float64})
+kpax3plotc(site, freq, C)
