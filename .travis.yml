@@ -11,7 +11,6 @@ addons:
   apt:
     packages:
       - hdf5-tools
-      - qt5-default
 
 notifications:
   email: false

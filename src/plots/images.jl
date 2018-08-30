@@ -1,21 +1,27 @@
 # This file is part of Kpax3. License is MIT.
 
-function plotP(R::Vector{Int},
-               P::Matrix{Float64};
-               clusterorder::Vector{Int}=zeros(Int, 0),
-               clusterlabel::Vector{String}=fill("", 0),
-               linesep::Bool=true,
-               width::Real=640.0,
-               height::Real=640.0)
+RecipesBase.@userplot Kpax3PlotP
+
+RecipesBase.@recipe function plotp(g::Kpax3PlotP;
+                                   clusterorder=:auto,
+                                   clusterlabel=:auto)
+  if (length(g.args) != 2) ||
+     (typeof(g.args[1]) != Vector{Int}) ||
+     (typeof(g.args[2]) != Matrix{Float64})
+      throw(KInputError("Two arguments required. Got: $(typeof(g.args))"))
+  end
+
+  R, P = g.args
+
   n = length(R)
   k = maximum(R)
 
-  if length(clusterorder) == 0 || length(clusterorder) != k
+  if (clusterorder == :auto) || (length(clusterorder) != k)
     clusterorder = collect(1:k)
   end
 
-  if length(clusterlabel) == 0 || length(clusterlabel) != k
-    clusterlabel = map(l -> string(l), clusterorder)
+  if (clusterlabel == :auto) || (length(clusterlabel) != k)
+    clusterlabel = string.(clusterorder)
   end
 
   (ord, mid, sep) = reorderunits(R, P, clusterorder)
@@ -58,11 +64,12 @@ function plotP(R::Vector{Int},
   # TODO: improve the algorithm
   processed = falses(n, n)
 
-  xmin = zeros(Int, 0)
-  xmax = zeros(Int, 0)
-  ymin = zeros(Int, 0)
-  ymax = zeros(Int, 0)
-  col = fill("", 0)
+  len = zero(Int)
+  xmin = zeros(Int, len)
+  xmax = zeros(Int, len)
+  ymin = zeros(Int, len)
+  ymax = zeros(Int, len)
+  col = fill("", len)
 
   # elements on the diagonal have always p = 1.0
   val = "#000000"
@@ -76,6 +83,8 @@ function plotP(R::Vector{Int},
     push!(ymin, j - 1)
     push!(ymax, jmax)
     push!(col, val)
+
+    len += 1
 
     processed[j:jmax, j:jmax] .= true
     j = jmax + 1
@@ -99,12 +108,16 @@ function plotP(R::Vector{Int},
         push!(ymax, imax)
         push!(col, val)
 
+        len += 1
+
         # upper triangular (transpose)
         push!(xmin, i - 1)
         push!(xmax, imax)
         push!(ymin, j - 1)
         push!(ymax, jmax)
         push!(col, val)
+
+        len += 1
 
         processed[i:imax, j:jmax] .= true
         i = imax + 1
@@ -125,46 +138,77 @@ function plotP(R::Vector{Int},
     yborder[:, i] = [sep[i]; sep[i + 1]; sep[i + 1]; sep[i]; sep[i]]
   end
 
-  rectangles = reshape([Plots.Shape([(xmin[i], ymin[i]),
-                                     (xmin[i], ymax[i]),
-                                     (xmax[i], ymax[i]),
-                                     (xmax[i], ymin[i])])
-                        for i = 1:length(xmin)], 1, length(xmin))
-
-  pcol = reshape(col, 1, length(col))
-  # create an empty plot and then add all the rectangles on top of it
   mcol = ["#FFFFFF" "#F0F0F0" "#BDBDBD" "#636363" "#000000"]
   mlab = ["[0.0, 0.2]" "(0.2, 0.4]" "(0.4, 0.6]" "(0.6, 0.8]" "(0.8, 1.0]"]
 
-  p = Plots.plot(xborder, yborder,
-                 # cluster borders
-                 seriestype=:path, linecolor=:black,
-                 # plot options
-                 background_color=:white, html_output_format=:svg,
-                 size=(width, height), window_title="",
-                 # subplot options
-                 grid=false, label="", legend=:none, title="",
-                 # axes
-                 formatter=l -> string(clusterlabel[mid .== l][1]),
-                 # x axis
-                 xlabel="Samples by cluster", xlims=(0, n), xticks=mid,
-                 # y axis
-                 ylabel="Samples by cluster", ylims=(0, n), yticks=mid,
-                 yflip=true)
-  Plots.plot!(p, fill(-2, 2, length(mcol)), fill(-0.5, 2, length(mcol)),
-              seriestype=:scatter, markershape=:rect, markercolor=mcol,
-              label=mlab, legend=:right)
-  Plots.plot!(p, rectangles, fillcolor=pcol, linealpha=0.0, linewidth=0.0,
-              linestyle=:dot, label="")
+  rect_x = zeros(Float64, 5 * len)
+  rect_y = zeros(Float64, 5 * len)
+  for i = 1:len
+    idx = LinearIndices((5, len))[:, i]
+    rect_x[idx] .= [xmin[i]; xmax[i]; xmax[i]; xmin[i]; NaN]
+    rect_y[idx] .= [ymin[i]; ymin[i]; ymax[i]; ymax[i]; NaN]
+  end
 
-  p
+  # start by plotting cluster borders
+  RecipesBase.@series begin
+    seriestype := :path
+    linecolor := :black
+    label := ""
+    legend := :none
+
+    xborder, yborder
+  end
+
+  # add the rectangles and fill them with color
+  RecipesBase.@series begin
+    seriestype := :shape
+    fillcolor := col
+    linealpha := 0.0
+    linewidth := 0.0
+    linestyle := :dot
+    label := ""
+
+    rect_x, rect_y
+  end
+
+  # complete the plot by adding the legend
+  RecipesBase.@series begin
+    seriestype := :scatter
+    background_color := :white
+    grid := false
+    markershape := :rect
+    markercolor := mcol
+    label := mlab
+    xlims := (0, n)
+    xticks := (mid, clusterlabel)
+    ylims := (0, n)
+    yticks := (mid, clusterlabel)
+    yflip := true
+
+    html_output_format --> :svg
+    size --> (800, 600)
+    window_title --> ""
+    title --> ""
+    legend --> :right
+    xlabel --> "Samples by cluster"
+    ylabel --> "Samples by cluster"
+
+    fill(-2.0, 1, length(mcol)), fill(-2.0, 1, length(mcol))
+  end
 end
 
-function plotC(site::Vector{Int},
-               freq::Vector{Float64},
-               C::Matrix{Float64};
-               width::Real=640.0,
-               height::Real=360.0)
+RecipesBase.@userplot Kpax3PlotC
+
+RecipesBase.@recipe function plotc(g::Kpax3PlotC)
+  if (length(g.args) != 3) ||
+     (typeof(g.args[1]) != Vector{Int}) ||
+     (typeof(g.args[2]) != Vector{Float64}) ||
+     (typeof(g.args[3]) != Matrix{Float64})
+      throw(KInputError("Three arguments required. Got: $(typeof(g.args))"))
+  end
+
+  site, freq, C = g.args
+
   m = site[end]
   M = length(site)
 
@@ -187,48 +231,83 @@ function plotC(site::Vector{Int},
   mcol = ["#FFFFFF" "#808080" "#000000"]
   mlab = ["Noise" "Weak signal" "Strong signal"]
 
-  p = Plots.plot(1:m, ones(Float64, m),
-                 seriestype=:path, linecolor=:black, fill=(0, :black),
-                 # plot options
-                 background_color=:white, html_output_format=:svg,
-                 size=(width, height), window_title="",
-                 # subplot options
-                 grid=false, label="", legend=:none, title="",
-                 # x axis
-                 xlabel="Site", xlims=(1, m),
-                 # y axis
-                 ylabel="Posterior probability", ylims=(0, 1))
-  Plots.plot!(p, 1:m, weak,
-              seriestype=:path,
-              linecolor="#808080",
-              fill=(0, "#808080"),
-              label="", legend=:none)
-  Plots.plot!(p, 1:m, noise,
-              seriestype=:path, linecolor=:white, fill=(0, :white),
-              label="", legend=:none)
-  Plots.plot!(p, fill(-2, 2, length(mcol)), fill(-0.5, 2, 3),
-              seriestype=:scatter, markershape=:rect, markercolor=mcol,
-              label=mlab, legend=:right)
+  # start with a complete black plot (strong signal)
+  RecipesBase.@series begin
+    seriestype := :path
+    linecolor := :black
+    fill := (0, :black)
+    label := ""
+    legend := :none
 
-  p
+    1:m, ones(Float64, m)
+  end
+
+  # add the weak signal on top
+  RecipesBase.@series begin
+    seriestype := :path
+    linecolor := "#808080"
+    fill := (0, "#808080")
+    label :=""
+    legend := :none
+
+    1:m, weak
+  end
+
+  # finally add the white noise
+  RecipesBase.@series begin
+    seriestype := :path
+    linecolor := :white
+    fill := (0, :white)
+    label :=""
+    legend := :none
+
+    1:m, noise
+  end
+
+  # add the legend
+  RecipesBase.@series begin
+    seriestype := :scatter
+    background_color := :white
+    grid := false
+    markershape := :rect
+    markercolor := mcol
+    label := mlab
+    legend := :right
+    xlims := (1, m)
+    ylims := (0, 1)
+
+    html_output_format --> :svg
+    size --> (800, 600)
+    window_title --> ""
+    title --> ""
+    legend --> :right
+    xlabel --> "Site"
+    ylabel --> "Posterior probability"
+
+    fill(-2, 1, length(mcol)), fill(-2, 1, length(mcol))
+  end
 end
 
-function plotD(x::AminoAcidData,
-               state::AminoAcidState;
-               clusterorder::Vector{Int}=zeros(Int, 0),
-               clusterlabel::Vector{String}=fill("", 0),
-               linesep::Bool=true,
-               width::Real=640.0,
-               height::Real=360.0)
+RecipesBase.@userplot Kpax3PlotD
+
+RecipesBase.@recipe function plotd(g::Kpax3PlotD;
+                                   clusterorder=:auto,
+                                   clusterlabel=:auto)
+  if length(g.args) != 2
+      throw(KInputError("Two arguments required. Got: $(typeof(g.args))"))
+  end
+
+  x, state = g.args
+
   (m, n) = size(x.data)
   M = length(x.ref)
 
-  if length(clusterorder) == 0 || length(clusterorder) != state.k
+  if (clusterorder == :auto) || (length(clusterorder) != state.k)
     clusterorder = collect(1:state.k)
   end
 
-  if length(clusterlabel) == 0 || length(clusterlabel) != state.k
-    clusterlabel = map(l -> string(l), clusterorder)
+  if (clusterlabel == :auto) || length(clusterlabel) != state.k
+    clusterlabel = string.(clusterorder)
   end
 
   v = zeros(Float64, state.k)
@@ -239,9 +318,7 @@ function plotD(x::AminoAcidData,
 
   v = [0.0; v[clusterorder]]
 
-  for g in 2:(state.k + 1)
-    v[g] += v[g - 1]
-  end
+  cumsum!(v, v)
 
   xax = collect(1:M)
 
@@ -249,6 +326,7 @@ function plotD(x::AminoAcidData,
   for g in 1:state.k
     yax[g] = (v[g] + v[g + 1]) / 2
   end
+  round.(yax, digits=3)
 
   # colors
   colset = [("A", "Ala", "#FF3232");
@@ -344,11 +422,12 @@ function plotD(x::AminoAcidData,
   # TODO: improve the algorithm
   processed = falses(state.k, M)
 
-  xmin = zeros(Int, 0)
-  xmax = zeros(Int, 0)
-  ymin = zeros(Float64, 0)
-  ymax = zeros(Float64, 0)
-  col = fill("", 0)
+  len = zero(Int)
+  xmin = zeros(Int, len)
+  xmax = zeros(Int, len)
+  ymin = zeros(Float64, len)
+  ymax = zeros(Float64, len)
+  col = fill("", len)
 
   j = 1
   while j <= M
@@ -366,6 +445,8 @@ function plotD(x::AminoAcidData,
         push!(ymax, v[imax + 1])
         push!(col, val)
 
+        len += 1
+
         processed[i:imax, j:jmax] .= true
         i = imax + 1
       else
@@ -378,32 +459,59 @@ function plotD(x::AminoAcidData,
     j += 1
   end
 
-  rectangles = reshape([Plots.Shape([(xmin[i], ymin[i]),
-                                     (xmin[i], ymax[i]),
-                                     (xmax[i], ymax[i]),
-                                     (xmax[i], ymin[i])])
-                        for i = 1:length(xmin)], 1, length(xmin))
-
-  pcol = reshape(col, 1, length(col))
   mcol = reshape(map(a -> a[3], colset[1:26]), 1, 26)
   mlab = reshape(map(a -> a[2], colset[1:26]), 1, 26)
 
-  p = Plots.plot(rectangles,
-                 fillcolor=pcol, linecolor=pcol,
-                 # plot options
-                 background_color=:white, html_output_format=:svg,
-                 size=(width, height), window_title="",
-                 # subplot options
-                 grid=false, label="", legend=:none, title="",
-                 # x axis
-                 xlabel="Site", xlims=(1, M),
-                 # y axis
-                 ylabel="Cluster", ylims=(0, 1), yticks=yax, yflip=true,
-                 yformatter=l -> string(clusterlabel[yax .== l][1]))
-  Plots.plot!(p, fill(-2, 2, length(mcol)), fill(-0.5, 2, length(mcol)),
-              seriestype=:scatter, markershape=:rect, markercolor=mcol,
-              label=mlab, legend=:right)
-  Plots.plot!(p, v[2:state.k], seriestype=:hline, linecolor=:black, label="")
+  rect_x = zeros(Float64, 5 * len)
+  rect_y = zeros(Float64, 5 * len)
+  for i = 1:len
+    idx = LinearIndices((5, len))[:, i]
+    rect_x[idx] .= [xmin[i]; xmax[i]; xmax[i]; xmin[i]; NaN]
+    rect_y[idx] .= [ymin[i]; ymin[i]; ymax[i]; ymax[i]; NaN]
+  end
 
-  p
+  # draw the rectangles
+  RecipesBase.@series begin
+    seriestype := :shape
+    fillcolor := col
+    linecolor := col
+    label := ""
+    legend := :none
+
+    rect_x, rect_y
+  end
+
+  # add cluster separators
+  RecipesBase.@series begin
+    seriestype := :hline
+    linecolor := :black
+    label := ""
+    legend := :none
+
+    v
+  end
+
+  # complete the plot by adding the legend
+  RecipesBase.@series begin
+    seriestype := :scatter
+    background_color := :white
+    grid := false
+    markershape := :rect
+    markercolor := mcol
+    label := mlab
+    xlims := (1, M)
+    ylims := (0, 1)
+    yticks := (yax, clusterlabel)
+    yflip := true
+
+    html_output_format --> :svg
+    size --> (800, 600)
+    window_title --> ""
+    title --> ""
+    legend --> :right
+    xlabel --> "Site"
+    ylabel --> "Cluster"
+
+    fill(-2, 1, length(mcol)), fill(-2, 1, length(mcol))
+  end
 end
