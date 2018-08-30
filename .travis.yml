@@ -17,7 +17,7 @@ notifications:
 
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'import Pkg; Pkg.add(Pkg.PackageSpec(path=pwd())); Pkg.build("Kpax3");'
+  - julia -e 'import Pkg; Pkg.add("Plots"); Pkg.add(Pkg.PackageSpec(path=pwd())); Pkg.build("Kpax3");'
   - julia --check-bounds=yes -e 'import Pkg; Pkg.test("Kpax3", coverage=true);'
 
 after_success:
