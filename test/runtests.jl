@@ -1,17 +1,21 @@
 # This file is part of Kpax3. License is MIT.
 
+# install Plots here because travis does not find it otherwise
+import Pkg
+if !in("Plots", keys(Pkg.installed()))
+  Pkg.add("Plots")
+end
+
 # Tell Plots/GR that we are in a headless environment
 ENV["GKSwstype"] = "100"
 ENV["PLOTS_TEST"] = "true"
 
 using Distances
-using GR
 using Plots
 using Printf
 using Random
 using SpecialFunctions
 using Statistics
-using StatPlots
 using StatsBase
 using Test
 
@@ -19,8 +23,7 @@ gr(size=(800, 600))
 
 cd(dirname(@__FILE__))
 
-#import Kpax3
-include("../src/Kpax3.jl")
+import Kpax3
 
 ε = 1.0e-13
 Random.seed!(1427371200)
