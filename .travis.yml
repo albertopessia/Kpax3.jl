@@ -18,7 +18,7 @@ notifications:
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia -e 'import Pkg; Pkg.add(Pkg.PackageSpec(path=pwd())); Pkg.build("Kpax3");'
-  - julia --check-bounds=yes -e 'import Pkg; Pkg.add("Plots"); Pkg.test("Kpax3", coverage=true);'
+  - julia --check-bounds=yes -e 'import Pkg; Pkg.test("Kpax3", coverage=true);'
 
 after_success:
   - julia -e 'import Pkg; import Kpax3; cd(joinpath(dirname(pathof(Kpax3)), "..")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder());'
