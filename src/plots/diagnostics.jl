@@ -1,11 +1,17 @@
 # This file is part of Kpax3. License is MIT.
+RecipesBase.@userplot Kpax3PlotTrace
 
-function plottrace(entropy::Vector{Float64};
-                   maxlag::Int=200,
-                   M::Int=20000,
-                   main::String="",
-                   width::Real=640.0,
-                   height::Real=360.0)
+RecipesBase.@recipe function plottrace(g::Kpax3PlotTrace;
+                                       maxlag=200,
+                                       M=20000,
+                                       main="")
+  if (length(g.args) != 1) ||
+     (typeof(g.args[1]) != Vector{Float64})
+      throw(KInputError("One argument required. Got: $(typeof(g.args))"))
+  end
+
+  entropy = g.args[1]
+
   nsim = length(entropy)
 
   # plot the last M points
@@ -17,7 +23,7 @@ function plottrace(entropy::Vector{Float64};
     ytr = copy(entropy)
   end
 
-  title = if main != ""
+  plot_title = if main != ""
     ac = StatsBase.autocov(entropy, 0:maxlag)
 
     variid = ac[1] / nsim
@@ -42,28 +48,41 @@ function plottrace(entropy::Vector{Float64};
     ""
   end
 
-  Plots.plot(xtr, ytr,
-             seriestype=:path, linecolor=:black,
-             # plot options
-             background_color=:white, html_output_format=:svg,
-             size=(width, height), window_title="",
-             # subplot options
-             label="", legend=:none, title=title,
-             # x axis
-             xlabel="Iteration", xlims=(minimum(xtr), maximum(xtr)),
-             # y axis
-             ylabel="Entropy",
-             ylims=(max(0.0, minimum(ytr) - 0.05), maximum(ytr) + 0.05))
+  RecipesBase.@series begin
+    seriestype := :path
+    linecolor := :black
+    background_color := :white
+    label := ""
+    legend := :none
+    title := plot_title
+    window_title := ""
+    xlims := (minimum(xtr), maximum(xtr))
+    ylims := (max(0.0, minimum(ytr) - 0.05), maximum(ytr) + 0.05)
+
+    html_output_format --> :svg
+    size --> (800, 600)
+    xlabel --> "Iteration"
+    ylabel --> "Entropy"
+
+    xtr, ytr
+  end
 end
 
-function plotdensity(entropy::Vector{Float64};
-                     maxlag::Int=200,
-                     main::String="",
-                     width::Real=640.0,
-                     height::Real=360.0)
+RecipesBase.@userplot Kpax3PlotDensity
+
+RecipesBase.@recipe function plotdensity(g::Kpax3PlotDensity;
+                                         maxlag=200,
+                                         main="")
+  if (length(g.args) != 1) ||
+     (typeof(g.args[1]) != Vector{Float64})
+      throw(KInputError("One argument required. Got: $(typeof(g.args))"))
+  end
+
+  entropy = g.args[1]
+
   nsim = length(entropy)
 
-  title = if main != ""
+  plot_title = if main != ""
     ac = StatsBase.autocov(entropy, 0:maxlag)
 
     variid = ac[1] / nsim
@@ -88,25 +107,38 @@ function plotdensity(entropy::Vector{Float64};
     ""
   end
 
-  StatPlots.density(entropy,
-                    linecolor=:black,
-                    # plot options
-                    background_color=:white, html_output_format=:svg,
-                    size=(width, height), window_title="",
-                    # subplot options
-                    label="", legend=:none, title=title,
-                    # x axis
-                    xlabel="Entropy",
-                    xlims=(max(0.0, minimum(entropy) - 0.05),
-                           maximum(entropy) + 0.05),
-                    # y axis
-                    ylabel="Density")
+  kd = KernelDensity.kde(entropy, npoints=256)
+
+  RecipesBase.@series begin
+    seriestype := :path
+    linecolor := :black
+    background_color := :white
+    label := ""
+    legend := :none
+    title := plot_title
+    window_title := ""
+    xlims := (max(0.0, minimum(entropy) - 0.05), maximum(entropy) + 0.05)
+
+    html_output_format --> :svg
+    size --> (800, 600)
+    xlabel --> "Entropy"
+    ylabel --> "Density"
+
+    kd.x, kd.density
+  end
 end
 
-function plotjump(avgd::Vector{Float64};
-                  main::String="",
-                  width::Real=640.0,
-                  height::Real=360.0)
+RecipesBase.@userplot Kpax3PlotJump
+
+RecipesBase.@recipe function plotjump(g::Kpax3PlotJump;
+                                      main="")
+  if (length(g.args) != 1) ||
+     (typeof(g.args[1]) != Vector{Float64})
+      throw(KInputError("One argument required. Got: $(typeof(g.args))"))
+  end
+
+  avgd = g.args[1]
+
   maxlag = length(avgd)
 
   # Exponential smoothing for estimating the long term mean
@@ -115,39 +147,31 @@ function plotjump(avgd::Vector{Float64};
     asy = 0.6 * asy + 0.4 * avgd[t]
   end
 
-  p = Plots.plot(1:maxlag, avgd,
-                 seriestype=:scatter, markercolor=:black,
-                 # plot options
-                 background_color=:white, html_output_format=:svg,
-                 size=(width, height), window_title="",
-                 # subplot options
-                 label="", legend=:none, title=main,
-                 # x axis
-                 xlabel="Lag", xlims=(0, maxlag + 1),
-                 # y axis
-                 ylabel="Average distance")
+  RecipesBase.@series begin
+    seriestype := :scatter
+    markercolor := :black
+    label := ""
+    legend := :none
 
-  Plots.plot!(p, [asy], seriestype=:hline, linestyle=:dash, linecolor=:black)
+    1:maxlag, avgd
+  end
 
-  p
-end
+  RecipesBase.@series begin
+    seriestype := :hline
+    linestyle := :dash
+    linecolor := :black
+    background_color := :white
+    label := ""
+    legend := :none
+    title := main
+    window_title := ""
+    xlims := (0, maxlag + 1)
 
-function plotdgn(entropy::Vector{Float64},
-                 avgd::Vector{Float64};
-                 maxlag::Int=200,
-                 M::Int=20000,
-                 main::String="",
-                 width::Real=640.0,
-                 height::Real=360.0)
-  p1 = plottrace(entropy, maxlag=maxlag, M=M, main=main,
-                 width=width, height=height)
-  p2 = plotdensity(entropy, maxlag=maxlag, main="", width=width,
-                   height=height)
-  p3 = plotjump(avgd, main="", width=width, height=height)
+    html_output_format --> :svg
+    size --> (800, 600)
+    xlabel --> "Lag"
+    ylabel --> "Average distance"
 
-  Plots.plot(p1, p2, p3,
-             layout=Plots.@layout([a; b; c]),
-             background_color=:white, html_output_format=:svg,
-             size=(10.0 + width, 10.0 + 3 * height), window_title="",
-             label="", legend=:none, title="")
+    [asy]
+  end
 end

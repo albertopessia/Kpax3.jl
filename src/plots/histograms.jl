@@ -1,13 +1,18 @@
 # This file is part of Kpax3. License is MIT.
 
-function plotk(k::Vector{Int},
-               pk::Vector{Float64};
-               xlim::UnitRange{Int}=1:0,
-               xticks::Vector{Int}=zeros(Int, 0),
-               width::Real=640.0,
-               height::Real=360.0)
-  x = if length(xlim) > 0
-    collect(xlim)
+RecipesBase.@userplot Kpax3PlotK
+
+RecipesBase.@recipe function plotk(g::Kpax3PlotK)
+  if (length(g.args) != 2) ||
+     (typeof(g.args[1]) != Vector{Int}) ||
+     (typeof(g.args[2]) != Vector{Float64})
+      throw(KInputError("Two arguments required. Got: $(typeof(g.args))"))
+  end
+
+  k, pk = g.args
+
+  x = if @isdefined xlims
+    collect(xlims)
   else
     collect(max(1, k[1] - 5):(k[end] + 5))
   end
@@ -42,17 +47,24 @@ function plotk(k::Vector{Int},
 
   M = ceil(M * multiplier) / multiplier
 
-  Plots.bar(x, y,
-            # bar options
-            fillcolor=:black, orientation=:vertical,
-            # plot options
-            background_color=:white, html_output_format=:svg,
-            size=(width, height), window_title="",
-            # subplot options
-            grid=true, legend=:none, title="",
-            # x axis
-            xlabel="k", xlims=(x[1] - 0.5, x[end] + 0.5),
-            xticks=length(xticks) == 0 ? :auto : xticks,
-            # y axis
-            ylabel="p(k | x)", ylims=(0, M))
+  RecipesBase.@series begin
+    seriestype := :bar
+    orientation := :vertical
+    legend := :none
+    ylims := (0, M)
+
+    fillcolor --> :black
+    background_color --> :white
+    html_output_format --> :svg
+    size --> (800, 600)
+    window_title --> ""
+    grid --> true
+    title --> ""
+    xlabel --> "k"
+    xticks --> :auto
+    xlims --> :auto
+    ylabel --> "p(k | x)"
+
+    x, y
+  end
 end

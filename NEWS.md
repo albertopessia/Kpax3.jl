@@ -1,5 +1,10 @@
 # Kpax3.jl Release Notes
 
+## Changes from v0.4.0 to v0.5.0
+
+* Add dependency on `RecipesBase`
+* Remove dependency on `GR`, `Plots`, and `StatPlots`
+
 ## Changes from v0.3.0 to v0.4.0
 
 * Upgrade to Julia 1.0

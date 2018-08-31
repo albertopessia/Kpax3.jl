@@ -286,8 +286,9 @@ function imsevar(ac::Vector{Float64},
   s = ac[1] + ac[2]
   old = s
   cur = 0.0
-  m = 0
-  for outer m in 1:u
+  counter = 0
+  for m in 1:u
+    counter += 1
     cur = ac[2 * m + 1] + ac[2 * m + 2]
 
     if cur <= 0.0
@@ -298,9 +299,9 @@ function imsevar(ac::Vector{Float64},
     old = cur
   end
 
-  if m == u
-    warn("'maxlag' value of ", length(ac) - 1, " might not be enough for ",
-         "estimating MCMC variance. Try increasing its value.")
+  if counter == u
+    @warn string("'maxlag' value of ", length(ac) - 1, " might not be enough ",
+                 "for estimating MCMC variance. Try increasing its value.")
   end
 
   (-ac[1] + 2 * s) / nsim
