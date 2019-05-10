@@ -1,5 +1,10 @@
 # Kpax3.jl Release Notes
 
+## Changes from v0.5.0 to v0.5.1
+
+* Upgrade to Julia 1.1
+* Update to use the new `Pkg` registry system
+
 ## Changes from v0.4.0 to v0.5.0
 
 * Add dependency on `RecipesBase`
