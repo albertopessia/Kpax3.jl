@@ -15,9 +15,7 @@ using Test
 
 gr(size=(800, 600))
 
-cd(dirname(@__FILE__))
-
-import Kpax3
+using Kpax3
 
 ε = 1.0e-13
 Random.seed!(1427371200)
