@@ -4,15 +4,15 @@ module Kpax3
   #################
   # Load packages #
   #################
-  import Clustering
-  import DelimitedFiles
-  import Distances
-  import FileIO
-  import KernelDensity
-  import Printf
-  import RecipesBase
-  import SpecialFunctions
-  import StatsBase
+  using Clustering
+  using DelimitedFiles
+  using Distances
+  using FileIO
+  using KernelDensity
+  using Printf
+  using RecipesBase
+  using SpecialFunctions
+  using StatsBase
 
   ####################
   # Export functions #
