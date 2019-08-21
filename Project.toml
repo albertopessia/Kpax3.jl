@@ -1,7 +1,7 @@
 name = "Kpax3"
 uuid = "ad72c4b6-2990-538c-bd38-e122d63d24d9"
 authors = ["Alberto Pessia <alberto@albertopessia.com>"]
-version = "0.5.1"
+version = "0.5.2"
 
 [deps]
 Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
