@@ -1,5 +1,9 @@
 # Kpax3.jl Release Notes
 
+## Changes from v0.5.1 to v0.5.2
+
+* Upgrade to Julia 1.2
+
 ## Changes from v0.5.0 to v0.5.1
 
 * Upgrade to Julia 1.1
