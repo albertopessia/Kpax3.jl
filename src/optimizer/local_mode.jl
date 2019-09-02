@@ -24,34 +24,34 @@ function computelocalmode!(v::Vector{Int},
     lγ[2] = priorC.logγ[2]
     lγ[3] = priorC.logγ[3]
 
-    tmp1[1] = SpecialFunctions.lbeta(priorC.A[1, b], priorC.B[1, b])
-    tmp1[2] = SpecialFunctions.lbeta(priorC.A[2, b], priorC.B[2, b])
-    tmp1[3] = SpecialFunctions.lbeta(priorC.A[3, b], priorC.B[3, b]) -
+    tmp1[1] = SpecialFunctions.logbeta(priorC.A[1, b], priorC.B[1, b])
+    tmp1[2] = SpecialFunctions.logbeta(priorC.A[2, b], priorC.B[2, b])
+    tmp1[3] = SpecialFunctions.logbeta(priorC.A[3, b], priorC.B[3, b]) -
               priorC.logω[k][1]
-    tmp1[4] = SpecialFunctions.lbeta(priorC.A[4, b], priorC.B[4, b]) -
+    tmp1[4] = SpecialFunctions.logbeta(priorC.A[4, b], priorC.B[4, b]) -
               priorC.logω[k][2]
 
     for l in 1:k
       g = cl[l]
 
       # noise
-      lγ[1] += SpecialFunctions.lbeta(priorC.A[1, b] + n1s[g, b],
-                                      priorC.B[1, b] + v[g] - n1s[g, b]) -
+      lγ[1] += SpecialFunctions.logbeta(priorC.A[1, b] + n1s[g, b],
+                                        priorC.B[1, b] + v[g] - n1s[g, b]) -
                tmp1[1]
 
       # weak signal
-      lγ[2] += SpecialFunctions.lbeta(priorC.A[2, b] + n1s[g, b],
-                                      priorC.B[2, b] + v[g] - n1s[g, b]) -
+      lγ[2] += SpecialFunctions.logbeta(priorC.A[2, b] + n1s[g, b],
+                                        priorC.B[2, b] + v[g] - n1s[g, b]) -
                tmp1[2]
 
       # strong signal but not characteristic
-      tmp2[1, l] = SpecialFunctions.lbeta(priorC.A[3, b] + n1s[g, b],
-                                          priorC.B[3, b] + v[g] - n1s[g, b]) -
+      tmp2[1, l] = SpecialFunctions.logbeta(priorC.A[3, b] + n1s[g, b],
+                                            priorC.B[3, b] + v[g] - n1s[g, b]) -
                    tmp1[3]
 
       # strong signal and characteristic
-      tmp2[2, l] = SpecialFunctions.lbeta(priorC.A[4, b] + n1s[g, b],
-                                          priorC.B[4, b] + v[g] - n1s[g, b]) -
+      tmp2[2, l] = SpecialFunctions.logbeta(priorC.A[4, b] + n1s[g, b],
+                                            priorC.B[4, b] + v[g] - n1s[g, b]) -
                    tmp1[4]
 
       if tmp2[1, l] >= tmp2[2, l]
@@ -125,35 +125,35 @@ function computelocalmode!(state::State,
     lγ[2] = priorC.logγ[2]
     lγ[3] = priorC.logγ[3]
 
-    tmp1[1] = SpecialFunctions.lbeta(priorC.A[1, b], priorC.B[1, b])
-    tmp1[2] = SpecialFunctions.lbeta(priorC.A[2, b], priorC.B[2, b])
-    tmp1[3] = SpecialFunctions.lbeta(priorC.A[3, b], priorC.B[3, b]) -
+    tmp1[1] = SpecialFunctions.logbeta(priorC.A[1, b], priorC.B[1, b])
+    tmp1[2] = SpecialFunctions.logbeta(priorC.A[2, b], priorC.B[2, b])
+    tmp1[3] = SpecialFunctions.logbeta(priorC.A[3, b], priorC.B[3, b]) -
               priorC.logω[k][1]
-    tmp1[4] = SpecialFunctions.lbeta(priorC.A[4, b], priorC.B[4, b]) -
+    tmp1[4] = SpecialFunctions.logbeta(priorC.A[4, b], priorC.B[4, b]) -
               priorC.logω[k][2]
 
     for l in 1:k
       g = state.cl[l]
 
       # noise
-      lγ[1] += SpecialFunctions.lbeta(priorC.A[1, b] + state.n1s[g, b],
-                                      priorC.B[1, b] + state.v[g] -
-                                      state.n1s[g, b]) - tmp1[1]
+      lγ[1] += SpecialFunctions.logbeta(priorC.A[1, b] + state.n1s[g, b],
+                                        priorC.B[1, b] + state.v[g] -
+                                        state.n1s[g, b]) - tmp1[1]
 
       # weak signal
-      lγ[2] += SpecialFunctions.lbeta(priorC.A[2, b] + state.n1s[g, b],
-                                      priorC.B[2, b] + state.v[g] -
-                                      state.n1s[g, b]) - tmp1[2]
+      lγ[2] += SpecialFunctions.logbeta(priorC.A[2, b] + state.n1s[g, b],
+                                        priorC.B[2, b] + state.v[g] -
+                                        state.n1s[g, b]) - tmp1[2]
 
       # strong signal but not characteristic
-      tmp2[1, l] = SpecialFunctions.lbeta(priorC.A[3, b] + state.n1s[g, b],
-                                          priorC.B[3, b] + state.v[g] -
-                                          state.n1s[g, b]) - tmp1[3]
+      tmp2[1, l] = SpecialFunctions.logbeta(priorC.A[3, b] + state.n1s[g, b],
+                                            priorC.B[3, b] + state.v[g] -
+                                            state.n1s[g, b]) - tmp1[3]
 
       # strong signal and characteristic
-      tmp2[2, l] = SpecialFunctions.lbeta(priorC.A[4, b] + state.n1s[g, b],
-                                          priorC.B[4, b] + state.v[g] -
-                                          state.n1s[g, b]) - tmp1[4]
+      tmp2[2, l] = SpecialFunctions.logbeta(priorC.A[4, b] + state.n1s[g, b],
+                                            priorC.B[4, b] + state.v[g] -
+                                            state.n1s[g, b]) - tmp1[4]
 
       if tmp2[1, l] >= tmp2[2, l]
         tmp3 = log1p(exp(tmp2[2, l] - tmp2[1, l]))

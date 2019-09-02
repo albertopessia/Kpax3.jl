@@ -4,14 +4,15 @@ function logmarglik(y::Vector{Float64},
                     n::Real,
                     α::Vector{Float64},
                     β::Vector{Float64})
-  SpecialFunctions.lbeta.(α .+ y, β .- y .+ n) .- SpecialFunctions.lbeta.(α, β)
+  SpecialFunctions.logbeta.(α .+ y, β .- y .+ n) .-
+  SpecialFunctions.logbeta.(α, β)
 end
 
 function logmarglik(y::Real,
                     n::Real,
                     α::Real,
                     β::Real)
-  SpecialFunctions.lbeta(α + y, β + n - y) - SpecialFunctions.lbeta(α, β)
+  SpecialFunctions.logbeta(α + y, β + n - y) - SpecialFunctions.logbeta(α, β)
 end
 
 function logcondmarglik(x::Vector{UInt8},

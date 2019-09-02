@@ -3,7 +3,7 @@
 function test_likelihoods_marginal()
   for (α, β) in ([0.1, 0.1], [0.5, 0.5], [1.0, 1.0], [10.0, 10.0], [100.0, 100.0], [0.2, 0.1], [1.0, 0.5], [2.0, 1.0], [20.0, 10.0], [200.0, 100.0], [0.1, 0.2], [0.5, 1.0], [1.0, 2.0], [10.0, 20.0], [100.0, 200.0])
     for (n, y) in ([1.0, 0.0], [1.0, 1.0], [5.0, 0.0], [5.0, 1.0], [5.0,  3.0], [5.0,  5.0], [10.0, 0.0], [10.0, 1.0], [10.0,  5.0], [10.0, 10.0], [100.0, 0.0], [100.0, 1.0], [100.0, 10.0], [100.0, 100.0])
-      logp = SpecialFunctions.lgamma(α + y) + SpecialFunctions.lgamma(β + n - y) - SpecialFunctions.lgamma(α + β + n) + SpecialFunctions.lgamma(α + β) - SpecialFunctions.lgamma(α) - SpecialFunctions.lgamma(β)
+      logp = SpecialFunctions.loggamma(α + y) + SpecialFunctions.loggamma(β + n - y) - SpecialFunctions.loggamma(α + β + n) + SpecialFunctions.loggamma(α + β) - SpecialFunctions.loggamma(α) - SpecialFunctions.loggamma(β)
 
       logcp0 = log(β + n - y) - log(α + β + n)
       logcp1 = log(α + y) - log(α + β + n)
@@ -39,7 +39,7 @@ function test_likelihoods_marginal()
       qx = Kpax3.condmarglik([fill(0x01, n1s); fill(0x00, m - n1s)], y, n, a, b)
       logqx = Kpax3.logcondmarglik([fill(0x01, n1s); fill(0x00, m - n1s)], y, n, a, b)
 
-      logp = SpecialFunctions.lgamma.(a .+ y) .+ SpecialFunctions.lgamma.(b .+ n .- y) .- SpecialFunctions.lgamma.(a .+ b .+ n) .+ SpecialFunctions.lgamma.(a .+ b) .- SpecialFunctions.lgamma.(a) .- SpecialFunctions.lgamma.(b)
+      logp = SpecialFunctions.loggamma.(a .+ y) .+ SpecialFunctions.loggamma.(b .+ n .- y) .- SpecialFunctions.loggamma.(a .+ b .+ n) .+ SpecialFunctions.loggamma.(a .+ b) .- SpecialFunctions.loggamma.(a) .- SpecialFunctions.loggamma.(b)
 
       logcp0 = log.(b .+ n .- y) .- log.(a .+ b .+ n)
       logcp1 = log.(a .+ y) .- log.(a .+ b .+ n)

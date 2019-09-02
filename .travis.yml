@@ -1,7 +1,9 @@
 language: julia
 
 julia:
-  - 1.1
+  - 1.0
+  - 1.2
+  - nightly
 
 os:
   - linux
@@ -15,9 +17,10 @@ addons:
 notifications:
   email: false
 
-script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia --project --check-bounds=yes -e 'import Pkg; Pkg.build(; verbose=true); Pkg.test(; coverage=true);'
+matrix:
+  fast_finish: true
+  allow_failures:
+    - julia: nightly
 
 after_success:
   - julia --project -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder());'
