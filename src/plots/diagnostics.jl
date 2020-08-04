@@ -61,8 +61,8 @@ RecipesBase.@recipe function plottrace(g::Kpax3PlotTrace;
 
     html_output_format --> :svg
     size --> (800, 600)
-    xlabel --> "Iteration"
-    ylabel --> "Entropy"
+    xguide --> "Iteration"
+    yguide --> "Entropy"
 
     xtr, ytr
   end
@@ -121,8 +121,8 @@ RecipesBase.@recipe function plotdensity(g::Kpax3PlotDensity;
 
     html_output_format --> :svg
     size --> (800, 600)
-    xlabel --> "Entropy"
-    ylabel --> "Density"
+    xguide --> "Entropy"
+    yguide --> "Density"
 
     kd.x, kd.density
   end
@@ -169,8 +169,8 @@ RecipesBase.@recipe function plotjump(g::Kpax3PlotJump;
 
     html_output_format --> :svg
     size --> (800, 600)
-    xlabel --> "Lag"
-    ylabel --> "Average distance"
+    xguide --> "Lag"
+    yguide --> "Average distance"
 
     [asy]
   end

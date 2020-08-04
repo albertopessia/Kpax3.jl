@@ -190,8 +190,8 @@ RecipesBase.@recipe function plotp(g::Kpax3PlotP;
     window_title --> ""
     title --> ""
     legend --> :right
-    xlabel --> "Samples by cluster"
-    ylabel --> "Samples by cluster"
+    xguide --> "Samples by cluster"
+    yguide --> "Samples by cluster"
 
     fill(-2.0, 1, length(mcol)), fill(-2.0, 1, length(mcol))
   end
@@ -281,8 +281,8 @@ RecipesBase.@recipe function plotc(g::Kpax3PlotC)
     window_title --> ""
     title --> ""
     legend --> :right
-    xlabel --> "Site"
-    ylabel --> "Posterior probability"
+    xguide --> "Site"
+    yguide --> "Posterior probability"
 
     fill(-2, 1, length(mcol)), fill(-2, 1, length(mcol))
   end
@@ -509,8 +509,8 @@ RecipesBase.@recipe function plotd(g::Kpax3PlotD;
     window_title --> ""
     title --> ""
     legend --> :right
-    xlabel --> "Site"
-    ylabel --> "Cluster"
+    xguide --> "Site"
+    yguide --> "Cluster"
 
     fill(-2, 1, length(mcol)), fill(-2, 1, length(mcol))
   end

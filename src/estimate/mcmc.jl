@@ -68,15 +68,13 @@ function kpax3estimate(x::AminoAcidData,
 
   close(fpS)
 
-  op = copy(StatsBase.values(settings.op))
-
   settings = KSettings(settings.ifile, settings.ofile, settings.protein,
                        settings.miss, settings.misscsv, settings.l, α, θ, γ, r,
                        settings.maxclust, settings.maxunit, settings.verbose,
                        settings.verbosestep, settings.popsize,
                        settings.maxiter, settings.maxgap, settings.xrate,
                        settings.mrate, settings.T, settings.burnin,
-                       settings.tstep, StatsBase.ProbabilityWeights(op))
+                       settings.tstep, settings.op)
 
   k = maximum(R)
 

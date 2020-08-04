@@ -60,10 +60,10 @@ RecipesBase.@recipe function plotk(g::Kpax3PlotK)
     window_title --> ""
     grid --> true
     title --> ""
-    xlabel --> "k"
+    xguide --> "k"
     xticks --> :auto
     xlims --> :auto
-    ylabel --> "p(k | x)"
+    yguide --> "p(k | x)"
 
     x, y
   end

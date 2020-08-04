@@ -79,7 +79,7 @@ function test_settings_constructor()
   @test settings.burnin == burnin
   @test settings.tstep == tstep
   @test isa(settings.op, StatsBase.ProbabilityWeights)
-  @test values(settings.op) == op
+  @test convert(Vector, settings.op) == op
 
   settings = Kpax3.KSettings(ifile, ofile, protein=true, miss=zeros(UInt8, 0))
 
