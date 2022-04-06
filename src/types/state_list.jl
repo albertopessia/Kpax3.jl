@@ -15,7 +15,6 @@ function AminoAcidStateList(data::Matrix{UInt8},
                             settings::KSettings)
   state = Array{AminoAcidState}(undef, settings.popsize)
   logpp = zeros(Float64, settings.popsize)
-  rank = Int[i for i in 1:settings.popsize]
 
   state[1] = AminoAcidState(data, partition, priorR, priorC, settings)
   logpp[1] = state[1].logpp
@@ -32,7 +31,7 @@ function AminoAcidStateList(data::Matrix{UInt8},
     logpp[i] = state[i].logpp
   end
 
-  sortperm!(rank, logpp, rev=true, initialized=true)
+  rank = sortperm(logpp, rev=true)
 
   if settings.verbose
     Printf.@printf("done\n")
